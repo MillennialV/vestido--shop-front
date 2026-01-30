@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.vestido.shop/</loc>
+    <lastmod>2024-07-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- 
+    Product URLs. 
+    In a real-world application, this file should be dynamically generated 
+    during the build process to reflect the current state of the database.
+  -->
+  <url><loc>https://www.vestido.shop/#/vestido-cielo-estrellado-1001</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-glamour-de-hollywood-1002</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-jardin-secreto-1003</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-brillo-de-metropolis-1004</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-silueta-minimalista-1005</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-elegancia-clasica-1006</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-fantasia-floral-1007</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-sueno-de-sirena-1008</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-romance-moderno-1009</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-audacia-metalica-1010</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-sofisticacion-royal-1011</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-bordado-celestial-1012</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-opulencia-barroca-1013</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-dama-de-cristal-1014</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-susurro-de-tul-1015</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-rubi-apasionado-1016</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-encaje-imperial-1017</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-noche-de-lentejuelas-1018</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-princesa-de-porcelana-1019</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vestido.shop/#/vestido-lazo-escultural-1020</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+</urlset>

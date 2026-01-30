@@ -1,0 +1,330 @@
+import type { Garment, Article } from '../types';
+import { defaultGarments } from './defaultGarments';
+import { slugify } from './slugify';
+import inventarioService from '../services/inventarioService';
+
+// URL del backend API desde variables de entorno (para upload de videos y otros servicios)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
+
+// Garment Functions
+/**
+ * Obtener lista de productos desde el servicio de inventario
+ * Llama al endpoint: GET /api/producto/obtener-listado-productos
+ */
+export async function getListProducts(page: number = 1, limit: number = 100, sort: string = 'title', order: 'asc' | 'desc' = 'desc'): Promise<Garment[]> {
+    try {
+        const result = await inventarioService.obtenerListadoProductos({ page, limit, sort, order });
+        
+        console.log('[getListProducts] Productos recibidos:', result.products?.length || 0);
+        if (result.products && result.products.length > 0) {
+            console.log('[getListProducts] Primer producto:', {
+                id: result.products[0].id,
+                title: result.products[0].title,
+                brand: result.products[0].brand,
+                videoUrl: result.products[0].videoUrl
+            });
+        }
+        
+        if (!result.products || result.products.length === 0) {
+            console.warn('[getListProducts] No hay productos, usando datos por defecto');
+            return Promise.resolve(defaultGarments);
+        }
+
+        return result.products;
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        // Si falla, retornar datos por defecto
+        return Promise.resolve(defaultGarments);
+    }
+}
+
+// Alias para mantener compatibilidad con código existente
+export const getGarments = getListProducts;
+
+export async function uploadVideoFile(videoFile: File, onProgress: (percentage: number) => void): Promise<string> {
+    const formData = new FormData();
+    formData.append('video', videoFile);
+
+    console.log('[uploadVideoFile] Intentando subir video:', {
+        fileName: videoFile.name,
+        fileSize: videoFile.size,
+        fileType: videoFile.type,
+        endpoint: `${API_BASE_URL}/api/upload/video`
+    });
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/upload/video`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
+                // No establecer Content-Type, el navegador lo hace automáticamente para FormData
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ 
+                message: response.statusText,
+                error: `HTTP ${response.status}`
+            }));
+            
+            console.error('[uploadVideoFile] Error en respuesta:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorData
+            });
+            
+            throw new Error(errorData.message || errorData.error || `Error al subir el video: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const videoUrl = data.url || data.publicUrl || data.videoUrl;
+        
+        if (!videoUrl) {
+            console.error('[uploadVideoFile] Respuesta sin URL:', data);
+            throw new Error('El servidor no devolvió una URL para el video subido');
+        }
+        
+        console.log('[uploadVideoFile] Video subido exitosamente:', videoUrl);
+        return videoUrl;
+    } catch (error) {
+        console.error('[uploadVideoFile] Error completo:', error);
+        throw error;
+    }
+}
+
+async function deleteVideoFile(videoUrl: string): Promise<void> {
+    if (!videoUrl) return;
+    try {
+        // Extraer el path del video de la URL
+        const videoPath = videoUrl.split('/').pop();
+        if (videoPath) {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`${API_BASE_URL}/api/upload/video/${encodeURIComponent(videoPath)}`, {
+                method: 'DELETE',
+                headers: {
+                    ...(token && { 'Authorization': `Bearer ${token}` }),
+                },
+            });
+            if (!response.ok) {
+                throw new Error(`Error al eliminar video: ${response.status}`);
+            }
+        }
+    } catch (removeError) {
+        console.error('Failed to remove old video, continuing...', removeError);
+        // No lanzar error, solo loguear
+    }
+}
+
+async function saveGarmentData(
+    garmentData: Omit<Garment, 'id' | 'slug' | 'created_at'> & { id?: number },
+): Promise<Garment> {
+    const { id, ...restOfGarmentData } = garmentData;
+
+    let savedData: Garment;
+
+    if (id) {
+        // Actualizar prenda existente
+        savedData = await inventarioService.actualizarProducto(id, restOfGarmentData);
+    } else {
+        // Crear nueva prenda
+        savedData = await inventarioService.crearProducto(restOfGarmentData);
+    }
+
+    // Actualizar slug si es necesario
+    const newSlug = slugify(savedData.title, savedData.id);
+    if (savedData.slug !== newSlug) {
+        try {
+            savedData = await inventarioService.actualizarProducto(savedData.id, { slug: newSlug });
+        } catch (updateError) {
+            console.warn("Failed to update slug, but continuing...", updateError);
+        }
+    }
+
+    return savedData;
+}
+
+export async function saveGarment(
+    garmentData: Omit<Garment, 'id' | 'videoUrl' | 'slug' | 'created_at'> & { id?: number },
+    videoFile: File | null,
+    existingVideoUrl?: string
+): Promise<Garment> {
+    let finalVideoUrl = existingVideoUrl || '';
+
+    // Si hay un archivo de video, intentar subirlo
+    if (videoFile) {
+        try {
+            console.log('[saveGarment] Subiendo video...', { fileName: videoFile.name, size: videoFile.size });
+            finalVideoUrl = await uploadVideoFile(videoFile, () => {});
+            console.log('[saveGarment] Video subido exitosamente:', finalVideoUrl);
+            
+            // Si se subió exitosamente y había un video anterior, eliminarlo
+            if (existingVideoUrl && finalVideoUrl !== existingVideoUrl) {
+                await deleteVideoFile(existingVideoUrl);
+            }
+        } catch (error) {
+            console.error('[saveGarment] Error al subir video:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            
+            // Si falla el upload, verificar si hay una URL existente
+            if (existingVideoUrl) {
+                console.warn('[saveGarment] Usando URL de video existente debido a error en upload');
+                finalVideoUrl = existingVideoUrl;
+            } else {
+                // Si no hay URL existente y el upload falla, lanzar error claro
+                // El usuario debe saber que necesita el endpoint de upload o una URL externa
+                throw new Error(
+                    `No se pudo subir el video al servidor. ${errorMessage}\n\n` +
+                    `Por favor, verifica que:\n` +
+                    `1. El endpoint /api/upload/video esté disponible en tu backend\n` +
+                    `2. O proporciona una URL externa de video (YouTube, Vimeo, etc.)`
+                );
+            }
+        }
+    }
+    
+    // Si no hay videoUrl, usar el que viene en garmentData (puede ser una URL externa)
+    if (!finalVideoUrl && (garmentData as any).videoUrl) {
+        finalVideoUrl = (garmentData as any).videoUrl;
+    }
+    
+    // Validar que tengamos un videoUrl antes de guardar
+    if (!finalVideoUrl || finalVideoUrl.trim() === '') {
+        throw new Error('Se requiere un video para guardar la prenda. Por favor, sube un video o proporciona una URL de video.');
+    }
+    
+    const dataToPersist = {
+        ...garmentData,
+        videoUrl: finalVideoUrl,
+    };
+
+    console.log('[saveGarment] Guardando producto:', {
+        id: garmentData.id,
+        title: garmentData.title,
+        hasVideoUrl: !!dataToPersist.videoUrl,
+        videoUrl: dataToPersist.videoUrl.substring(0, 100) + '...' // Mostrar solo los primeros 100 caracteres
+    });
+
+    return saveGarmentData(dataToPersist);
+}
+
+export async function saveBulkGarments(garmentsToSave: Omit<Garment, 'id' | 'slug' | 'created_at'>[]): Promise<Garment[]> {
+    if (garmentsToSave.length === 0) {
+        return [];
+    }
+
+    return await inventarioService.crearProductosEnLote(garmentsToSave);
+}
+
+export async function deleteGarment(garment: Garment): Promise<void> {
+    if (garment.videoUrl) {
+        await deleteVideoFile(garment.videoUrl);
+    }
+
+    try {
+        await inventarioService.eliminarProducto(garment.id);
+    } catch (error) {
+        console.error('Error deleting garment:', error);
+        throw new Error(`Error al eliminar la prenda de la base de datos: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+}
+
+export async function deleteGarments(garments: Garment[]): Promise<void> {
+    if (garments.length === 0) return;
+
+    // Eliminar videos primero
+    for (const garment of garments) {
+        if (garment.videoUrl) {
+            try {
+                await deleteVideoFile(garment.videoUrl);
+            } catch (error) {
+                console.error(`Failed to remove video for garment ${garment.id}, continuing...`, error);
+            }
+        }
+    }
+
+    // Eliminar productos usando el servicio
+    const garmentIds = garments.map(g => g.id);
+    await inventarioService.eliminarProductosEnLote(garmentIds);
+}
+
+// Helper para requests de otros servicios (no inventario)
+async function makeApiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+            ...options.headers,
+        },
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ 
+            message: response.statusText,
+            error: response.status === 404 ? 'Ruta no encontrada' : response.statusText
+        }));
+        const error = new Error(errorData.message || errorData.error || `Error HTTP: ${response.status}`);
+        (error as any).status = response.status;
+        throw error;
+    }
+
+    const jsonResponse = await response.json();
+    return jsonResponse.data || jsonResponse;
+}
+
+// Article Functions
+// Nota: El endpoint de artículos no está disponible en el backend actual
+// Retornamos un array vacío para que la app funcione sin errores
+// Cuando implementes el endpoint de artículos, descomenta el código de abajo
+export async function getArticles(): Promise<Article[]> {
+    // Por ahora, retornar array vacío ya que el endpoint no existe
+    // TODO: Implementar cuando el backend tenga el endpoint /api/articles
+    return [];
+    
+    /* Código para cuando el endpoint esté disponible:
+    try {
+        const data = await makeApiRequest<Article[]>('/api/articles', {
+            method: 'GET',
+        });
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.warn('Error fetching articles:', error);
+        return [];
+    }
+    */
+}
+
+export async function saveArticle(articleData: Omit<Article, 'id' | 'slug' | 'created_at'>): Promise<Article> {
+    try {
+        const data = await makeApiRequest<Article>('/api/articles', {
+            method: 'POST',
+            body: JSON.stringify(articleData),
+        });
+
+        if (!data) {
+            throw new Error("No se devolvieron datos del artículo después de guardar.");
+        }
+
+        // Actualizar slug si es necesario
+        const newSlug = slugify(data.title, data.id);
+        if (data.slug !== newSlug) {
+            try {
+                const updatedData = await makeApiRequest<Article>(`/api/articles/${data.id}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ slug: newSlug }),
+                });
+                return updatedData || data;
+            } catch (updateError) {
+                console.warn("Failed to update article slug, but continuing...", updateError);
+                return data;
+            }
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error saving article:', error);
+        throw new Error(`Error al guardar el artículo: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+}
