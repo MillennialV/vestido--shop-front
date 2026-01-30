@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-//import Header from './components/Header';
+import Header from './components/Header';
 import VideoGrid from './components/VideoGrid';
 import VideoModal from './components/VideoModal';
 import AdminFormModal from './components/AdminFormModal';
