@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import type { Garment } from '../types';
+import { inventarioService } from '../services/inventarioService';
 import { WhatsappIcon, EditIcon, DeleteIcon, SpinnerIcon, ErrorIcon, CircleIcon, CheckCircleIcon } from './Icons';
 
 interface VideoCardProps {
@@ -19,6 +20,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ garment, onSelect, isAdmin, onEdi
   const [isVisible, setIsVisible] = useState(false);
   const [isMediaLoading, setIsMediaLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  // isLoadingDetails removido para apertura instantánea
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -75,7 +77,21 @@ const VideoCard: React.FC<VideoCardProps> = ({ garment, onSelect, isAdmin, onEdi
     if (isSelectionMode) {
       onToggleSelection(garment.id);
     } else {
+      // Abrir modal inmediatamente con la información actual
       onSelect(garment);
+
+      // Obtener detalles completos en segundo plano
+      inventarioService.obtenerDetalleProducto(garment.id)
+        .then(fullGarment => {
+            const garmentWithSlug = {
+                ...fullGarment,
+                slug: fullGarment.slug || garment.slug
+            };
+            onSelect(garmentWithSlug);
+        })
+        .catch(error => {
+            console.error("Error fetching details:", error);
+        });
     }
   };
   
@@ -123,7 +139,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ garment, onSelect, isAdmin, onEdi
     setHasError(true);
   };
 
-  const showSpinner = isVisible && garment.videoUrl && isMediaLoading;
+  const showSpinner = (isVisible && garment.videoUrl && isMediaLoading);
   // Mostrar contenido siempre que esté visible, incluso si el video falla
   const showContent = isVisible && !showSpinner;
   

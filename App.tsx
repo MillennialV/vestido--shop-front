@@ -82,17 +82,26 @@ const App: React.FC = () => {
         if (isGarmentRoute) {
             const garmentSlug = path.substring(1);
             const garmentToOpen = garments.find(g => g.slug === garmentSlug);
-            setSelectedGarment(garmentToOpen || null);
+            
             if (garmentToOpen) {
-                fetchProductById(garmentToOpen.id).then(fresh => {
-                    if (fresh) setSelectedGarment(fresh);
-                });
+                setSelectedGarment(garmentToOpen || null);
+                if (garmentToOpen) {
+                    fetchProductById(garmentToOpen.id).then(fresh => {
+                        if (fresh) setSelectedGarment(fresh);
+                    });
+                }
+            } else if (selectedGarment && selectedGarment.slug === garmentSlug) {
+                // Si el producto ya está seleccionado y coincide con la ruta, lo mantenemos
+                // Esto evita que se cierre el modal si el producto no está en la lista cargada actualmente
+                console.log('Manteniendo producto seleccionado:', selectedGarment.slug);
+            } else {
+                setSelectedGarment(null);
             }
         } else {
             setSelectedGarment(null);
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [garments, fetchProductById]);
+    }, [garments, fetchProductById, selectedGarment]);
 
     const navigate = useCallback((path: string) => {
         window.location.hash = path;
@@ -264,8 +273,23 @@ const App: React.FC = () => {
     };
 
     const handleSelectGarment = (garment: Garment) => {
+        // SIEMPRE establecer el estado para abrir el modal, tenga slug o no
+        setSelectedGarment(garment);
+        
+        // Actualizar estado local con la información más reciente
+        setGarments(prev => {
+            const exists = prev.some(g => g.id === garment.id);
+            if (exists) {
+                return prev.map(g => g.id === garment.id ? garment : g);
+            }
+            return prev;
+        });
+
+        // Solo si tiene slug actualizamos la URL (sin recargar), pero esto es secundario
         if (garment.slug) {
-            navigate(`/${garment.slug}`);
+            const newPath = `/${garment.slug}`;
+            window.history.pushState(null, '', `#${newPath}`);
+            setCurrentPath(newPath);
         }
     };
 

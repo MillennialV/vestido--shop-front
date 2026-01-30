@@ -138,7 +138,12 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
   message += `*Talla:* ${garment.size}\n`;
   message += `*Color:* ${garment.color}\n`;
   if (garment.price) {
-    message += `*Precio:* S/ ${garment.price.toFixed(2)}\n`;
+    const priceValue = typeof garment.price === 'string' ? parseFloat(garment.price) : garment.price;
+    if (!isNaN(priceValue)) {
+        message += `*Precio:* S/ ${priceValue.toFixed(2)}\n`;
+    } else {
+        message += `*Precio:* S/ ${garment.price}\n`;
+    }
   }
   if (garment.slug) {
       const productUrl = `${PUBLIC_URL}/#/${garment.slug}`;
@@ -180,13 +185,15 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
           <div className="relative w-full md:w-1/2 aspect-[9/16] bg-black flex items-center justify-center flex-shrink-0">
             {garment.videoUrl ? (
               <video
-                key={garment.id}
+                key={garment.videoUrl} // Force re-render when URL changes
                 src={garment.videoUrl}
                 autoPlay
                 loop
                 muted
                 controls
                 playsInline
+                preload="auto"
+                onError={(e) => console.error("Error loading video in modal:", e)}
                 className="w-full h-full object-cover"
               >
                 <title>Video de demostración para {garment.title} por {garment.brand}</title>
@@ -227,7 +234,9 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
                 <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400">{garment.brand}</p>
                 <h2 id="modal-title" className="text-4xl lg:text-5xl font-semibold text-stone-900 dark:text-stone-100 mt-2 mb-4">{garment.title}</h2>
                 {garment.price && (
-                  <p className="text-3xl text-stone-700 dark:text-stone-200 font-light mb-4">S/ {garment.price.toFixed(2)}</p>
+                  <p className="text-3xl text-stone-700 dark:text-stone-200 font-light mb-4">
+                      S/ {typeof garment.price === 'number' ? garment.price.toFixed(2) : garment.price}
+                  </p>
                 )}
                  <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 flex-wrap">
                     <a
