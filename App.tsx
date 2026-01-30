@@ -22,7 +22,7 @@ import { setHomePageSeo, setGarmentPageSeo, setBlogIndexPageSeo, setArticlePageS
 import authService from './services/authService';
 import { PlusIcon, UploadIcon, CheckCircleIcon, DeleteIcon, WhatsappIcon, CloseIcon } from './components/Icons';
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 10; // Max items per page
 
 const sortByCreatedAt = <T extends { created_at: string }>(items: T[]): T[] => {
     return [...items].sort((a, b) => {
@@ -43,7 +43,7 @@ const getCurrentHashPath = () => {
 
 
 const App: React.FC = () => {
-    const { products: garments, selectedProduct: selectedGarment, setSelectedProduct: setSelectedGarment, isLoading: isGarmentsLoading, error: garmentsError, fetchProducts, fetchProductById, setProducts: setGarments } = useProducts();
+    const { products: garments, pagination, selectedProduct: selectedGarment, setSelectedProduct: setSelectedGarment, isLoading: isGarmentsLoading, error: garmentsError, fetchProducts, fetchProductById, setProducts: setGarments } = useProducts();
     const { faqsForComponent, fetchFaqs } = useFaqs();
     const [articles, setArticles] = useState<Article[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -121,7 +121,7 @@ const App: React.FC = () => {
             setError(null);
             try {
                 const [fetchedGarments, fetchedArticles, fetchedFaqs] = await Promise.all([
-                    fetchProducts(), 
+                    fetchProducts({ page: 1, limit: ITEMS_PER_PAGE }), 
                     getArticles(),
                     /**
                      * Cargar preguntas frecuentes desde el microservicio
@@ -213,11 +213,10 @@ const App: React.FC = () => {
     }, [garments, searchQuery, filters]);
 
     const paginatedGarments = useMemo(() => {
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        return filteredGarments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    }, [filteredGarments, currentPage]);
+        return filteredGarments;
+    }, [filteredGarments]);
 
-    const totalPages = Math.ceil(filteredGarments.length / ITEMS_PER_PAGE);
+    const totalPages = pagination.totalPages || 1;
 
     const uniqueFilters = useMemo(() => {
         const brands = [...new Set(garments.map(g => g.brand))].sort();
@@ -245,6 +244,7 @@ const App: React.FC = () => {
     const handlePageChange = (page: number) => {
         if (page > 0 && page <= totalPages) {
             setCurrentPage(page);
+            fetchProducts({ page, limit: ITEMS_PER_PAGE });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -339,7 +339,8 @@ const App: React.FC = () => {
 
             // 2. Also trigger a background refetch to ensure consistency with server
             // We don't await this to keep UI responsive
-            fetchProducts().catch(err => console.error("Background fetch failed:", err));
+            // Reloading products for current page
+            fetchProducts({ page: currentPage, limit: ITEMS_PER_PAGE }).catch(err => console.error("Background fetch failed:", err));
 
             setEditingGarment(null);
             setIsFormModalOpen(false);

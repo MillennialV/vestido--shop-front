@@ -4,22 +4,30 @@ import type { Garment } from '../types';
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Garment[]>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10, // Default limit
+    total: 0,
+    totalPages: 0
+  });
   const [selectedProduct, setSelectedProduct] = useState<Garment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // --- READ (Listar) ---
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (params: { page?: number; limit?: number } = {}) => {
     setIsLoading(true);
     setError(null);
     try {
-      const { products: fetchedProducts } = await inventarioService.obtenerListadoProductos({
-        limit: 1000,
+      const { products: fetchedProducts, pagination: fetchedPagination } = await inventarioService.obtenerListadoProductos({
+        limit: params.limit || 10,
+        page: params.page || 1,
         sort: 'created_at',
         order: 'desc'
       });
       
       setProducts(fetchedProducts);
+      setPagination(fetchedPagination);
       return fetchedProducts;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al cargar productos';
@@ -154,6 +162,7 @@ export const useProducts = () => {
 
   return {
     products,
+    pagination,
     selectedProduct,
     isLoading,
     error,
