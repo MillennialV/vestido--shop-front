@@ -9,7 +9,6 @@ import BulkUploadModal from './components/BulkUploadModal';
 import Pagination from './components/Pagination';
 import FaqAccordion from './components/FaqAccordion';
 import FaqModal from './components/FaqModal';
-import BlogPage from './pages/BlogPage';
 import ArticlePage from './pages/ArticlePage';
 import Footer from './components/Footer';
 import { faqData } from './lib/faqData';
@@ -21,6 +20,7 @@ import { generateArticleWithAI } from './lib/ai';
 import { getFriendlySupabaseError } from './lib/errorUtils';
 import { setHomePageSeo, setGarmentPageSeo, setBlogIndexPageSeo, setArticlePageSeo } from './lib/seo';
 import authService from './services/authService';
+import Blog from './components/Blog';
 import { PlusIcon, UploadIcon, CheckCircleIcon, DeleteIcon, WhatsappIcon, CloseIcon, EditIcon } from './components/Icons';
 
 const ITEMS_PER_PAGE = 10; // Max items per page
@@ -458,7 +458,7 @@ const App: React.FC = () => {
         }
 
         if (currentPath === '/blog') {
-            return <BlogPage articles={articles} navigate={navigate} />;
+            return <Blog articles={articles} navigate={navigate} />;
         }
 
         // Default home page view
@@ -551,7 +551,7 @@ const App: React.FC = () => {
                 />
 
                 <section className="mt-24">
-                    <BlogPage articles={articles} navigate={navigate} />
+                    <Blog articles={articles} navigate={navigate} />
                 </section>
 
                 <section className="mt-24 max-w-4xl mx-auto">
