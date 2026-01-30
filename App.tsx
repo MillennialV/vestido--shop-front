@@ -8,11 +8,12 @@ import LoadingOverlay from './components/LoadingOverlay';
 import BulkUploadModal from './components/BulkUploadModal';
 import Pagination from './components/Pagination';
 import FaqAccordion from './components/FaqAccordion';
+import FaqModal from './components/FaqModal';
 import BlogPage from './pages/BlogPage';
 import ArticlePage from './pages/ArticlePage';
 import Footer from './components/Footer';
 import { faqData } from './lib/faqData';
-import type { Garment, Article } from './types';
+import type { Garment, Article, FaqItem } from './types';
 import { saveGarment, deleteGarment, deleteGarments, getArticles, saveArticle } from './lib/db';
 import { useProducts } from './hooks/useProducts';
 import { useFaqs } from './hooks/useFaqs';
@@ -20,9 +21,9 @@ import { generateArticleWithAI } from './lib/ai';
 import { getFriendlySupabaseError } from './lib/errorUtils';
 import { setHomePageSeo, setGarmentPageSeo, setBlogIndexPageSeo, setArticlePageSeo } from './lib/seo';
 import authService from './services/authService';
-import { PlusIcon, UploadIcon, CheckCircleIcon, DeleteIcon, WhatsappIcon, CloseIcon } from './components/Icons';
+import { PlusIcon, UploadIcon, CheckCircleIcon, DeleteIcon, WhatsappIcon, CloseIcon, EditIcon } from './components/Icons';
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 10; // Max items per page
 
 const sortByCreatedAt = <T extends { created_at: string }>(items: T[]): T[] => {
     return [...items].sort((a, b) => {
@@ -43,14 +44,14 @@ const getCurrentHashPath = () => {
 
 
 const App: React.FC = () => {
-    const { products: garments, selectedProduct: selectedGarment, setSelectedProduct: setSelectedGarment, isLoading: isGarmentsLoading, error: garmentsError, fetchProducts, fetchProductById, setProducts: setGarments } = useProducts();
+    const { products: garments, pagination, selectedProduct: selectedGarment, setSelectedProduct: setSelectedGarment, isLoading: isGarmentsLoading, error: garmentsError, fetchProducts, fetchProductById, setProducts: setGarments } = useProducts();
     const { faqsForComponent, fetchFaqs } = useFaqs();
     const [articles, setArticles] = useState<Article[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+
     const [currentPath, setCurrentPath] = useState(getCurrentHashPath());
-    
+
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAccessCodeModalOpen, setIsAccessCodeModalOpen] = useState(false);
     const [accessCodeError, setAccessCodeError] = useState<string | null>(null);
@@ -61,15 +62,18 @@ const App: React.FC = () => {
     const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
     const [isGeneratingArticle, setIsGeneratingArticle] = useState(false);
     const [isWhatsappModalOpen, setIsWhatsappModalOpen] = useState(false);
+    const [isFaqModalOpen, setIsFaqModalOpen] = useState(false);
+    const [faqModalMode, setFaqModalMode] = useState<'create' | 'edit' | 'delete'>('create');
+    const [editingFaq, setEditingFaq] = useState<FaqItem | null>(null);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState({ brand: 'all', size: 'all', color: 'all' });
-    
+
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [selectedIds, setSelectedIds] = useState(new Set<number>());
-    
+
     const [whatsappNumber, setWhatsappNumber] = useState<string>(() => {
         const saved = localStorage.getItem('whatsappNumber');
         const fullNumber = saved || '51956382746';
@@ -80,11 +84,11 @@ const App: React.FC = () => {
     const handleRouteChange = useCallback((path: string) => {
         setCurrentPath(path);
         const isGarmentRoute = path.length > 1 && !path.startsWith('/blog');
-        
+
         if (isGarmentRoute) {
             const garmentSlug = path.substring(1);
             const garmentToOpen = garments.find(g => g.slug === garmentSlug);
-            
+
             if (garmentToOpen) {
                 setSelectedGarment(garmentToOpen || null);
                 if (garmentToOpen) {
@@ -108,7 +112,7 @@ const App: React.FC = () => {
     const navigate = useCallback((path: string) => {
         window.location.hash = path;
     }, []);
-    
+
     useEffect(() => {
         if (authService.isAuthenticated()) {
             setIsAdmin(true);
@@ -120,24 +124,24 @@ const App: React.FC = () => {
             setIsLoading(true);
             setError(null);
             try {
+                /**
+                 * Carga inicial de datos: productos, artículos y preguntas frecuentes
+                 * Las FAQs se cargan desde el microservicio (máximo 5 activas)
+                 * El hook useFaqs maneja fallback automático a datos por defecto si falla la consulta
+                 */
                 const [fetchedGarments, fetchedArticles, fetchedFaqs] = await Promise.all([
-                    fetchProducts(), 
+                    fetchProducts({ page: 1, limit: ITEMS_PER_PAGE }),
                     getArticles(),
-                    /**
-                     * Cargar preguntas frecuentes desde el microservicio
-                     * Limita a 5 preguntas con estado "activa"
-                     * El hook maneja su propio estado y tiene fallback automático a datos por defecto
-                     */
                     fetchFaqs(true, false, { limit: 5, estado: 'activa' }).catch(err => {
-                        console.warn('Error al cargar preguntas frecuentes:', err);
+                        //console.warn('Error al cargar preguntas frecuentes:', err);
                         return [];
                     })
                 ]);
                 console.log('Productos obtenidos (useProducts):', fetchedGarments);
-                console.log('Preguntas frecuentes obtenidas (useFaqs):', fetchedFaqs);
+                //console.log('Preguntas frecuentes obtenidas (useFaqs):', fetchedFaqs);
                 // El hook ya ordena los productos, solo ordenamos articulos
                 const sortedArticles = sortByCreatedAt(fetchedArticles);
-                
+
                 setArticles(sortedArticles);
 
                 const path = getCurrentHashPath();
@@ -191,11 +195,11 @@ const App: React.FC = () => {
             if (garment) {
                 setGarmentPageSeo(garment);
             } else {
-                 setHomePageSeo(); // Fallback to home page SEO if no garment found
+                setHomePageSeo(); // Fallback to home page SEO if no garment found
             }
         }
     }, [currentPath, garments, articles, isLoading]);
-    
+
     const filteredGarments = useMemo(() => {
         return garments.filter(garment => {
             const searchLower = searchQuery.toLowerCase();
@@ -213,11 +217,10 @@ const App: React.FC = () => {
     }, [garments, searchQuery, filters]);
 
     const paginatedGarments = useMemo(() => {
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        return filteredGarments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    }, [filteredGarments, currentPage]);
+        return filteredGarments;
+    }, [filteredGarments]);
 
-    const totalPages = Math.ceil(filteredGarments.length / ITEMS_PER_PAGE);
+    const totalPages = pagination.totalPages || 1;
 
     const uniqueFilters = useMemo(() => {
         const brands = [...new Set(garments.map(g => g.brand))].sort();
@@ -245,10 +248,11 @@ const App: React.FC = () => {
     const handlePageChange = (page: number) => {
         if (page > 0 && page <= totalPages) {
             setCurrentPage(page);
+            fetchProducts({ page, limit: ITEMS_PER_PAGE });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
-    
+
     const handleToggleAdmin = async () => {
         if (isAdmin) {
             setIsLogoutLoading(true);
@@ -290,7 +294,7 @@ const App: React.FC = () => {
     const handleSelectGarment = (garment: Garment) => {
         // SIEMPRE establecer el estado para abrir el modal, tenga slug o no
         setSelectedGarment(garment);
-        
+
         // Actualizar estado local con la información más reciente
         setGarments(prev => {
             const exists = prev.some(g => g.id === garment.id);
@@ -339,7 +343,8 @@ const App: React.FC = () => {
 
             // 2. Also trigger a background refetch to ensure consistency with server
             // We don't await this to keep UI responsive
-            fetchProducts().catch(err => console.error("Background fetch failed:", err));
+            // Reloading products for current page
+            fetchProducts({ page: currentPage, limit: ITEMS_PER_PAGE }).catch(err => console.error("Background fetch failed:", err));
 
             setEditingGarment(null);
             setIsFormModalOpen(false);
@@ -366,13 +371,13 @@ const App: React.FC = () => {
         setGarments(prev => sortByCreatedAt([...newGarments, ...prev]));
         setIsBulkUploadModalOpen(false);
     };
-    
+
     const handleToggleSelectionMode = () => {
         if (!isAdmin) return;
         setIsSelectionMode(!isSelectionMode);
         setSelectedIds(new Set());
     };
-    
+
     const handleToggleSelection = (id: number) => {
         setSelectedIds(prev => {
             const newSet = new Set(prev);
@@ -384,10 +389,10 @@ const App: React.FC = () => {
             return newSet;
         });
     };
-    
+
     const handleBulkDelete = async () => {
         if (selectedIds.size === 0) return;
-        
+
         const garmentsToDelete = garments.filter(g => selectedIds.has(g.id));
         if (window.confirm(`¿Estás seguro de que quieres eliminar ${selectedIds.size} prendas seleccionadas?`)) {
             try {
@@ -401,7 +406,7 @@ const App: React.FC = () => {
             }
         }
     };
-    
+
     const handleGenerateArticle = async (garment: Garment) => {
         if (!garment) return;
         setIsGeneratingArticle(true);
@@ -466,39 +471,38 @@ const App: React.FC = () => {
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                                 {/* Sección de acciones principales */}
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <button 
-                                        onClick={() => handleOpenForm(null)} 
+                                    <button
+                                        onClick={() => handleOpenForm(null)}
                                         className="inline-flex items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
                                     >
                                         <PlusIcon className="w-4 h-4" />
                                         <span>Añadir Prenda</span>
                                     </button>
-                                    <button 
-                                        onClick={() => setIsBulkUploadModalOpen(true)} 
+                                    <button
+                                        onClick={() => setIsBulkUploadModalOpen(true)}
                                         className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold py-2.5 px-5 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700 hover:border-stone-400 dark:hover:border-stone-500 active:bg-stone-100 dark:active:bg-stone-600 transition-all duration-200 text-sm shadow-sm hover:shadow-md"
                                     >
                                         <UploadIcon className="w-4 h-4" />
                                         <span>Carga Masiva</span>
                                     </button>
                                 </div>
-                                
+
                                 {/* Sección de selección múltiple */}
                                 <div className="flex flex-wrap items-center gap-3">
                                     <div className="h-6 w-px bg-sky-300 dark:bg-white hidden lg:block"></div>
-                                    <button 
-                                        onClick={handleToggleSelectionMode} 
-                                        className={`inline-flex items-center gap-2 font-semibold py-2.5 px-5 rounded-lg transition-all duration-200 text-sm ${
-                                            isSelectionMode 
-                                                ? 'bg-sky-600 text-white shadow-md hover:bg-sky-700 hover:shadow-lg' 
-                                                : 'bg-white dark:bg-stone-800 text-sky-700 dark:text-white border border-sky-300 dark:border-stone-600 hover:bg-sky-50 dark:hover:bg-stone-700 hover:border-sky-400 dark:hover:border-stone-500 shadow-sm hover:shadow-md'
-                                        }`}
+                                    <button
+                                        onClick={handleToggleSelectionMode}
+                                        className={`inline-flex items-center gap-2 font-semibold py-2.5 px-5 rounded-lg transition-all duration-200 text-sm ${isSelectionMode
+                                            ? 'bg-sky-600 text-white shadow-md hover:bg-sky-700 hover:shadow-lg'
+                                            : 'bg-white dark:bg-stone-800 text-sky-700 dark:text-white border border-sky-300 dark:border-stone-600 hover:bg-sky-50 dark:hover:bg-stone-700 hover:border-sky-400 dark:hover:border-stone-500 shadow-sm hover:shadow-md'
+                                            }`}
                                     >
                                         <CheckCircleIcon className={`w-4 h-4 ${isSelectionMode ? '' : 'opacity-70'}`} />
                                         <span>{isSelectionMode ? 'Cancelar Selección' : 'Seleccionar Múltiples'}</span>
                                     </button>
                                     {isSelectionMode && selectedIds.size > 0 && (
-                                        <button 
-                                            onClick={handleBulkDelete} 
+                                        <button
+                                            onClick={handleBulkDelete}
                                             className="inline-flex items-center gap-2 bg-red-600 dark:bg-red-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 active:bg-red-800 dark:active:bg-red-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
                                         >
                                             <DeleteIcon className="w-4 h-4" />
@@ -510,7 +514,7 @@ const App: React.FC = () => {
                                     )}
                                 </div>
                             </div>
-                            
+
                             {/* Botón de WhatsApp */}
                             <div className="mt-6 pt-6 border-t border-sky-200 dark:border-white">
                                 <button
@@ -526,21 +530,21 @@ const App: React.FC = () => {
                 )}
 
                 {filteredGarments.length > 0 ? (
-                   <VideoGrid 
-                       garments={paginatedGarments}
-                       onSelectGarment={handleSelectGarment}
-                       isAdmin={isAdmin}
-                       onEdit={handleOpenForm}
-                       onDelete={handleDeleteGarment}
-                       isSelectionMode={isSelectionMode}
-                       selectedIds={selectedIds}
-                       onToggleSelection={handleToggleSelection}
-                   />
+                    <VideoGrid
+                        garments={paginatedGarments}
+                        onSelectGarment={handleSelectGarment}
+                        isAdmin={isAdmin}
+                        onEdit={handleOpenForm}
+                        onDelete={handleDeleteGarment}
+                        isSelectionMode={isSelectionMode}
+                        selectedIds={selectedIds}
+                        onToggleSelection={handleToggleSelection}
+                    />
                 ) : (
-                   <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">No se encontraron prendas que coincidan con tu búsqueda.</p>
+                    <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">No se encontraron prendas que coincidan con tu búsqueda.</p>
                 )}
-                
-                <Pagination 
+
+                <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={handlePageChange}
@@ -551,158 +555,204 @@ const App: React.FC = () => {
                 </section>
 
                 <section className="mt-24 max-w-4xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-semibold text-center text-stone-800 dark:text-stone-100 mb-8">Preguntas Frecuentes</h2>
-                    {/**
-                     * Renderiza el componente de preguntas frecuentes
-                     * Usa datos del microservicio si están disponibles, sino usa datos por defecto (fallback)
-                     */}
-                    <FaqAccordion items={faqsForComponent.length > 0 ? faqsForComponent : faqData} />
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-3xl md:text-4xl font-semibold text-stone-800 dark:text-stone-100">Preguntas Frecuentes</h2>
+                        {isAdmin && (
+                            <button
+                                onClick={() => {
+                                    setFaqModalMode('create');
+                                    setEditingFaq(null);
+                                    setIsFaqModalOpen(true);
+                                }}
+                                className="inline-flex items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
+                            >
+                                <PlusIcon className="w-4 h-4" />
+                                <span>Agregar pregunta</span>
+                            </button>
+                        )}
+                    </div>
+                    <FaqAccordion
+                        items={isAdmin ? faqsForComponent : (faqsForComponent.length > 0 ? faqsForComponent : faqData)}
+                        isAdmin={isAdmin}
+                        onEdit={(faq) => {
+                            const fullFaq = faqs.find(f => f.id === faq.id);
+                            if (fullFaq) {
+                                setEditingFaq(fullFaq);
+                                setFaqModalMode('edit');
+                                setIsFaqModalOpen(true);
+                            }
+                        }}
+                        onDelete={(faq) => {
+                            const fullFaq = faqs.find(f => f.id === faq.id);
+                            if (fullFaq) {
+                                setEditingFaq(fullFaq);
+                                setFaqModalMode('delete');
+                                setIsFaqModalOpen(true);
+                            }
+                        }}
+                    />
                 </section>
             </>
         );
     };
 
     return (
-      <div className="bg-stone-50 dark:bg-stone-900 min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
-        <Header 
-            isAdmin={isAdmin}
-            onToggleAdmin={handleToggleAdmin}
-            navigate={navigate}
-        />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-80">
-            {isLoading && (garments.length === 0) && <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">Cargando...</p>}
-            {error && <p className="text-center text-lg text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-4 rounded-md whitespace-pre-wrap">{error}</p>}
+        <div className="bg-stone-50 dark:bg-stone-900 min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
+            <Header
+                isAdmin={isAdmin}
+                onToggleAdmin={handleToggleAdmin}
+                navigate={navigate}
+            />
+            <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-80">
+                {isLoading && (garments.length === 0) && <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">Cargando...</p>}
+                {error && <p className="text-center text-lg text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-4 rounded-md whitespace-pre-wrap">{error}</p>}
 
-            {!isLoading && !error && renderPage()}
-        </main>
-        
-        {selectedGarment && (
-            <VideoModal 
-                garment={selectedGarment}
-                onClose={handleCloseModal}
-                garmentList={filteredGarments}
-                onChangeGarment={handleSelectGarment}
-                onGenerateArticle={isAdmin ? handleGenerateArticle : undefined}
-                isGeneratingArticle={isGeneratingArticle}
-                articleExists={articles.some(a => a.garment_id === selectedGarment.id)}
-            />
-        )}
-        
-        {isAccessCodeModalOpen && (
-            <AccessCodeModal 
-                onClose={() => {
-                    if (!isLoginLoading) {
-                        setIsAccessCodeModalOpen(false);
-                        setAccessCodeError(null);
-                    }
-                }}
-                onSubmit={handleAccessCodeSubmit}
-                error={accessCodeError}
-                isLoading={isLoginLoading}
-            />
-        )}
+                {!isLoading && !error && renderPage()}
+            </main>
 
-        {isLogoutLoading && (
-            <LoadingOverlay message="Cerrando sesión..." />
-        )}
-        
-        {isFormModalOpen && (
-            <AdminFormModal 
-                garment={editingGarment}
-                onClose={() => setIsFormModalOpen(false)}
-                onSave={handleSaveGarment}
-            />
-        )}
-        
-        {isBulkUploadModalOpen && (
-            <BulkUploadModal 
-                onClose={() => setIsBulkUploadModalOpen(false)}
-                onBulkSaveComplete={handleBulkSaveComplete}
-            />
-        )}
+            {selectedGarment && (
+                <VideoModal
+                    garment={selectedGarment}
+                    onClose={handleCloseModal}
+                    garmentList={filteredGarments}
+                    onChangeGarment={handleSelectGarment}
+                    onGenerateArticle={isAdmin ? handleGenerateArticle : undefined}
+                    isGeneratingArticle={isGeneratingArticle}
+                    articleExists={articles.some(a => a.garment_id === selectedGarment.id)}
+                />
+            )}
 
-        {isWhatsappModalOpen && (
-            <div
-                className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in"
-                onClick={() => setIsWhatsappModalOpen(false)}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="whatsapp-modal-title"
-            >
+            {isAccessCodeModalOpen && (
+                <AccessCodeModal
+                    onClose={() => {
+                        if (!isLoginLoading) {
+                            setIsAccessCodeModalOpen(false);
+                            setAccessCodeError(null);
+                        }
+                    }}
+                    onSubmit={handleAccessCodeSubmit}
+                    error={accessCodeError}
+                    isLoading={isLoginLoading}
+                />
+            )}
+
+            {isLogoutLoading && (
+                <LoadingOverlay message="Cerrando sesión..." />
+            )}
+
+            {isFormModalOpen && (
+                <AdminFormModal
+                    garment={editingGarment}
+                    onClose={() => setIsFormModalOpen(false)}
+                    onSave={handleSaveGarment}
+                />
+            )}
+
+            {isBulkUploadModalOpen && (
+                <BulkUploadModal
+                    onClose={() => setIsBulkUploadModalOpen(false)}
+                    onBulkSaveComplete={handleBulkSaveComplete}
+                />
+            )}
+
+            {isWhatsappModalOpen && (
                 <div
-                    className="relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-sm animate-modal-in"
-                    onClick={(e) => e.stopPropagation()}
+                    className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in"
+                    onClick={() => setIsWhatsappModalOpen(false)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="whatsapp-modal-title"
                 >
-                    <div className="p-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 id="whatsapp-modal-title" className="text-2xl font-semibold !font-sans text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                                <WhatsappIcon className="w-6 h-6 text-[#25D366]" />
-                                Registra el número
-                            </h2>
-                            <button
-                                onClick={() => setIsWhatsappModalOpen(false)}
-                                className="text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
-                                aria-label="Cerrar"
-                            >
-                                <CloseIcon className="w-6 h-6" />
-                            </button>
-                        </div>
-                        <p className="text-stone-600 dark:text-stone-300 mb-6">
-                            Ingresa el número de WhatsApp que se usará para las consultas.
-                        </p>
-                        <div className="space-y-4">
-                            <div>
-                                <label htmlFor="whatsapp-number-input" className="block text-sm font-semibold text-stone-700 dark:text-stone-200 mb-2">
-                                    Número de WhatsApp
-                                </label>
-                                <div className="flex items-center">
-                                    <span className="px-4 py-2.5 bg-stone-100 dark:bg-stone-700 border border-r-0 border-stone-300 dark:border-stone-600 rounded-l-lg text-sm font-semibold text-stone-700 dark:text-stone-200">
-                                        +51
-                                    </span>
-                                    <input
-                                        id="whatsapp-number-input"
-                                        type="text"
-                                        value={whatsappNumber}
-                                        onChange={handleWhatsappNumberChange}
-                                        placeholder="956382746"
-                                        maxLength={9}
-                                        className="flex-1 px-4 py-2.5 border border-stone-300 dark:border-stone-600 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#25D366] focus:border-transparent text-sm font-sans bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
-                                    />
-                                </div>
-                                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">Ingresa solo el número local (9 dígitos)</p>
-                            </div>
-                            <div className="flex gap-3">
+                    <div
+                        className="relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-sm animate-modal-in"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-8">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 id="whatsapp-modal-title" className="text-2xl font-semibold !font-sans text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                                    <WhatsappIcon className="w-6 h-6 text-[#25D366]" />
+                                    Registra el número
+                                </h2>
                                 <button
                                     onClick={() => setIsWhatsappModalOpen(false)}
-                                    className="flex-1 bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-semibold py-2.5 px-4 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors text-sm"
+                                    className="text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+                                    aria-label="Cerrar"
                                 >
-                                    Cancelar
+                                    <CloseIcon className="w-6 h-6" />
                                 </button>
-                                <button
-                                    onClick={handleSaveWhatsappNumber}
-                                    disabled={whatsappNumber.trim().length < 9}
-                                    className="flex-1 bg-[#25D366] text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-[#20BA5A] active:bg-[#1DA851] transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Guardar
-                                </button>
+                            </div>
+                            <p className="text-stone-600 dark:text-stone-300 mb-6">
+                                Ingresa el número de WhatsApp que se usará para las consultas.
+                            </p>
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="whatsapp-number-input" className="block text-sm font-semibold text-stone-700 dark:text-stone-200 mb-2">
+                                        Número de WhatsApp
+                                    </label>
+                                    <div className="flex items-center">
+                                        <span className="px-4 py-2.5 bg-stone-100 dark:bg-stone-700 border border-r-0 border-stone-300 dark:border-stone-600 rounded-l-lg text-sm font-semibold text-stone-700 dark:text-stone-200">
+                                            +51
+                                        </span>
+                                        <input
+                                            id="whatsapp-number-input"
+                                            type="text"
+                                            value={whatsappNumber}
+                                            onChange={handleWhatsappNumberChange}
+                                            placeholder="956382746"
+                                            maxLength={9}
+                                            className="flex-1 px-4 py-2.5 border border-stone-300 dark:border-stone-600 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#25D366] focus:border-transparent text-sm font-sans bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                                        />
+                                    </div>
+                                    <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">Ingresa solo el número local (9 dígitos)</p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setIsWhatsappModalOpen(false)}
+                                        className="flex-1 bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-semibold py-2.5 px-4 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors text-sm"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleSaveWhatsappNumber}
+                                        disabled={whatsappNumber.trim().length < 9}
+                                        className="flex-1 bg-[#25D366] text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-[#20BA5A] active:bg-[#1DA851] transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Guardar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        )}
+            )}
 
-        <Footer
-            brands={uniqueFilters.brands}
-            sizes={uniqueFilters.sizes}
-            colors={uniqueFilters.colors}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
-            onClearAll={handleClearFilters}
-        />
-      </div>
+            {isFaqModalOpen && (
+                <FaqModal
+                    mode={faqModalMode}
+                    faq={editingFaq}
+                    onClose={() => {
+                        setIsFaqModalOpen(false);
+                        setEditingFaq(null);
+                    }}
+                    onSuccess={() => {
+                        fetchFaqs(true, true, { limit: 5, estado: 'activa' }).catch(err => {
+                            console.warn('Error al recargar preguntas frecuentes:', err);
+                        });
+                    }}
+                />
+            )}
+
+            <Footer
+                brands={uniqueFilters.brands}
+                sizes={uniqueFilters.sizes}
+                colors={uniqueFilters.colors}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                searchQuery={searchQuery}
+                onSearchChange={handleSearchChange}
+                onClearAll={handleClearFilters}
+            />
+        </div>
     );
 };
 
