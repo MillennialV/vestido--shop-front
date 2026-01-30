@@ -1,0 +1,1 @@
+export const BLOG_BASE_API = import.meta.env.VITE_API_BLOG_BASE_URL || 'http://localhost:3005';
