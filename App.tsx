@@ -15,6 +15,7 @@ import { faqData } from './lib/faqData';
 import type { Garment, Article } from './types';
 import { saveGarment, deleteGarment, deleteGarments, getArticles, saveArticle } from './lib/db';
 import { useProducts } from './hooks/useProducts';
+import { useFaqs } from './hooks/useFaqs';
 import { generateArticleWithAI } from './lib/ai';
 import { getFriendlySupabaseError } from './lib/errorUtils';
 import { setHomePageSeo, setGarmentPageSeo, setBlogIndexPageSeo, setArticlePageSeo } from './lib/seo';
@@ -43,6 +44,7 @@ const getCurrentHashPath = () => {
 
 const App: React.FC = () => {
     const { products: garments, selectedProduct: selectedGarment, setSelectedProduct: setSelectedGarment, isLoading: isGarmentsLoading, error: garmentsError, fetchProducts, fetchProductById, setProducts: setGarments } = useProducts();
+    const { faqsForComponent, fetchFaqs } = useFaqs();
     const [articles, setArticles] = useState<Article[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -118,8 +120,21 @@ const App: React.FC = () => {
             setIsLoading(true);
             setError(null);
             try {
-                const [fetchedGarments, fetchedArticles] = await Promise.all([fetchProducts(), getArticles()]);
+                const [fetchedGarments, fetchedArticles, fetchedFaqs] = await Promise.all([
+                    fetchProducts(), 
+                    getArticles(),
+                    /**
+                     * Cargar preguntas frecuentes desde el microservicio
+                     * Limita a 5 preguntas con estado "activa"
+                     * El hook maneja su propio estado y tiene fallback automático a datos por defecto
+                     */
+                    fetchFaqs(true, false, { limit: 5, estado: 'activa' }).catch(err => {
+                        console.warn('Error al cargar preguntas frecuentes:', err);
+                        return [];
+                    })
+                ]);
                 console.log('Productos obtenidos (useProducts):', fetchedGarments);
+                console.log('Preguntas frecuentes obtenidas (useFaqs):', fetchedFaqs);
                 // El hook ya ordena los productos, solo ordenamos articulos
                 const sortedArticles = sortByCreatedAt(fetchedArticles);
                 
@@ -537,7 +552,11 @@ const App: React.FC = () => {
 
                 <section className="mt-24 max-w-4xl mx-auto">
                     <h2 className="text-3xl md:text-4xl font-semibold text-center text-stone-800 dark:text-stone-100 mb-8">Preguntas Frecuentes</h2>
-                    <FaqAccordion items={faqData} />
+                    {/**
+                     * Renderiza el componente de preguntas frecuentes
+                     * Usa datos del microservicio si están disponibles, sino usa datos por defecto (fallback)
+                     */}
+                    <FaqAccordion items={faqsForComponent.length > 0 ? faqsForComponent : faqData} />
                 </section>
             </>
         );
