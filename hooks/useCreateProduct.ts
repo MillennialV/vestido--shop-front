@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Garment } from '../types';
+import type { Garment } from '@/interfaces/Garment';
 
 interface CreateProductData {
   title: string;
@@ -84,13 +84,13 @@ export const useCreateProduct = () => {
       // Hacer llamada al API
       const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
       console.log('[useCreateProduct] Enviando POST a:', `${apiUrl}/api/producto/crear-producto`);
-      
+
       const response = await fetch(`${apiUrl}/api/producto/crear-producto`, {
         method: 'POST',
         headers,
         body: formData,
       });
-      
+
       console.log('[useCreateProduct] Respuesta del servidor:', {
         status: response.status,
         statusText: response.statusText,

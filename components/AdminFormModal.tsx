@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { Garment } from '../types';
+import type { Garment } from '@/interfaces/Garment';
 import { iaService } from '../services/iaService';
 import { useProducts } from '../hooks/useProducts';
 import { CloseIcon, SparklesIcon, SpinnerIcon } from './Icons';
@@ -49,7 +49,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ garment, onClose, onSav
     }
     firstInputRef.current?.focus();
   }, [garment]);
-  
+
   useEffect(() => {
     const currentPreviewUrl = previewUrl;
     return () => {
@@ -88,27 +88,27 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ garment, onClose, onSav
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!previewUrl && !videoFile && !formData.videoUrl) {
-        console.log('Por favor, sube un video o proporciona una URL de video.');
-        return;
+      console.log('Por favor, sube un video o proporciona una URL de video.');
+      return;
     }
-    
+
     const priceAsNumber = formData.price ? parseFloat(formData.price) : undefined;
     if (formData.price && isNaN(priceAsNumber!)) {
-        console.log('Por favor, introduce un precio válido.');
-        return;
+      console.log('Por favor, introduce un precio válido.');
+      return;
     }
 
     const dataToSave = {
-        title: formData.title,
-        brand: formData.brand,
-        size: formData.size,
-        color: formData.color,
-        description: formData.description,
-        price: priceAsNumber,
-        material: formData.material,
-        occasion: formData.occasion,
-        style_notes: formData.style_notes,
-        ...(formData.videoUrl && !videoFile ? { videoUrl: formData.videoUrl } : {}),
+      title: formData.title,
+      brand: formData.brand,
+      size: formData.size,
+      color: formData.color,
+      description: formData.description,
+      price: priceAsNumber,
+      material: formData.material,
+      occasion: formData.occasion,
+      style_notes: formData.style_notes,
+      ...(formData.videoUrl && !videoFile ? { videoUrl: formData.videoUrl } : {}),
     };
 
     // Determinar si es crear o actualizar
@@ -135,7 +135,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ garment, onClose, onSav
         console.log(`Error al guardar el producto: ${error instanceof Error ? error.message : 'Error desconocido'}`);
       });
   };
-  
+
   // Función helper para capturar un frame del video
   const captureFrame = (videoEl: HTMLVideoElement): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -146,19 +146,19 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ garment, onClose, onSav
         canvas.height = videoEl.videoHeight;
         const ctx = canvas.getContext('2d');
         if (!ctx) return reject(new Error("No se pudo obtener el contexto del canvas"));
-        
+
         ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
         try {
           const base64ImageData = canvas.toDataURL('image/jpeg').split(',')[1];
           resolve(base64ImageData);
-        } catch(e) {
+        } catch (e) {
           reject(e);
         }
       };
-      
+
       videoEl.addEventListener('seeked', onSeeked, { once: true });
       videoEl.addEventListener('error', (e) => reject(new Error(`Error en el elemento de video: ${e}`)), { once: true });
-      
+
       videoEl.currentTime = Math.min(1, videoEl.duration / 2);
     });
   };
@@ -182,13 +182,13 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ garment, onClose, onSav
 
       // Capturar un frame del video
       const base64Image = await captureFrame(videoPreviewRef.current);
-      
+
       // Llamar a la API del servicio de IA
       const result = await iaService.analyzeGarmentFromBase64(base64Image);
-      
+
       // Mostrar el resultado en consola
       console.log("Resultado del análisis de IA:", result);
-      
+
       // Autocompletar los campos con la información del análisis
       setFormData(prev => {
         const newPrice = result.price;
@@ -210,11 +210,11 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ garment, onClose, onSav
           style_notes: result.style_notes || prev.style_notes,
         };
       });
-      
+
     } catch (error) {
       console.error("Error con IA:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       // Mensajes más específicos según el tipo de error
       if (errorMessage.includes("conexión") || errorMessage.includes("fetch")) {
         console.log("Error de conexión: Verifica que el servicio de IA esté disponible y que VITE_IA_URL esté configurado correctamente.");
@@ -245,169 +245,169 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ garment, onClose, onSav
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8">
-            <h2 id="form-modal-title" className="text-3xl font-semibold text-stone-900 dark:text-stone-100 mb-6">
-                {garment ? 'Editar Prenda' : 'Añadir Nueva Prenda'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <h2 id="form-modal-title" className="text-3xl font-semibold text-stone-900 dark:text-stone-100 mb-6">
+            {garment ? 'Editar Prenda' : 'Añadir Nueva Prenda'}
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Título</label>
+              <input ref={firstInputRef} type="text" name="title" id="title" value={formData.title} onChange={handleChange} required className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+            </div>
+            <div>
+              <label htmlFor="brand" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Marca</label>
+              <input type="text" name="brand" id="brand" value={formData.brand} onChange={handleChange} required className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="size" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Talla</label>
+                <input type="text" name="size" id="size" value={formData.size} onChange={handleChange} required className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+              </div>
+              <div>
+                <label htmlFor="color" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Color</label>
+                <input type="text" name="color" id="color" value={formData.color} onChange={handleChange} required className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="price" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Precio (Opcional)</label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <span className="text-stone-500 dark:text-stone-400 sm:text-sm">S/</span>
+                </div>
+                <input
+                  type="number"
+                  name="price"
+                  id="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="99.99"
+                  min="0"
+                  step="0.01"
+                  className="w-full p-2 pl-8 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="videoFile" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Video</label>
+              <div className="w-full space-y-3">
                 <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Título</label>
-                    <input ref={firstInputRef} type="text" name="title" id="title" value={formData.title} onChange={handleChange} required className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
-                </div>
-                <div>
-                    <label htmlFor="brand" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Marca</label>
-                    <input type="text" name="brand" id="brand" value={formData.brand} onChange={handleChange} required className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                      <label htmlFor="size" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Talla</label>
-                      <input type="text" name="size" id="size" value={formData.size} onChange={handleChange} required className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
-                  </div>
-                  <div>
-                      <label htmlFor="color" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Color</label>
-                      <input type="text" name="color" id="color" value={formData.color} onChange={handleChange} required className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="price" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Precio (Opcional)</label>
-                  <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                          <span className="text-stone-500 dark:text-stone-400 sm:text-sm">S/</span>
-                      </div>
-                      <input 
-                          type="number" 
-                          name="price" 
-                          id="price" 
-                          value={formData.price} 
-                          onChange={handleChange} 
-                          placeholder="99.99"
-                          min="0"
-                          step="0.01"
-                          className="w-full p-2 pl-8 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" 
-                      />
-                  </div>
-                </div>
-                 <div>
-                    <label htmlFor="videoFile" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Video</label>
-                    <div className="w-full space-y-3">
-                        <div>
-                            <label htmlFor="videoFile" className="block text-xs text-stone-500 dark:text-stone-400 mb-1">Subir archivo de video</label>
-                            <input 
-                                type="file" 
-                                name="videoFile" 
-                                id="videoFile" 
-                                accept="video/*" 
-                                onChange={handleFileChange} 
-                                className="block w-full text-sm text-stone-600 dark:text-stone-300
+                  <label htmlFor="videoFile" className="block text-xs text-stone-500 dark:text-stone-400 mb-1">Subir archivo de video</label>
+                  <input
+                    type="file"
+                    name="videoFile"
+                    id="videoFile"
+                    accept="video/*"
+                    onChange={handleFileChange}
+                    className="block w-full text-sm text-stone-600 dark:text-stone-300
                                 file:mr-4 file:py-2 file:px-4
                                 file:rounded-lg file:border-0
                                 file:text-sm file:font-semibold
                                 file:bg-stone-200 dark:file:bg-stone-700 file:text-stone-700 dark:file:text-stone-200
                                 hover:file:bg-stone-300 dark:hover:file:bg-stone-600 transition-colors cursor-pointer"
-                            />
-                            {videoFile && <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">Archivo seleccionado: {videoFile.name}</p>}
-                            {!videoFile && garment && <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">Sube un nuevo video para reemplazar el actual.</p>}
-                        </div>
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-stone-300 dark:border-stone-600"></div>
-                            </div>
-                            <div className="relative flex justify-center text-xs">
-                                <span className="px-2 bg-stone-50 dark:bg-stone-800 text-stone-500 dark:text-stone-400">O</span>
-                            </div>
-                        </div>
-                        <div>
-                            <label htmlFor="videoUrl" className="block text-xs text-stone-500 dark:text-stone-400 mb-1">URL de video (YouTube, Vimeo, etc.)</label>
-                            <input 
-                                type="url" 
-                                name="videoUrl" 
-                                id="videoUrl" 
-                                value={formData.videoUrl} 
-                                onChange={handleVideoUrlChange}
-                                placeholder="https://youtube.com/watch?v=..."
-                                className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 text-sm"
-                            />
-                            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Si el upload de archivo falla, puedes usar una URL externa</p>
-                        </div>
-                    </div>
-                    
-                    {previewUrl && (
-                        <div className="mt-4">
-                            <video 
-                                ref={videoPreviewRef} 
-                                key={previewUrl} 
-                                src={previewUrl} 
-                                controls
-                                playsInline 
-                                crossOrigin="anonymous" 
-                                className="w-full rounded-lg bg-black"
-                                style={{maxHeight: '300px'}}
-                            />
-                        </div>
-                    )}
+                  />
+                  {videoFile && <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">Archivo seleccionado: {videoFile.name}</p>}
+                  {!videoFile && garment && <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">Sube un nuevo video para reemplazar el actual.</p>}
                 </div>
-                <div>
-                    <button 
-                        type="button" 
-                        onClick={handleAiAutocomplete}
-                        disabled={isAiDisabled}
-                        title={isAiDisabled && !isAiLoading ? "Sube un video para activar la IA." : "Autocompletar datos con IA"}
-                        className="w-full flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-lg border border-stone-500 dark:border-stone-400 text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isAiLoading ? (
-                            <>
-                                <SpinnerIcon className="w-4 h-4 animate-spin" />
-                                Analizando...
-                            </>
-                        ) : (
-                            <>
-                                <SparklesIcon className="w-4 h-4" />
-                                Autocompletar con IA
-                            </>
-                        )}
-                    </button>
-                </div>
-                 <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Descripción</label>
-                    <textarea name="description" id="description" value={formData.description} onChange={handleChange} required rows={3} className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                      <label htmlFor="material" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Materiales</label>
-                      <input type="text" name="material" id="material" value={formData.material} onChange={handleChange} placeholder="Ej: Seda, Lino" className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-stone-300 dark:border-stone-600"></div>
                   </div>
-                  <div>
-                      <label htmlFor="occasion" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Ocasión Ideal</label>
-                      <input type="text" name="occasion" id="occasion" value={formData.occasion} onChange={handleChange} placeholder="Ej: Boda de día, Gala" className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+                  <div className="relative flex justify-center text-xs">
+                    <span className="px-2 bg-stone-50 dark:bg-stone-800 text-stone-500 dark:text-stone-400">O</span>
                   </div>
                 </div>
                 <div>
-                    <label htmlFor="style_notes" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Notas de Estilo</label>
-                    <input type="text" name="style_notes" id="style_notes" value={formData.style_notes} onChange={handleChange} placeholder="Ej: Corte sirena, Espalda descubierta" className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+                  <label htmlFor="videoUrl" className="block text-xs text-stone-500 dark:text-stone-400 mb-1">URL de video (YouTube, Vimeo, etc.)</label>
+                  <input
+                    type="url"
+                    name="videoUrl"
+                    id="videoUrl"
+                    value={formData.videoUrl}
+                    onChange={handleVideoUrlChange}
+                    placeholder="https://youtube.com/watch?v=..."
+                    className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 text-sm"
+                  />
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Si el upload de archivo falla, puedes usar una URL externa</p>
                 </div>
-                <div className="flex justify-end gap-4 pt-4">
-                    <button type="button" onClick={onClose} className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2 px-4 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors">Cancelar</button>
-                    <button type="submit" disabled={isProductLoading} className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2 px-6 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                      {isProductLoading ? (
-                        <>
-                          <SpinnerIcon className="w-4 h-4 animate-spin" />
-                          Guardando...
-                        </>
-                      ) : (
-                        'Guardar'
-                      )}
-                    </button>
+              </div>
+
+              {previewUrl && (
+                <div className="mt-4">
+                  <video
+                    ref={videoPreviewRef}
+                    key={previewUrl}
+                    src={previewUrl}
+                    controls
+                    playsInline
+                    crossOrigin="anonymous"
+                    className="w-full rounded-lg bg-black"
+                    style={{ maxHeight: '300px' }}
+                  />
                 </div>
-            </form>
+              )}
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={handleAiAutocomplete}
+                disabled={isAiDisabled}
+                title={isAiDisabled && !isAiLoading ? "Sube un video para activar la IA." : "Autocompletar datos con IA"}
+                className="w-full flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-lg border border-stone-500 dark:border-stone-400 text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isAiLoading ? (
+                  <>
+                    <SpinnerIcon className="w-4 h-4 animate-spin" />
+                    Analizando...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="w-4 h-4" />
+                    Autocompletar con IA
+                  </>
+                )}
+              </button>
+            </div>
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Descripción</label>
+              <textarea name="description" id="description" value={formData.description} onChange={handleChange} required rows={3} className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="material" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Materiales</label>
+                <input type="text" name="material" id="material" value={formData.material} onChange={handleChange} placeholder="Ej: Seda, Lino" className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+              </div>
+              <div>
+                <label htmlFor="occasion" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Ocasión Ideal</label>
+                <input type="text" name="occasion" id="occasion" value={formData.occasion} onChange={handleChange} placeholder="Ej: Boda de día, Gala" className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="style_notes" className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Notas de Estilo</label>
+              <input type="text" name="style_notes" id="style_notes" value={formData.style_notes} onChange={handleChange} placeholder="Ej: Corte sirena, Espalda descubierta" className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100" />
+            </div>
+            <div className="flex justify-end gap-4 pt-4">
+              <button type="button" onClick={onClose} className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2 px-4 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors">Cancelar</button>
+              <button type="submit" disabled={isProductLoading} className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2 px-6 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                {isProductLoading ? (
+                  <>
+                    <SpinnerIcon className="w-4 h-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  'Guardar'
+                )}
+              </button>
+            </div>
+          </form>
         </div>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400"
           aria-label="Cerrar formulario"
         >
-          <CloseIcon className="w-8 h-8"/>
+          <CloseIcon className="w-8 h-8" />
         </button>
       </div>
-       <style>{`
+      <style>{`
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
         @keyframes modal-in {

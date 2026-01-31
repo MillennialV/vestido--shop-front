@@ -1,5 +1,5 @@
 import { Product, ProductsResponse } from '@/interfaces/product';
-import type { Garment } from '../types';
+import type { Garment } from '@/interfaces/Garment';
 import { apiResponse } from './apiResponse';
 import { INVENTARIO_API_URL } from '@/core/apiConfig';
 import { Pagination } from '@/interfaces/pagination';

@@ -12,7 +12,7 @@
 import { useState, useCallback } from 'react';
 import { preguntasService, mapFaqItemToComponent } from '../services/faqService';
 import { faqData } from '../lib/faqData';
-import type { FaqItem } from '../types';
+import type { FaqItem } from '@/interfaces/FaqItem';
 
 export interface FaqComponentItem {
   id: string;
@@ -46,7 +46,7 @@ export const useFaqs = () => {
    * @returns Promise con array de preguntas en formato para el componente
    */
   const fetchFaqs = useCallback(async (
-    useFallback: boolean = true, 
+    useFallback: boolean = true,
     force: boolean = false,
     params?: { limit?: number; estado?: string; order?: 'asc' | 'desc' }
   ): Promise<FaqComponentItem[]> => {
@@ -56,22 +56,22 @@ export const useFaqs = () => {
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const fetchedFaqs = await preguntasService.obtenerPreguntas(params);
-      
+
       const componentFaqs = fetchedFaqs.map(mapFaqItemToComponent);
-      
+
       setFaqs(fetchedFaqs);
       setFaqsForComponent(componentFaqs);
       setHasFetched(true);
-      
+
       return componentFaqs;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al cargar preguntas frecuentes';
       setError(msg);
       console.error('[useFaqs] Error:', err);
-      
+
       if (useFallback) {
         console.warn('[useFaqs] Usando datos por defecto debido a error');
         const fallbackFaqs = faqData.map(item => ({
@@ -83,7 +83,7 @@ export const useFaqs = () => {
         setHasFetched(true);
         return fallbackFaqs;
       }
-      
+
       return [];
     } finally {
       setIsLoading(false);

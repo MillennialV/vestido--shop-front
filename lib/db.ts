@@ -1,4 +1,5 @@
-import type { Garment, Article } from '../types';
+import type { Garment } from '@/interfaces/Garment';
+import type { Article } from '@/interfaces/Article';
 import { defaultGarments } from './defaultGarments';
 import { slugify } from './slugify';
 import inventarioService from '../services/inventarioService';
@@ -14,7 +15,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005
 export async function getListProducts(page: number = 1, limit: number = 100, sort: string = 'title', order: 'asc' | 'desc' = 'desc'): Promise<Garment[]> {
     try {
         const result = await inventarioService.obtenerListadoProductos({ page, limit, sort, order });
-        
+
         console.log('[getListProducts] Productos recibidos:', result.products?.length || 0);
         if (result.products && result.products.length > 0) {
             console.log('[getListProducts] Primer producto:', {
@@ -24,7 +25,7 @@ export async function getListProducts(page: number = 1, limit: number = 100, sor
                 videoUrl: result.products[0].videoUrl
             });
         }
-        
+
         if (!result.products || result.products.length === 0) {
             console.warn('[getListProducts] No hay productos, usando datos por defecto');
             return Promise.resolve(defaultGarments);
@@ -63,28 +64,28 @@ export async function uploadVideoFile(videoFile: File, onProgress: (percentage: 
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ 
+            const errorData = await response.json().catch(() => ({
                 message: response.statusText,
                 error: `HTTP ${response.status}`
             }));
-            
+
             console.error('[uploadVideoFile] Error en respuesta:', {
                 status: response.status,
                 statusText: response.statusText,
                 error: errorData
             });
-            
+
             throw new Error(errorData.message || errorData.error || `Error al subir el video: ${response.status}`);
         }
 
         const data = await response.json();
         const videoUrl = data.url || data.publicUrl || data.videoUrl;
-        
+
         if (!videoUrl) {
             console.error('[uploadVideoFile] Respuesta sin URL:', data);
             throw new Error('El servidor no devolvió una URL para el video subido');
         }
-        
+
         console.log('[uploadVideoFile] Video subido exitosamente:', videoUrl);
         return videoUrl;
     } catch (error) {
@@ -155,9 +156,9 @@ export async function saveGarment(
     if (videoFile) {
         try {
             console.log('[saveGarment] Subiendo video...', { fileName: videoFile.name, size: videoFile.size });
-            finalVideoUrl = await uploadVideoFile(videoFile, () => {});
+            finalVideoUrl = await uploadVideoFile(videoFile, () => { });
             console.log('[saveGarment] Video subido exitosamente:', finalVideoUrl);
-            
+
             // Si se subió exitosamente y había un video anterior, eliminarlo
             if (existingVideoUrl && finalVideoUrl !== existingVideoUrl) {
                 await deleteVideoFile(existingVideoUrl);
@@ -165,7 +166,7 @@ export async function saveGarment(
         } catch (error) {
             console.error('[saveGarment] Error al subir video:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            
+
             // Si falla el upload, verificar si hay una URL existente
             if (existingVideoUrl) {
                 console.warn('[saveGarment] Usando URL de video existente debido a error en upload');
@@ -182,17 +183,17 @@ export async function saveGarment(
             }
         }
     }
-    
+
     // Si no hay videoUrl, usar el que viene en garmentData (puede ser una URL externa)
     if (!finalVideoUrl && (garmentData as any).videoUrl) {
         finalVideoUrl = (garmentData as any).videoUrl;
     }
-    
+
     // Validar que tengamos un videoUrl antes de guardar
     if (!finalVideoUrl || finalVideoUrl.trim() === '') {
         throw new Error('Se requiere un video para guardar la prenda. Por favor, sube un video o proporciona una URL de video.');
     }
-    
+
     const dataToPersist = {
         ...garmentData,
         videoUrl: finalVideoUrl,
@@ -261,7 +262,7 @@ async function makeApiRequest<T>(endpoint: string, options: RequestInit = {}): P
     });
 
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ 
+        const errorData = await response.json().catch(() => ({
             message: response.statusText,
             error: response.status === 404 ? 'Ruta no encontrada' : response.statusText
         }));
@@ -282,7 +283,7 @@ export async function getArticles(): Promise<Article[]> {
     // Por ahora, retornar array vacío ya que el endpoint no existe
     // TODO: Implementar cuando el backend tenga el endpoint /api/articles
     return [];
-    
+
     /* Código para cuando el endpoint esté disponible:
     try {
         const data = await makeApiRequest<Article[]>('/api/articles', {

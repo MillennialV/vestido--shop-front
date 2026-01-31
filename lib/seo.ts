@@ -1,4 +1,5 @@
-import type { Garment, Article } from '../types';
+import type { Garment } from '@/interfaces/Garment';
+import type { Article } from '@/interfaces/Article';
 
 const PRODUCT_SCHEMA_ID = 'product-schema';
 const ARTICLE_SCHEMA_ID = 'article-schema';
@@ -36,29 +37,29 @@ const updateTag = (selector: string, attribute: string, content: string, isLink:
  * Updates the main SEO meta tags in the document's head.
  */
 const setCoreMetaTags = (title: string, description: string, url: string) => {
-  document.title = title;
-  updateTag('meta[name="description"]', 'content', description);
-  updateTag('link[rel="canonical"]', 'href', url, true);
-  
-  // Open Graph / Facebook
-  updateTag('meta[property="og:title"]', 'content', title);
-  updateTag('meta[property="og:description"]', 'content', description);
-  updateTag('meta[property="og:url"]', 'content', url);
-  
-  // Twitter
-  updateTag('meta[property="twitter:title"]', 'content', title);
-  updateTag('meta[property="twitter:description"]', 'content', description);
-  updateTag('meta[property="twitter:url"]', 'content', url);
+    document.title = title;
+    updateTag('meta[name="description"]', 'content', description);
+    updateTag('link[rel="canonical"]', 'href', url, true);
+
+    // Open Graph / Facebook
+    updateTag('meta[property="og:title"]', 'content', title);
+    updateTag('meta[property="og:description"]', 'content', description);
+    updateTag('meta[property="og:url"]', 'content', url);
+
+    // Twitter
+    updateTag('meta[property="twitter:title"]', 'content', title);
+    updateTag('meta[property="twitter:description"]', 'content', description);
+    updateTag('meta[property="twitter:url"]', 'content', url);
 };
 
 /**
  * Removes a dynamically injected JSON-LD schema by its ID.
  */
 const removeSchema = (id: string) => {
-  const scriptTag = document.getElementById(id);
-  if (scriptTag) {
-    scriptTag.remove();
-  }
+    const scriptTag = document.getElementById(id);
+    if (scriptTag) {
+        scriptTag.remove();
+    }
 };
 
 /**
@@ -115,10 +116,10 @@ export const setGarmentPageSeo = (garment: Garment) => {
         setHomePageSeo();
         return;
     }
-    
+
     const url = getCanonicalUrl(`/#/${garment.slug}`);
     const title = `${garment.title} | ${garment.brand} - Womanity Boutique`;
-    
+
     setCoreMetaTags(title, garment.description, url);
 
     const productSchema = {
@@ -130,19 +131,19 @@ export const setGarmentPageSeo = (garment: Garment) => {
         'url': url,
         'image': garment.videoUrl || DEFAULT_IMAGE_URL,
         'brand': {
-          '@type': 'Brand',
-          'name': garment.brand,
+            '@type': 'Brand',
+            'name': garment.brand,
         },
         'offers': garment.price ? {
-          '@type': 'Offer',
-          'priceCurrency': 'PEN',
-          'price': garment.price.toFixed(2),
-          'availability': 'https://schema.org/InStock',
-          'url': url,
+            '@type': 'Offer',
+            'priceCurrency': 'PEN',
+            'price': garment.price.toFixed(2),
+            'availability': 'https://schema.org/InStock',
+            'url': url,
         } : undefined,
     };
     injectSchema(PRODUCT_SCHEMA_ID, productSchema);
-    
+
     injectBreadcrumbSchema([
         { name: 'Inicio', url: getCanonicalUrl('/') },
         { name: garment.title, url: url }
@@ -154,7 +155,7 @@ export const setBlogIndexPageSeo = () => {
     const url = getCanonicalUrl('/#/blog');
     const title = 'Blog | Inspiración y Estilo - Womanity Boutique';
     const description = 'Descubre las historias detrás de nuestros diseños, consejos de moda y las últimas tendencias en el blog oficial de Womanity Boutique.';
-    
+
     setCoreMetaTags(title, description, url);
     injectBreadcrumbSchema([
         { name: 'Inicio', url: getCanonicalUrl('/') },

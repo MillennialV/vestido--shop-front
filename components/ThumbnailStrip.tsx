@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import type { Garment } from '../types';
+import type { Garment } from '@/interfaces/Garment';
 import { PlayIcon } from './Icons';
 
 interface ThumbnailProps {
@@ -21,9 +21,8 @@ const Thumbnail: React.FC<ThumbnailProps> = ({ garment, isActive, onSelect }) =>
     <button
       ref={ref}
       onClick={() => onSelect(garment)}
-      className={`group relative w-20 h-[142px] flex-shrink-0 rounded-md overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white ${
-        isActive ? 'ring-2 ring-white scale-105 shadow-lg' : 'ring-2 ring-transparent hover:scale-105 hover:ring-white/75'
-      }`}
+      className={`group relative w-20 h-[142px] flex-shrink-0 rounded-md overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white ${isActive ? 'ring-2 ring-white scale-105 shadow-lg' : 'ring-2 ring-transparent hover:scale-105 hover:ring-white/75'
+        }`}
       aria-label={`Ver ${garment.title}`}
       aria-current={isActive ? 'true' : 'false'}
     >
@@ -56,13 +55,13 @@ interface ThumbnailStripProps {
 const ThumbnailStrip: React.FC<ThumbnailStripProps> = ({ garments, currentGarment, onSelectGarment }) => {
   return (
     <div className="bg-black/50 p-4">
-      <div 
+      <div
         className="flex items-center gap-4 overflow-x-auto pb-2"
         role="toolbar"
         aria-label="Navegación de productos"
       >
         {garments.map(garment => (
-          <Thumbnail 
+          <Thumbnail
             key={garment.id}
             garment={garment}
             isActive={!!currentGarment && garment.id === currentGarment.id}

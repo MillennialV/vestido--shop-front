@@ -1,5 +1,6 @@
 import React from 'react';
-import type { Article, Garment } from '../types';
+import type { Article } from '@/interfaces/Article';
+import type { Garment } from '@/interfaces/Garment';
 import VideoCard from '../components/VideoCard';
 import { ArrowLeftIcon } from '../components/Icons';
 
@@ -18,21 +19,21 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ data, navigate }) => {
     e.preventDefault();
     navigate(path);
   };
-  
+
   const handleGarmentSelect = () => {
-      if(garment && garment.slug) {
-          navigate(`/${garment.slug}`);
-      }
+    if (garment && garment.slug) {
+      navigate(`/${garment.slug}`);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in-down">
-      <a 
-        href="/blog" 
-        onClick={(e) => handleLinkClick(e, '/blog')} 
+      <a
+        href="/blog"
+        onClick={(e) => handleLinkClick(e, '/blog')}
         className="inline-flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors mb-8 font-semibold"
       >
-        <ArrowLeftIcon className="w-5 h-5"/>
+        <ArrowLeftIcon className="w-5 h-5" />
         Volver al Blog
       </a>
 
@@ -41,7 +42,7 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ data, navigate }) => {
         <p className="text-lg text-stone-500 mb-8">{article.excerpt}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div 
+          <div
             className="md:col-span-2 prose prose-lg max-w-none text-stone-800 prose-headings:text-stone-900 prose-strong:text-stone-900"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
@@ -52,11 +53,11 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ data, navigate }) => {
                 garment={garment}
                 onSelect={handleGarmentSelect}
                 isAdmin={false}
-                onEdit={() => {}}
-                onDelete={() => {}}
+                onEdit={() => { }}
+                onDelete={() => { }}
                 isSelectionMode={false}
                 isSelected={false}
-                onToggleSelection={() => {}}
+                onToggleSelection={() => { }}
               />
             </div>
           </aside>

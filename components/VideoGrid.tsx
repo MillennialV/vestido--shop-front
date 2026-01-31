@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Garment } from '../types';
+import type { Garment } from '@/interfaces/Garment';
 import VideoCard from './VideoCard';
 
 interface VideoGridProps {
@@ -17,16 +17,16 @@ const VideoGrid: React.FC<VideoGridProps> = ({ garments, onSelectGarment, isAdmi
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
       {garments.map((garment) => (
-        <VideoCard 
-            key={garment.id} 
-            garment={garment} 
-            onSelect={onSelectGarment}
-            isAdmin={isAdmin}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            isSelectionMode={isSelectionMode}
-            isSelected={selectedIds.has(garment.id)}
-            onToggleSelection={onToggleSelection}
+        <VideoCard
+          key={garment.id}
+          garment={garment}
+          onSelect={onSelectGarment}
+          isAdmin={isAdmin}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isSelectionMode={isSelectionMode}
+          isSelected={selectedIds.has(garment.id)}
+          onToggleSelection={onToggleSelection}
         />
       ))}
     </div>

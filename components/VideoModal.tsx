@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { Garment } from '../types';
+import type { Garment } from '@/interfaces/Garment';
 import ThumbnailStrip from './ThumbnailStrip';
 import QrCodeModal from './QrCodeModal';
 import { PUBLIC_URL } from '../lib/seo';
@@ -42,18 +42,18 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
         handleClose();
         return;
       }
-      
+
       const currentIndex = garmentList.findIndex(g => g.id === garment.id);
       if (currentIndex === -1) return;
 
       let nextIndex = -1;
-      
+
       if (event.key === 'ArrowRight') {
         nextIndex = (currentIndex + 1) % garmentList.length;
       } else if (event.key === 'ArrowLeft') {
         nextIndex = (currentIndex - 1 + garmentList.length) % garmentList.length;
       }
-      
+
       if (nextIndex !== -1) {
         event.preventDefault();
         onChangeGarment(garmentList[nextIndex]);
@@ -61,72 +61,72 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
     };
 
     closeButtonRef.current?.focus();
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [onClose, garment, garmentList, onChangeGarment]);
-  
+
   const handleShare = () => {
     if (!garment.slug) {
-        setToastMessage('Error: No se pudo generar el enlace.');
-        setTimeout(() => setToastMessage(null), 3000);
-        return;
+      setToastMessage('Error: No se pudo generar el enlace.');
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
     }
     const shareUrl = `${PUBLIC_URL}/#/${garment.slug}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
-        setToastMessage('¡Enlace copiado!');
-        setTimeout(() => setToastMessage(null), 3000);
+      setToastMessage('¡Enlace copiado!');
+      setTimeout(() => setToastMessage(null), 3000);
     }).catch(err => {
-        console.error('Failed to copy link: ', err);
-        setToastMessage('Error al copiar el enlace.');
-        setTimeout(() => setToastMessage(null), 3000);
+      console.error('Failed to copy link: ', err);
+      setToastMessage('Error al copiar el enlace.');
+      setTimeout(() => setToastMessage(null), 3000);
     });
   };
-  
+
   const handleSocialShare = async (platform: 'TikTok' | 'Instagram') => {
-      if (!garment.videoUrl) return;
+    if (!garment.videoUrl) return;
 
-      const fileName = `vestidos-de-fiesta-${garment.title.toLowerCase().replace(/\s+/g, '-')}.mp4`;
-      const shareDetails = {
-          title: `${garment.title} - Colección Vestidos de Fiesta`,
-          text: `Descubre este vestido de la nueva colección de Vestidos de Fiesta por Womanity Boutique. #VestidosDeFiesta #WomanityBoutique #ModaDeLujo #${garment.brand.replace(/\s+/g, '')}`,
-      };
+    const fileName = `vestidos-de-fiesta-${garment.title.toLowerCase().replace(/\s+/g, '-')}.mp4`;
+    const shareDetails = {
+      title: `${garment.title} - Colección Vestidos de Fiesta`,
+      text: `Descubre este vestido de la nueva colección de Vestidos de Fiesta por Womanity Boutique. #VestidosDeFiesta #WomanityBoutique #ModaDeLujo #${garment.brand.replace(/\s+/g, '')}`,
+    };
 
-      try {
-          const response = await fetch(garment.videoUrl);
-          if (!response.ok) {
-              throw new Error(`La respuesta de la red no fue correcta, estado: ${response.status}`);
-          }
-          const blob = await response.blob();
-          const file = new File([blob], fileName, { type: 'video/mp4' });
-
-          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-              await navigator.share({ ...shareDetails, files: [file] });
-          } else {
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.style.display = 'none';
-              a.href = url;
-              a.download = fileName;
-              
-              document.body.appendChild(a);
-              a.click();
-              
-              window.URL.revokeObjectURL(url);
-              document.body.removeChild(a);
-              
-              setToastMessage(`¡Video descargado! Súbelo a ${platform} para publicarlo.`);
-              setTimeout(() => setToastMessage(null), 4000);
-          }
-      } catch (error: any) {
-          if (error.name !== 'AbortError') {
-              console.error(`Error al compartir/descargar el video para ${platform}:`, error);
-              setToastMessage('No se pudo compartir o descargar.');
-              setTimeout(() => setToastMessage(null), 4000);
-          }
+    try {
+      const response = await fetch(garment.videoUrl);
+      if (!response.ok) {
+        throw new Error(`La respuesta de la red no fue correcta, estado: ${response.status}`);
       }
+      const blob = await response.blob();
+      const file = new File([blob], fileName, { type: 'video/mp4' });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ ...shareDetails, files: [file] });
+      } else {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = fileName;
+
+        document.body.appendChild(a);
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        setToastMessage(`¡Video descargado! Súbelo a ${platform} para publicarlo.`);
+        setTimeout(() => setToastMessage(null), 4000);
+      }
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error(`Error al compartir/descargar el video para ${platform}:`, error);
+        setToastMessage('No se pudo compartir o descargar.');
+        setTimeout(() => setToastMessage(null), 4000);
+      }
+    }
   };
 
 
@@ -140,14 +140,14 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
   if (garment.price) {
     const priceValue = typeof garment.price === 'string' ? parseFloat(garment.price) : garment.price;
     if (!isNaN(priceValue)) {
-        message += `*Precio:* S/ ${priceValue.toFixed(2)}\n`;
+      message += `*Precio:* S/ ${priceValue.toFixed(2)}\n`;
     } else {
-        message += `*Precio:* S/ ${garment.price}\n`;
+      message += `*Precio:* S/ ${garment.price}\n`;
     }
   }
   if (garment.slug) {
-      const productUrl = `${PUBLIC_URL}/#/${garment.slug}`;
-      message += `*Enlace:* ${productUrl}\n`;
+    const productUrl = `${PUBLIC_URL}/#/${garment.slug}`;
+    message += `*Enlace:* ${productUrl}\n`;
   }
   message += `\n¿Podrían darme más información sobre la disponibilidad?`;
 
@@ -172,13 +172,13 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
           className="absolute top-4 right-4 text-stone-800 dark:text-stone-200 hover:text-black dark:hover:text-white bg-white/70 dark:bg-stone-700/70 hover:bg-white/90 dark:hover:bg-stone-700/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400 z-20"
           aria-label="Cerrar modal"
         >
-          <CloseIcon className="w-6 h-6"/>
+          <CloseIcon className="w-6 h-6" />
         </button>
-        
+
         {toastMessage && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-cyan-500 text-white text-sm font-bold px-4 py-2 rounded-full animate-fade-in-out z-30">
-                {toastMessage}
-            </div>
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-cyan-500 text-white text-sm font-bold px-4 py-2 rounded-full animate-fade-in-out z-30">
+            {toastMessage}
+          </div>
         )}
 
         <div className="flex flex-col md:flex-row flex-grow overflow-y-auto custom-scrollbar">
@@ -202,96 +202,96 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
               <SpinnerIcon className="w-10 h-10 text-white animate-spin" />
             )}
             <div className="absolute bottom-4 right-4 z-10 flex flex-col items-center gap-3">
-               <button onClick={() => setIsQrModalOpen(true)} className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group" aria-label="Mostrar código QR">
+              <button onClick={() => setIsQrModalOpen(true)} className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group" aria-label="Mostrar código QR">
                 <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
-                    <QrCodeIcon className="w-6 h-6 text-white" />
+                  <QrCodeIcon className="w-6 h-6 text-white" />
                 </span>
                 <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">QR</span>
               </button>
               <button onClick={(e) => { e.stopPropagation(); handleSocialShare('TikTok'); }} className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group" aria-label="Publicar en TikTok">
                 <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
-                    <TikTokIcon className="w-6 h-6 text-white" />
+                  <TikTokIcon className="w-6 h-6 text-white" />
                 </span>
                 <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">TikTok</span>
               </button>
               <button onClick={(e) => { e.stopPropagation(); handleSocialShare('Instagram'); }} className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group" aria-label="Publicar en Instagram">
                 <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
-                    <InstagramIcon className="w-6 h-6 text-white" />
+                  <InstagramIcon className="w-6 h-6 text-white" />
                 </span>
                 <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">Instagram</span>
               </button>
               <button onClick={handleShare} className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group" aria-label="Copiar enlace de la prenda">
                 <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
-                    <ShareIcon className="w-6 h-6 text-white" />
+                  <ShareIcon className="w-6 h-6 text-white" />
                 </span>
                 <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">Compartir</span>
               </button>
             </div>
           </div>
-          
+
           <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col">
-              <div className="flex-shrink-0">
-                <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400">{garment.brand}</p>
-                <h2 id="modal-title" className="text-4xl lg:text-5xl font-semibold text-stone-900 dark:text-stone-100 mt-2 mb-4">{garment.title}</h2>
-                {garment.price && (
-                  <p className="text-3xl text-stone-700 dark:text-stone-200 font-light mb-4">
-                      S/ {typeof garment.price === 'number' ? garment.price.toFixed(2) : garment.price}
-                  </p>
-                )}
-                 <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 flex-wrap">
-                    <a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center grow sm:grow-0 px-6 py-3 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                      <WhatsappIcon className="w-5 h-5 mr-3" />
-                      Consultar por WhatsApp
-                    </a>
-                    <button
-                        onClick={handleShare}
-                        className="inline-flex items-center justify-center gap-2 grow sm:grow-0 px-6 py-3 font-semibold text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-700 rounded-lg shadow-md border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400"
-                        aria-label="Copiar enlace de la prenda"
-                    >
-                        <ShareIcon className="w-5 h-5" />
-                        Copiar Enlace
-                    </button>
-                  </div>
-                   {onGenerateArticle && (
-                      <div className="mt-4 pt-4 border-t border-stone-200 dark:border-stone-700">
-                          <button
-                              onClick={() => onGenerateArticle(garment)}
-                              disabled={isGeneratingArticle || articleExists}
-                              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400 disabled:opacity-60 disabled:cursor-not-allowed"
-                              title={articleExists ? "Ya existe un artículo para esta prenda." : "Crear un nuevo artículo de blog con IA"}
-                          >
-                              {isGeneratingArticle ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <SparklesIcon className="w-5 h-5" />}
-                              {isGeneratingArticle ? 'Creando artículo...' : (articleExists ? 'Artículo ya Creado' : 'Crear Artículo de Blog')}
-                          </button>
-                      </div>
-                  )}
+            <div className="flex-shrink-0">
+              <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400">{garment.brand}</p>
+              <h2 id="modal-title" className="text-4xl lg:text-5xl font-semibold text-stone-900 dark:text-stone-100 mt-2 mb-4">{garment.title}</h2>
+              {garment.price && (
+                <p className="text-3xl text-stone-700 dark:text-stone-200 font-light mb-4">
+                  S/ {typeof garment.price === 'number' ? garment.price.toFixed(2) : garment.price}
+                </p>
+              )}
+              <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 flex-wrap">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center grow sm:grow-0 px-6 py-3 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  <WhatsappIcon className="w-5 h-5 mr-3" />
+                  Consultar por WhatsApp
+                </a>
+                <button
+                  onClick={handleShare}
+                  className="inline-flex items-center justify-center gap-2 grow sm:grow-0 px-6 py-3 font-semibold text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-700 rounded-lg shadow-md border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400"
+                  aria-label="Copiar enlace de la prenda"
+                >
+                  <ShareIcon className="w-5 h-5" />
+                  Copiar Enlace
+                </button>
               </div>
-              
-              <div className="flex-grow">
-                <AccordionItem title="Descripción" isOpen={openAccordion === 'description'} onClick={() => handleAccordionClick('description')}>
-                    <p className="leading-relaxed">{garment.description}</p>
-                </AccordionItem>
-                <AccordionItem title="Detalles del Producto" isOpen={openAccordion === 'details'} onClick={() => handleAccordionClick('details')}>
-                    <ul className="space-y-2 list-disc list-inside">
-                      {garment.material && <li><strong>Material:</strong> {garment.material}</li>}
-                      {garment.occasion && <li><strong>Ocasión Ideal:</strong> {garment.occasion}</li>}
-                      {garment.style_notes && <li><strong>Notas de Estilo:</strong> {garment.style_notes}</li>}
-                      <li><strong>Color:</strong> {garment.color}</li>
-                      <li><strong>Tallas Disponibles:</strong> {garment.size}</li>
-                    </ul>
-                </AccordionItem>
-                <AccordionItem title="Envíos y Devoluciones" isOpen={openAccordion === 'shipping'} onClick={() => handleAccordionClick('shipping')}>
-                    <p className="leading-relaxed">Ofrecemos envío express a todo el país (24-48 horas). Devoluciones aceptadas dentro de los 7 días posteriores a la recepción, con la prenda en su estado original.</p>
-                </AccordionItem>
-              </div>
+              {onGenerateArticle && (
+                <div className="mt-4 pt-4 border-t border-stone-200 dark:border-stone-700">
+                  <button
+                    onClick={() => onGenerateArticle(garment)}
+                    disabled={isGeneratingArticle || articleExists}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400 disabled:opacity-60 disabled:cursor-not-allowed"
+                    title={articleExists ? "Ya existe un artículo para esta prenda." : "Crear un nuevo artículo de blog con IA"}
+                  >
+                    {isGeneratingArticle ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <SparklesIcon className="w-5 h-5" />}
+                    {isGeneratingArticle ? 'Creando artículo...' : (articleExists ? 'Artículo ya Creado' : 'Crear Artículo de Blog')}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex-grow">
+              <AccordionItem title="Descripción" isOpen={openAccordion === 'description'} onClick={() => handleAccordionClick('description')}>
+                <p className="leading-relaxed">{garment.description}</p>
+              </AccordionItem>
+              <AccordionItem title="Detalles del Producto" isOpen={openAccordion === 'details'} onClick={() => handleAccordionClick('details')}>
+                <ul className="space-y-2 list-disc list-inside">
+                  {garment.material && <li><strong>Material:</strong> {garment.material}</li>}
+                  {garment.occasion && <li><strong>Ocasión Ideal:</strong> {garment.occasion}</li>}
+                  {garment.style_notes && <li><strong>Notas de Estilo:</strong> {garment.style_notes}</li>}
+                  <li><strong>Color:</strong> {garment.color}</li>
+                  <li><strong>Tallas Disponibles:</strong> {garment.size}</li>
+                </ul>
+              </AccordionItem>
+              <AccordionItem title="Envíos y Devoluciones" isOpen={openAccordion === 'shipping'} onClick={() => handleAccordionClick('shipping')}>
+                <p className="leading-relaxed">Ofrecemos envío express a todo el país (24-48 horas). Devoluciones aceptadas dentro de los 7 días posteriores a la recepción, con la prenda en su estado original.</p>
+              </AccordionItem>
+            </div>
           </div>
         </div>
-        
+
         <div className="flex justify-center items-center py-1 bg-stone-50 dark:bg-stone-800 border-t border-stone-200 dark:border-stone-700">
           <button
             onClick={() => setIsThumbnailStripVisible(!isThumbnailStripVisible)}
@@ -304,26 +304,26 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
           </button>
         </div>
 
-        <div 
+        <div
           id="thumbnail-strip-container"
           className={`transition-all duration-300 ease-in-out overflow-hidden ${isThumbnailStripVisible ? 'max-h-48' : 'max-h-0'}`}>
-          <ThumbnailStrip 
+          <ThumbnailStrip
             garments={garmentList}
             currentGarment={garment}
             onSelectGarment={onChangeGarment}
           />
         </div>
       </div>
-      
+
       {isQrModalOpen && (
-        <QrCodeModal 
-            isOpen={isQrModalOpen}
-            onClose={() => setIsQrModalOpen(false)}
-            garment={garment}
+        <QrCodeModal
+          isOpen={isQrModalOpen}
+          onClose={() => setIsQrModalOpen(false)}
+          garment={garment}
         />
       )}
 
-       <style>{`
+      <style>{`
         @keyframes backdrop-in { 
           from { opacity: 0; } 
           to { opacity: 1; } 

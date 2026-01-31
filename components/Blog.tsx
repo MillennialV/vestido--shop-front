@@ -1,6 +1,6 @@
 import React from 'react';
 import ArticleCard from './ArticleCard';
-import type { Article } from '../types';
+import type { Article } from '@/interfaces/Article';
 
 interface BlogProps {
     articles: Article[];

@@ -15,7 +15,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { preguntasService, PreguntasServiceError } from '../services/faqService';
-import type { FaqItem } from '../types';
+import type { FaqItem } from '@/interfaces/FaqItem';
 import { CloseIcon, SpinnerIcon, ExclamationTriangleIcon } from './Icons';
 
 type FaqModalMode = 'create' | 'edit' | 'delete';
