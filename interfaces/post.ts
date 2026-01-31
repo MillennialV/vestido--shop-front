@@ -1,3 +1,4 @@
+import { Pagination } from "./pagination";
 export interface Post {
     id: number;
     title: string;
@@ -15,4 +16,9 @@ export interface Category {
     id: number;
     name: string;
     slug: string;
+}
+
+export interface PostResponse {
+    posts?: Post[];
+    pagination?: Pagination;
 }

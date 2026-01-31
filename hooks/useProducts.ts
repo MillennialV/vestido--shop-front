@@ -6,7 +6,7 @@ export const useProducts = () => {
   const [products, setProducts] = useState<Garment[]>([]);
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10, // Default limit
+    limit: 10,
     total: 0,
     totalPages: 0
   });
@@ -14,7 +14,6 @@ export const useProducts = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // --- READ (Listar) ---
   const fetchProducts = useCallback(async (params: { page?: number; limit?: number } = {}) => {
     setIsLoading(true);
     setError(null);
@@ -25,7 +24,7 @@ export const useProducts = () => {
         sort: 'created_at',
         order: 'desc'
       });
-      
+
       setProducts(fetchedProducts);
       setPagination(fetchedPagination);
       return fetchedProducts;
@@ -39,7 +38,6 @@ export const useProducts = () => {
     }
   }, []);
 
-  // --- READ (Detalle) ---
   const fetchProductById = useCallback(async (id: number | string): Promise<Garment | null> => {
     setIsLoading(true);
     setError(null);
@@ -57,7 +55,6 @@ export const useProducts = () => {
     }
   }, []);
 
-  // --- CREATE (Crear) ---
   const createProduct = async (
     productData: Record<string, any>,
     videoFile: File | null
@@ -66,7 +63,7 @@ export const useProducts = () => {
     setError(null);
     try {
       const formData = new FormData();
-      
+
       Object.entries(productData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           formData.append(key, String(value));
@@ -78,10 +75,9 @@ export const useProducts = () => {
       }
 
       const newProduct = await inventarioService.crearProductoMultipart(formData);
-      
-      // Actualizar lista localmente
+
       setProducts((prev: Garment[]) => [newProduct, ...prev]);
-      
+
       return newProduct;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al crear producto';
@@ -92,7 +88,6 @@ export const useProducts = () => {
     }
   };
 
-  // --- UPDATE (Actualizar) ---
   const updateProduct = async (
     id: number | string,
     productData: Partial<Garment>
@@ -101,15 +96,13 @@ export const useProducts = () => {
     setError(null);
     try {
       const updatedProduct = await inventarioService.actualizarProducto(id, productData);
-      
-      // Actualizar lista localmente
+
       setProducts((prev: Garment[]) => prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p)));
-      
-      // Actualizar producto seleccionado si es el mismo
+
       if (selectedProduct && selectedProduct.id === updatedProduct.id) {
         setSelectedProduct(updatedProduct);
       }
-      
+
       return updatedProduct;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al actualizar producto';
@@ -120,17 +113,14 @@ export const useProducts = () => {
     }
   };
 
-  // --- DELETE (Eliminar) ---
   const deleteProduct = async (id: number | string): Promise<void> => {
     setIsLoading(true);
     setError(null);
     try {
       await inventarioService.eliminarProducto(id);
-      
-      // Actualizar lista localmente
+
       setProducts((prev: Garment[]) => prev.filter(p => p.id !== id && String(p.id) !== String(id)));
 
-      // Limpiar producto seleccionado si es el que se eliminó
       if (selectedProduct && (selectedProduct.id === id || String(selectedProduct.id) === String(id))) {
         setSelectedProduct(null);
       }
@@ -143,7 +133,6 @@ export const useProducts = () => {
     }
   };
 
-  // --- FILTER (Filtrar) ---
   const filterProducts = async (filters: Record<string, any>): Promise<Garment[]> => {
     setIsLoading(true);
     setError(null);
