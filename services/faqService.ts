@@ -72,11 +72,11 @@ function mapPreguntaToFaqItem(pregunta: any): FaqItem {
 /**
  * Mapea FaqItem del backend a formato que espera el componente (question/answer)
  */
-export function mapFaqItemToComponent(faqItem: FaqItem): { id: string; question: string; answer: string } {
+export function mapFaqItemToComponent(faqItem: FaqItem): { id: string; pregunta: string; respuesta: string } {
   return {
     id: faqItem.id.toString(),
-    question: faqItem.pregunta,
-    answer: faqItem.respuesta,
+    pregunta: faqItem.pregunta,
+    respuesta: faqItem.respuesta,
   };
 }
 

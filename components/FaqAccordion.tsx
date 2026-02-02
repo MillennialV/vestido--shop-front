@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { PlusIcon, MinusIcon, EditIcon, DeleteIcon } from './Icons';
+import { PlusIcon, MinusIcon, EditIcon, DeleteIcon, GripVerticalIcon } from './Icons';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 interface FaqItem {
   id: string;
-  question: string;
-  answer: string;
+  pregunta: string; 
+  respuesta: string;
+  orden?: number;
 }
 
 interface FaqAccordionProps {
@@ -12,96 +14,110 @@ interface FaqAccordionProps {
   isAdmin?: boolean;
   onEdit?: (item: FaqItem) => void;
   onDelete?: (item: FaqItem) => void;
+  onReorder?: (newItems: FaqItem[]) => void; 
 }
 
-const FaqAccordion: React.FC<FaqAccordionProps> = ({ items, isAdmin = false, onEdit, onDelete }) => {
+const FaqAccordion: React.FC<FaqAccordionProps> = ({ items, isAdmin = false, onEdit, onDelete, onReorder }) => {
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const handleClick = (id: string) => {
-    setOpenId(prevId => (prevId === id ? null : id));
-  };
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination || !onReorder) return;
 
-  const handleEditClick = (e: React.MouseEvent, item: FaqItem) => {
-    e.stopPropagation();
-    onEdit?.(item);
-  };
+    // Copia profunda para evitar mutaciones accidentales
+    const reorderedItems = items.map(item => ({ ...item }));
+    const [removed] = reorderedItems.splice(result.source.index, 1);
+    reorderedItems.splice(result.destination.index, 0, removed);
 
-  const handleDeleteClick = (e: React.MouseEvent, item: FaqItem) => {
-    e.stopPropagation();
-    onDelete?.(item);
+    const updatedItems = reorderedItems.map((item: FaqItem, idx) => ({
+      ...item,
+      id: item.id,
+      orden: idx + 1,
+    }));
+
+    onReorder(updatedItems, result);
   };
 
   return (
-    <div className="w-full space-y-2">
-      {items.map((item) => {
-        const isOpen = openId === item.id;
-        return (
-          <div key={item.id} className="border-b border-stone-200 dark:border-stone-700">
-            <div className="flex items-center w-full group"> {/* Contenedor padre flex */}
-              <h3 className="flex-grow">
-                <button
-                  onClick={() => handleClick(item.id)}
-                  className="flex justify-between items-center w-full py-5 text-left font-semibold text-stone-800 dark:text-stone-100 text-lg hover:text-stone-900 dark:hover:text-stone-50 transition-colors"
-                  aria-expanded={isOpen}
-                  aria-controls={`faq-answer-${item.id}`}
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId="faq-list">
+        {(provided) => (
+          <div 
+            {...provided.droppableProps} 
+            ref={provided.innerRef} 
+            className="w-full space-y-2"
+          >
+            {items.map((item, index) => {
+              const isOpen = openId === item.id;
+              return (
+                <React.Fragment key={String(item.id)}>
+                  <Draggable
+                  draggableId={item.id}
+                  index={index}
+                  isDragDisabled={!isAdmin} // Solo el admin puede mover
                 >
-                  <span>{item.question}</span>
-                </button>
-              </h3>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className={`border-b border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 transition-shadow ${
+                        snapshot.isDragging ? "shadow-lg z-50 border-stone-400" : ""
+                      }`}
+                    >
+                      <div className="flex items-center w-full group">
+                        
+                        {/* Icono de Arrastre a la izquierda */}
+                        {isAdmin && (
+                          <div 
+                            {...provided.dragHandleProps} 
+                            className="pr-2 cursor-grab active:cursor-grabbing text-stone-400 hover:text-stone-600"
+                          >
+                            <GripVerticalIcon className="w-5 h-5" />
+                          </div>
+                        )}
 
-              {/* Acciones de Admin FUERA del botón del FAQ */}
-              <div className="flex items-center gap-3 ml-4">
-                {isAdmin && (
-                  <div className="flex items-center gap-2">
-                    {onEdit && (
-                      <button
-                        onClick={(e) => handleEditClick(e, item)}
-                        className="p-1.5 rounded-md hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"
-                        aria-label="Editar pregunta"
-                        title="Editar pregunta"
-                      >
-                        <EditIcon className="w-4 h-4" />
-                      </button>
-                    )}
-                    {onDelete && (
-                      <button
-                        onClick={(e) => handleDeleteClick(e, item)}
-                        className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-                        aria-label="Eliminar pregunta"
-                        title="Eliminar pregunta"
-                      >
-                        <DeleteIcon className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                )}
+                        <h3 className="flex-grow">
+                          <button
+                            onClick={() => setOpenId(isOpen ? null : item.id)}
+                            className="flex justify-between items-center w-full py-5 text-left font-semibold text-stone-800 dark:text-stone-100 text-lg"
+                          >
+                            <span>{item.pregunta}</span>
+                          </button>
+                        </h3>
 
-                {/* Icono de abrir/cerrar (también fuera para evitar anidación) */}
-                <button
-                  onClick={() => handleClick(item.id)}
-                  className="text-stone-800 dark:text-stone-200 p-2"
-                >
-                  <span className="transition-transform duration-300">
-                    {isOpen ? <MinusIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
-                  </span>
-                </button>
-              </div>
-            </div>
-            <div
-              id={`faq-answer-${item.id}`}
-              className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                }`}
-            >
-              <div className="overflow-hidden">
-                <p className="pb-5 text-stone-600 dark:text-stone-300 leading-relaxed">
-                  {item.answer}
-                </p>
-              </div>
-            </div>
+                        <div className="flex items-center gap-3 ml-4">
+                          {isAdmin && (
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => onEdit?.(item)} className="p-1.5 rounded-md hover:bg-stone-200 text-stone-600">
+                                <EditIcon className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => onDelete?.(item)} className="p-1.5 rounded-md hover:bg-red-100 text-red-600">
+                                <DeleteIcon className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
+                          <button onClick={() => setOpenId(isOpen ? null : item.id)} className="p-2">
+                            {isOpen ? <MinusIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className={`grid transition-all duration-300 ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                        <div className="overflow-hidden">
+                          <p className="pb-5 text-stone-600 dark:text-stone-300">{item.respuesta}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Draggable>
+                </React.Fragment>
+                
+              );
+            })}
+            {provided.placeholder}
           </div>
-        );
-      })}
-    </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 };
 

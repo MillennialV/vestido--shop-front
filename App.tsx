@@ -30,9 +30,12 @@ import { PlusIcon } from './components/Icons';
 import WhatsappModal from './components/WhatsappModal';
 import VideoCard from './components/VideoCard';
 import { usePosts } from './hooks/usePosts';
+import { preguntasService, PreguntasServiceError } from './services/faqService';
+import { DropResult } from '@hello-pangea/dnd';
 
 const ITEMS_PER_PAGE = 10; // Max items per page
 const POSTS_PER_PAGE = 6; // Max items per page
+const FAQ_LIMIT = Number(import.meta.env.VITE_FAQ_LIMIT) || 5; 
 
 const sortByCreatedAt = <T extends { created_at: string }>(items: T[]): T[] => {
     return [...items].sort((a, b) => {
@@ -53,12 +56,20 @@ const getCurrentHashPath = () => {
 
 
 const App: React.FC = () => {
+    const [faqsLocal, setFaqsLocal] = useState<FaqItem[]>([]);
+
     const { authenticated, onLogout, onLogin } = useAuth();
     const { products: garments, pagination, selectedProduct: selectedGarment, setSelectedProduct: setSelectedGarment, isLoading: isGarmentsLoading, error: garmentsError, fetchProducts, fetchProductById, setProducts: setGarments } = useProducts();
     const { posts, pagination: postsPagination, isLoading: isPostsLoading, error: postsError, fetchPosts, fetchPostById, createPost, updatePost, deletePost, setPosts } = usePosts();
     const { faqsForComponent, fetchFaqs, faqs } = useFaqs();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (faqsForComponent && faqsForComponent.length > 0) {
+            setFaqsLocal(faqsForComponent);
+        }
+    }, [faqsForComponent]);
 
     const [currentPath, setCurrentPath] = useState(getCurrentHashPath());
 
@@ -124,7 +135,7 @@ const App: React.FC = () => {
             try {
                 const [fetchedGarments, fetchedFaqs, fetchedPosts] = await Promise.all([
                     fetchProducts({ page: 1, limit: ITEMS_PER_PAGE }),
-                    fetchFaqs(true, false, { limit: 5, estado: 'activa' }).catch(err => {
+                    fetchFaqs(true, false, { limit: FAQ_LIMIT, estado: 'activa', order:'ASC'}).catch(err => {
                         return [];
                     }),
                     fetchPosts({ page: 1, limit: POSTS_PER_PAGE }).catch(err => {
@@ -198,7 +209,7 @@ const App: React.FC = () => {
             const matchesSearch = searchQuery === '' ||
                 garment.title.toLowerCase().includes(searchLower) ||
                 garment.brand.toLowerCase().includes(searchLower) ||
-                garment.description.toLowerCase().includes(searchLower);
+                garment.ASCription.toLowerCase().includes(searchLower);
 
             const matchesBrand = filters.brand === 'all' || garment.brand === filters.brand;
             const matchesSize = filters.size === 'all' || garment.size === filters.size;
@@ -428,6 +439,27 @@ const App: React.FC = () => {
         }
     };
 
+
+    const handleReorderFaqs = useCallback(async (newOrder: FaqItem[], result: DropResult) => {
+        setFaqsLocal(newOrder);
+        
+        try {
+            const updatePromises = newOrder
+                .filter(item => {
+                    const original = faqs.find((f: FaqItem) => f.id === item.id);
+                    return original && original.orden !== item.orden;
+                })
+                .map(item => preguntasService.actualizarPregunta(item.id, { orden: item.orden }));
+
+            if (updatePromises.length > 0) {
+                await Promise.all(updatePromises);
+                await fetchFaqs(true, true, { limit: FAQ_LIMIT, estado: 'activa', order:'ASC'});
+            }
+        } catch (err) {
+            await fetchFaqs(true, true, { limit: FAQ_LIMIT, estado: 'activa', order:'ASC'});
+        }
+    }, [faqs, fetchFaqs]);
+
     const renderPage = () => {
         if (currentPath.startsWith('/blog/')) {
             const slug = currentPath.substring('/blog/'.length);
@@ -521,29 +553,32 @@ const App: React.FC = () => {
                         )}
                     </div>
                     <FaqAccordion
-                        items={authenticated ? faqsForComponent : (faqsForComponent.length > 0 ? faqsForComponent : faqData)}
+                        items={
+                            authenticated 
+                                ? (faqsLocal.length > 0 ? faqsLocal : faqsForComponent)
+                                : (faqsForComponent.length > 0 ? faqsForComponent : faqData)
+                        }
                         isAdmin={authenticated}
                         onEdit={(faq) => {
-                            const fullFaq = faqs.find(f => f.id === faq.id);
-                            if (fullFaq) {
-                                setEditingFaq(fullFaq);
-                                setFaqModalMode('edit');
-                                setIsFaqModalOpen(true);
-                            }
+                            const fullFaq = faqs.find(f => f.id === faq.id) || faq;
+                            setEditingFaq(fullFaq);
+                            setFaqModalMode('edit');
+                            setIsFaqModalOpen(true);
                         }}
                         onDelete={(faq) => {
-                            const fullFaq = faqs.find(f => f.id === faq.id);
-                            if (fullFaq) {
-                                setEditingFaq(fullFaq);
-                                setFaqModalMode('delete');
-                                setIsFaqModalOpen(true);
-                            }
+                            const fullFaq = faqs.find(f => f.id === faq.id) || faq;
+                            setEditingFaq(fullFaq);
+                            setFaqModalMode('delete');
+                            setIsFaqModalOpen(true);
                         }}
+                        onReorder={handleReorderFaqs}
                     />
                 </section>
             </>
         );
     };
+
+
 
     return (
         <div className="bg-stone-50 dark:bg-stone-900 min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
@@ -635,7 +670,7 @@ const App: React.FC = () => {
                         setEditingFaq(null);
                     }}
                     onSuccess={() => {
-                        fetchFaqs(true, true, { limit: 5, estado: 'activa' }).catch(err => {
+                        fetchFaqs(true, true, { limit: FAQ_LIMIT, estado: 'activa', order:'ASC'}).catch(err => {
                             console.warn('Error al recargar preguntas frecuentes:', err);
                         });
                     }}

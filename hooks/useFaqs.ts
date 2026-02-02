@@ -16,8 +16,8 @@ import type { FaqItem } from '@/types/FaqItem';
 
 export interface FaqComponentItem {
   id: string;
-  question: string;
-  answer: string;
+  pregunta: string;
+  respuesta: string;
 }
 
 /**
@@ -76,8 +76,8 @@ export const useFaqs = () => {
         console.warn('[useFaqs] Usando datos por defecto debido a error');
         const fallbackFaqs = faqData.map(item => ({
           id: item.id,
-          question: item.question,
-          answer: item.answer,
+          pregunta: item.pregunta,
+          respuesta: item.respuesta,
         }));
         setFaqsForComponent(fallbackFaqs);
         setHasFetched(true);
