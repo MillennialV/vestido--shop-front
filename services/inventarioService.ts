@@ -1,9 +1,9 @@
-import { Product, ProductsResponse } from '@/interfaces/product';
-import type { Garment } from '@/interfaces/Garment';
+import { Product, ProductsResponse } from '@/types/product';
+import type { Garment } from '@/types/Garment';
 import { apiResponse } from './apiResponse';
 import { INVENTARIO_API_URL } from '@/core/apiConfig';
-import { Pagination } from '@/interfaces/pagination';
-import { ApiParams } from '@/interfaces/apiParams';
+import { Pagination } from '@/types/pagination';
+import { ApiParams } from '@/types/apiParams';
 
 function mapProductToGarment(product: Product): Garment {
   return {

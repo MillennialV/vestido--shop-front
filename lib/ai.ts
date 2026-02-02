@@ -1,7 +1,7 @@
 
 
 import { GoogleGenAI, Type } from '@google/genai';
-import type { Garment } from '@/interfaces/Garment';
+import type { Garment } from '@/types/Garment';
 
 interface AiGarmentAnalysis {
   title: string;

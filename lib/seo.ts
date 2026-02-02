@@ -1,5 +1,5 @@
-import type { Garment } from '@/interfaces/Garment';
-import type { Article } from '@/interfaces/Article';
+import type { Garment } from '@/types/Garment';
+import type { Post } from '@/types/post';
 
 const PRODUCT_SCHEMA_ID = 'product-schema';
 const ARTICLE_SCHEMA_ID = 'article-schema';
@@ -163,25 +163,25 @@ export const setBlogIndexPageSeo = () => {
     ]);
 };
 
-export const setArticlePageSeo = (article: Article, garment: Garment) => {
+export const setPostPageSeo = (post: Post) => {
     clearPageSpecificSchemas();
-    if (!article.slug) {
+    if (!post.slug) {
         setBlogIndexPageSeo();
         return;
     }
 
-    const url = getCanonicalUrl(`/#/blog/${article.slug}`);
-    const title = `${article.title} | Blog - Womanity Boutique`;
+    const url = getCanonicalUrl(`/#/blog/${post.slug}`);
+    const title = `${post.title} | Blog - Womanity Boutique`;
 
-    setCoreMetaTags(title, article.excerpt, url);
+    setCoreMetaTags(title, post.seo_description || post.content.substring(0, 160), url);
 
-    const articleSchema = {
+    const postSchema = {
         '@context': 'https://schema.org',
         '@type': 'Article',
-        'headline': article.title,
-        'description': article.excerpt,
-        'image': article.image_url || DEFAULT_IMAGE_URL,
-        'datePublished': article.created_at,
+        'headline': post.title,
+        'description': post.seo_description || post.content.substring(0, 160),
+        'image': post.featured_image_url || DEFAULT_IMAGE_URL,
+        'datePublished': post.published_at,
         'author': {
             '@type': 'Organization',
             'name': 'Womanity Boutique',
@@ -200,11 +200,11 @@ export const setArticlePageSeo = (article: Article, garment: Garment) => {
             '@id': url
         }
     };
-    injectSchema(ARTICLE_SCHEMA_ID, articleSchema);
+    injectSchema(ARTICLE_SCHEMA_ID, postSchema);
 
     injectBreadcrumbSchema([
         { name: 'Inicio', url: getCanonicalUrl('/') },
         { name: 'Blog', url: getCanonicalUrl('/#/blog') },
-        { name: article.title, url: url }
+        { name: post.title, url: url }
     ]);
 };

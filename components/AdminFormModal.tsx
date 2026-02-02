@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { Garment } from '@/interfaces/Garment';
+import type { Garment } from '@/types/Garment';
 import { iaService } from '../services/iaService';
 import { useProducts } from '../hooks/useProducts';
 import { CloseIcon, SparklesIcon, SpinnerIcon } from './Icons';

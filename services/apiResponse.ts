@@ -1,4 +1,4 @@
-import { ApiResponse } from "@/interfaces/apiResponse";
+import { ApiResponse } from "@/types/apiResponse";
 
 export async function apiResponse<T>(
   url: string,

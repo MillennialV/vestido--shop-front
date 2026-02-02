@@ -11,7 +11,7 @@
  * - Mapear los datos del backend al formato esperado por los componentes
  */
 
-import type { FaqItem } from '@/interfaces/FaqItem';
+import type { FaqItem } from '@/types/FaqItem';
 
 const PREGUNTAS_API_URL = import.meta.env.VITE_API_PREGUNTAS_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
 

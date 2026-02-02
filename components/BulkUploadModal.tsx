@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import type { Garment } from '@/interfaces/Garment';
+import type { Garment } from '@/types/Garment';
 import { uploadVideoFile, saveBulkGarments } from '../lib/db';
 import { iaService } from '../services/iaService';
 import { getFriendlySupabaseError } from '../lib/errorUtils';

@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import type { Garment } from '@/interfaces/Garment';
+import type { Garment } from '@/types/Garment';
 import { inventarioService } from '../services/inventarioService';
 import { WhatsappIcon, EditIcon, DeleteIcon, SpinnerIcon, ErrorIcon, CircleIcon, CheckCircleIcon } from './Icons';
 

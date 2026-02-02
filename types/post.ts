@@ -5,6 +5,7 @@ export interface Post {
     slug: string;
     content: string;
     featured_image_url: string;
+    is_published: boolean;
     reading_time: number;
     seo_description: string;
     seo_keywords: string;

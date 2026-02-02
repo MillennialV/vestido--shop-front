@@ -12,7 +12,7 @@
 import { useState, useCallback } from 'react';
 import { preguntasService, mapFaqItemToComponent } from '../services/faqService';
 import { faqData } from '../lib/faqData';
-import type { FaqItem } from '@/interfaces/FaqItem';
+import type { FaqItem } from '@/types/FaqItem';
 
 export interface FaqComponentItem {
   id: string;

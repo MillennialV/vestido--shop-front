@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Garment } from '@/interfaces/Garment';
+import type { Garment } from '@/types/Garment';
 
 interface CreateProductData {
   title: string;

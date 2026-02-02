@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import type { Garment } from '@/interfaces/Garment';
+import type { Garment } from '@/types/Garment';
 import QRCode from 'qrcode';
 import { PUBLIC_URL } from '../lib/seo';
 import { CloseIcon, DownloadIcon } from './Icons';

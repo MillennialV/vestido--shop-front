@@ -1,4 +1,4 @@
-import type { Garment } from '@/interfaces/Garment';
+import type { Garment } from '@/types/Garment';
 
 const VIDEOS = [
   'https://storage.googleapis.com/aistudio-hosting/venice-videos/video1.mp4',

@@ -1,5 +1,5 @@
-import type { Garment } from '@/interfaces/Garment';
-import type { Article } from '@/interfaces/Article';
+import type { Garment } from '@/types/Garment';
+import type { Article } from '@/types/Article';
 import { defaultGarments } from './defaultGarments';
 import { slugify } from './slugify';
 import inventarioService from '../services/inventarioService';

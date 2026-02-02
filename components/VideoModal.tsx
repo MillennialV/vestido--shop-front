@@ -1,22 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { Garment } from '@/interfaces/Garment';
+import type { Garment } from '@/types/Garment';
 import ThumbnailStrip from './ThumbnailStrip';
 import QrCodeModal from './QrCodeModal';
 import { PUBLIC_URL } from '../lib/seo';
 import AccordionItem from './AccordionItem';
-import { CloseIcon, SparklesIcon, SpinnerIcon, WhatsappIcon, ShareIcon, QrCodeIcon, TikTokIcon, InstagramIcon, ChevronDownIcon, ChevronUpIcon } from './Icons';
+import { CloseIcon, SpinnerIcon, WhatsappIcon, ShareIcon, QrCodeIcon, TikTokIcon, InstagramIcon, ChevronDownIcon, ChevronUpIcon } from './Icons';
 
 interface VideoModalProps {
   garment: Garment;
   onClose: () => void;
   garmentList: Garment[];
   onChangeGarment: (garment: Garment) => void;
-  onGenerateArticle?: (garment: Garment) => void;
-  isGeneratingArticle: boolean;
-  articleExists: boolean;
 }
 
-const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, onChangeGarment, onGenerateArticle, isGeneratingArticle, articleExists }) => {
+const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, onChangeGarment }) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [isThumbnailStripVisible, setIsThumbnailStripVisible] = useState(true);
@@ -257,19 +254,6 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
                   Copiar Enlace
                 </button>
               </div>
-              {onGenerateArticle && (
-                <div className="mt-4 pt-4 border-t border-stone-200 dark:border-stone-700">
-                  <button
-                    onClick={() => onGenerateArticle(garment)}
-                    disabled={isGeneratingArticle || articleExists}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-stone-200 bg-stone-200 dark:bg-stone-700 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400 disabled:opacity-60 disabled:cursor-not-allowed"
-                    title={articleExists ? "Ya existe un artículo para esta prenda." : "Crear un nuevo artículo de blog con IA"}
-                  >
-                    {isGeneratingArticle ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <SparklesIcon className="w-5 h-5" />}
-                    {isGeneratingArticle ? 'Creando artículo...' : (articleExists ? 'Artículo ya Creado' : 'Crear Artículo de Blog')}
-                  </button>
-                </div>
-              )}
             </div>
 
             <div className="flex-grow">

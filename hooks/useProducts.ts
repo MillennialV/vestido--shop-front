@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { inventarioService } from '../services/inventarioService';
-import type { Garment } from '@/interfaces/Garment';
+import type { Garment } from '@/types/Garment';
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Garment[]>([]);

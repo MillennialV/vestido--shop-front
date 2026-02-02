@@ -1,11 +1,19 @@
-import { Post, PostResponse } from "@/interfaces/post";
+import { Post, PostResponse } from "@/types/post";
+import { Category } from "@/types/category";
 import { apiResponse } from "@/services/apiResponse";
 import { BLOG_BASE_API } from "@/core/apiConfig";
-import { Pagination } from "@/interfaces/pagination";
-import { ApiParams } from "@/interfaces/apiParams";
+import { Pagination } from "@/types/pagination";
+import { ApiParams } from "@/types/apiParams";
 class PostService {
 
-  async createPost(post: Omit<Post,'id'| 'slug' | 'created_at'>): Promise<Post> {
+  async getCategories(): Promise<Category[]> {
+    const url = `${BLOG_BASE_API}/api/blog/categories`;
+    const res = await apiResponse<Category[]>(url, { method: "GET" });
+    if (!res.success) throw new Error(res.error || 'Error al obtener categorías');
+    return res.data;
+  }
+
+  async createPost(post: Omit<Post, 'id' | 'slug' | 'created_at'>): Promise<Post> {
     const url = `${BLOG_BASE_API}/api/blog/posts`;
     const res = await apiResponse<Post>(url, { method: "POST", body: JSON.stringify(post) });
     if (!res.success) throw new Error(res.error || 'Error al crear el post');

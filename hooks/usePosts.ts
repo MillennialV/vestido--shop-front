@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { postService } from '../services/postService';
-import { Post } from '@/interfaces/post';
-import { Pagination } from '@/interfaces/pagination';
+import { Post } from '@/types/post';
+import { Pagination } from '@/types/pagination';
 
 export const usePosts = () => {
 
@@ -61,7 +61,7 @@ export const usePosts = () => {
             setIsLoading(false);
         }
     };
-    
+
     const updatePost = async (
         id: number | string,
         postData: Partial<Post>
@@ -95,7 +95,7 @@ export const usePosts = () => {
             setIsLoading(false);
         }
     };
-    
+
     return {
         posts,
         pagination,
@@ -105,7 +105,8 @@ export const usePosts = () => {
         fetchPostById,
         createPost,
         updatePost,
-        deletePost
+        deletePost,
+        setPosts
     };
-    
+
 }

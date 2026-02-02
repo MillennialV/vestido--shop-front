@@ -7,7 +7,7 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+const PaginationComponent: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
   // Hide pagination if there is only one page or less
   if (totalPages <= 1) {
     return null;
@@ -87,4 +87,4 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
   );
 };
 
-export default Pagination;
+export default PaginationComponent;
