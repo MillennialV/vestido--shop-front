@@ -18,12 +18,23 @@ class AuthService {
 
       console.log('[AuthService] Respuesta recibida, status:', response.status);
 
-      if (!response.ok) {
-        console.error('[AuthService] Response no OK:', response.statusText);
-        throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+      // Intentar parsear el body para obtener un mensaje de error más útil
+      let parsedBody: any = null;
+      try {
+        parsedBody = await response.clone().json();
+      } catch (e) {
+        // ignore parse errors
+        parsedBody = null;
       }
 
-      const json = await response.json();
+      if (!response.ok) {
+        const remoteMsg = parsedBody?.error || parsedBody?.message || response.statusText || '';
+        const friendly = response.status === 401 ? 'Credenciales inválidas' : remoteMsg || `Error HTTP: ${response.status}`;
+        console.error('[AuthService] Response no OK:', response.status, remoteMsg);
+        throw new Error(friendly);
+      }
+
+      const json = parsedBody ?? (await response.json());
       console.log('[AuthService] JSON parseado:', { success: json.success, hasData: !!json.data });
 
       if (json.success && json.data) {
@@ -33,14 +44,14 @@ class AuthService {
         console.log('[AuthService] Datos guardados, retornando Auth');
         return { token: json.data.token, user: json.data.user };
       } else {
-        const errorMsg = json.error || 'Error en el login';
+        const errorMsg = json.error || json.message || 'Error en el login';
         console.error('[AuthService] Login no exitoso:', errorMsg);
         throw new Error(errorMsg);
       }
     } catch (error) {
       console.error('[AuthService] Error capturado:', error);
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`[AuthService] ${message}`);
+      throw new Error(message);
     }
   }
 

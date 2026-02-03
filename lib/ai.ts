@@ -213,7 +213,7 @@ export const analyzeGarmentWithAI = async (videoElement: HTMLVideoElement): Prom
       },
     });
 
-    return JSON.parse(response.text);
+    return JSON.parse(response.text || '{}');
 
   } catch (error) {
     console.error("Error con Gemini AI:", error);
@@ -271,7 +271,7 @@ export const generateArticleWithAI = async (garment: Garment): Promise<{ title: 
       },
     });
 
-    return JSON.parse(response.text);
+    return JSON.parse(response.text || '{}');
 
   } catch (error) {
     console.error("Error generating article with AI:", error);

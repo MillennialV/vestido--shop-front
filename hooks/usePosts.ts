@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { postService } from '../services/postService';
 import { Post } from '@/types/post';
 import { Pagination } from '@/types/pagination';
@@ -12,7 +12,7 @@ export const usePosts = () => {
         total: 0,
         totalPages: 0
     });
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const fetchPosts = useCallback(async (params: { page?: number; limit?: number } = {}) => {
@@ -28,6 +28,11 @@ export const usePosts = () => {
             setIsLoading(false);
         }
     }, []);
+
+    // Load posts on mount
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
 
     const fetchPostById = useCallback(async (id: number | string): Promise<Post | null> => {
         setIsLoading(true);

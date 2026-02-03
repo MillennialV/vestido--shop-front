@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import type { Garment } from "@/types/Garment";
 import ThumbnailStrip from "./ThumbnailStrip";

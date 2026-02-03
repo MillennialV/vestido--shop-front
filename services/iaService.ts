@@ -432,7 +432,7 @@ class IAServiceClient {
     });
 
     // Log para debugging (solo en desarrollo)
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('[IA Service] Respuesta completa de analyzeGarmentFromBase64:', result);
     }
 

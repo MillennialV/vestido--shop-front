@@ -64,7 +64,7 @@ class InventarioService {
     });
     const url = `${INVENTARIO_API_URL}/api/producto/filtrar-busqueda?${queryParams}`;
     const res = await apiResponse<ProductsResponse>(url, { method: 'GET' });
-    return (res?.data.products || []).map(mapProductToGarment);
+    return (res?.data?.products || []).map(mapProductToGarment);
   }
 
   async crearProducto(productoData: Omit<Garment, 'id' | 'slug' | 'created_at'>): Promise<Garment> {
@@ -74,7 +74,7 @@ class InventarioService {
       body: JSON.stringify(productoData),
     });
     if (!response.success) throw new Error(response.error || 'Error al crear el producto');
-    return mapProductToGarment(response.data);
+    return mapProductToGarment(response.data!);
   }
 
   async crearProductoMultipart(formData: FormData): Promise<Garment> {
@@ -84,7 +84,7 @@ class InventarioService {
       body: formData,
     });
     if (!response.success) throw new Error(response.error || 'Error al crear el producto');
-    return mapProductToGarment(response.data);
+    return mapProductToGarment(response.data!);
   }
 
   async actualizarProducto(id: number | string, data: Partial<Garment>): Promise<Garment> {
@@ -94,7 +94,7 @@ class InventarioService {
       body: JSON.stringify(data),
     });
     if (!response.success) throw new Error(response.error || 'Error al actualizar el producto');
-    return mapProductToGarment(response.data);
+    return mapProductToGarment(response.data!);
   }
 
   async eliminarProducto(id: number | string): Promise<void> {

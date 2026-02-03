@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { inventarioService } from '../services/inventarioService';
 import type { Garment } from '@/types/Garment';
 
@@ -11,7 +11,7 @@ export const useProducts = () => {
     totalPages: 0
   });
   const [selectedProduct, setSelectedProduct] = useState<Garment | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async (params: { page?: number; limit?: number } = {}) => {
@@ -37,6 +37,11 @@ export const useProducts = () => {
       setIsLoading(false);
     }
   }, []);
+
+  // Load products on mount
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const fetchProductById = useCallback(async (id: number | string): Promise<Garment | null> => {
     setIsLoading(true);

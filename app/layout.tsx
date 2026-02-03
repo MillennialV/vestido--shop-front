@@ -1,6 +1,9 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata, Viewport } from "next";
+import "./globals.css";
 import React from "react";
-import { AuthProvider } from "../provider/AuthProvider";
+import { AuthProvider } from "@/provider/AuthProvider";
 
 export const viewport: Viewport = {
   themeColor: "#f5f5f4",
@@ -15,6 +18,9 @@ export const metadata: Metadata = {
   keywords:
     "vestidos de fiesta lima, showroom san isidro, vestidos elegantes perú, vestidos importados, moda san isidro, womanity boutique, vestidos de noche, vestidos de gala, boutique en lima",
   authors: [{ name: "Womanity Boutique" }],
+  alternates: {
+    canonical: "https://www.vestido.shop/",
+  },
   openGraph: {
     type: "website",
     url: "https://www.vestido.shop/",
@@ -42,7 +48,6 @@ export const metadata: Metadata = {
     ],
   },
   robots: "index, follow",
-  canonical: "https://www.vestido.shop/",
 };
 
 export default function RootLayout({
@@ -56,7 +61,6 @@ export default function RootLayout({
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-
         <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
         <script>
           {`

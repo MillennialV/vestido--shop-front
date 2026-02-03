@@ -10,14 +10,14 @@ class PostService {
     const url = `${BLOG_BASE_API}/api/blog/categories`;
     const res = await apiResponse<Category[]>(url, { method: "GET" });
     if (!res.success) throw new Error(res.error || 'Error al obtener categorías');
-    return res.data;
+    return res.data!;
   }
 
   async createPost(post: Omit<Post, 'id' | 'slug' | 'created_at'>): Promise<Post> {
     const url = `${BLOG_BASE_API}/api/blog/posts`;
     const res = await apiResponse<Post>(url, { method: "POST", body: JSON.stringify(post) });
     if (!res.success) throw new Error(res.error || 'Error al crear el post');
-    return res.data;
+    return res.data!;
   }
 
   async readPosts(params: ApiParams = {}): Promise<{ posts: Post[]; pagination: Pagination }> {
@@ -32,8 +32,8 @@ class PostService {
     const res = await apiResponse<PostResponse>(url, { method: "GET" });
 
     return {
-      posts: res.data.posts,
-      pagination: res.data.pagination
+      posts: res.data?.posts || [],
+      pagination: res.data?.pagination || { page: 1, limit: 100, total: 0, totalPages: 0 }
     }
   }
 
@@ -41,14 +41,14 @@ class PostService {
     const url = `${BLOG_BASE_API}/api/blog/posts/${id}`;
     const res = await apiResponse<Post>(url, { method: "GET" });
     if (!res.success) throw new Error(res.error || 'Error al obtener el post');
-    return res.data;
+    return res.data!;
   }
 
   async updatePost(id: number | string, data: Partial<Post>): Promise<Post> {
     const url = `${BLOG_BASE_API}/api/blog/posts/${id}`;
     const res = await apiResponse<Post>(url, { method: "PUT", body: JSON.stringify(data) });
     if (!res.success) throw new Error(res.error || 'Error al actualizar el post');
-    return res.data;
+    return res.data!;
   }
 
   async deletePost(id: number | string): Promise<void> {

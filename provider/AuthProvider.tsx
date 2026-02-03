@@ -7,9 +7,11 @@ import { AuthContextType } from "../context/AuthContext";
 import { User } from "../types/auth";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [authenticated, setAuthenticated] = useState<boolean | null>(false);
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const token = localStorage.getItem("authToken");
     if (token) {
       setAuthenticated(true);
@@ -37,11 +39,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getUser = (): User | null => {
+    if (!mounted) return null;
     const userStr = localStorage.getItem("user");
     return userStr ? JSON.parse(userStr) : null;
   };
 
   const value: AuthContextType = { onLogin, onLogout, authenticated, getUser };
+
+  // Evitar que el contenido se renderice hasta que el cliente esté listo
+  if (!mounted) {
+    return <>{children}</>;
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
