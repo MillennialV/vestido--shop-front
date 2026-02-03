@@ -66,13 +66,20 @@ export const usePosts = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(postData),
             });
-            if (!res.ok) throw new Error('Error al crear el post');
-            const newPost = await res.json();
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Error al crear el post');
+            }
+            
+            const newPost = data.data || data; 
             setPosts((prev: Post[]) => [newPost, ...prev]);
-            return newPost;
-        } catch (err: any) {
-            setError(err.message || 'Error al crear el producto');
-            return null;
+
+            return data;
+        } catch (error: any) {
+            setError(error.message);
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -96,7 +103,7 @@ export const usePosts = () => {
             return updatedPost;
         } catch (err: any) {
             setError(err.message || 'Error al actualizar el producto');
-            return null;
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -113,6 +120,7 @@ export const usePosts = () => {
             setPosts((prev: Post[]) => prev.filter(p => p.id !== id && String(p.id) !== String(id)));
         } catch (err: any) {
             setError(err.message || 'Error al eliminar el producto');
+            throw error;
         } finally {
             setIsLoading(false);
         }

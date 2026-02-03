@@ -13,7 +13,6 @@ export interface Post {
     is_published: boolean;
     reading_time: number;
     seo_description: string;
-    seo_keywords: string;
     categories: Category[];
     created_at: string;
     updated_at?: string;

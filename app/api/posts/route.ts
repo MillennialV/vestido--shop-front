@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        const { slug, seo_description, seo_keywords, ...bodyWithoutSlug } = body;
+        const { slug,seo_keywords,categoryId, ...bodyWithoutSlug } = body;
         
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts`, {
             method: 'POST',
@@ -60,11 +60,13 @@ export async function POST(req: NextRequest) {
 
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.message || 'Error al crear el post');
+        if (!data.success) {
+            throw new Error(data.message || 'Error al crear el post');
+        }
 
         return NextResponse.json(data);
     } catch (error: any) {
-        console.error('POST Post Error:', error);
+        console.error('POST Post Error:', error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
@@ -77,11 +79,13 @@ export async function PUT(req: NextRequest) {
         if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
 
         const body = await req.json();
+        
+        const { slug,seo_keywords,categoryId, ...bodyWithoutSlug } = body;
 
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts/${id}`, {
             method: 'PUT',
             headers: getAuthHeaders(req),
-            body: JSON.stringify(body),
+            body: JSON.stringify(bodyWithoutSlug),
         });
 
         const data = await res.json();

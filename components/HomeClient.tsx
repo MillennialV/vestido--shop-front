@@ -65,6 +65,7 @@ export default function HomeClient({
   const { authenticated, onLogout, onLogin } = useAuth();
   const { fetchProducts, fetchProductById } = useProducts();
   const { fetchPosts } = usePosts();
+  const { deletePost } = usePosts();
   const { fetchFaqs, faqs: allFaqs } = useFaqs();
   const ITEMS_PER_PAGE = 10;
   const POSTS_PER_PAGE = 6;
@@ -244,13 +245,19 @@ export default function HomeClient({
   const handleSavePost = (post: Post) => {
     setPosts((prev) => {
       const currentPosts = Array.isArray(prev) ? prev : [];
-
-      const exists = currentPosts.some((p) => p.id === post.id);
+      console.log("Current posts:", currentPosts);
+      const exists = currentPosts.some((p) => Number(p.id) === Number(post.id));
+      console.log("Saving post:", post, "Exists:", exists);
       if (exists) {
-        return currentPosts.map((p) => (p.id === post.id ? post : p));
+        return currentPosts.map((p) => 
+          Number(p.id) === Number(post.id) ? post : p
+        );
       }
+      console.log("Adding new post:", post);
       return [post, ...currentPosts];
     });
+
+    
     setIsPostModalOpen(false);
     setEditingPost(null);
   };
@@ -262,7 +269,10 @@ export default function HomeClient({
     if (!postToDelete) return;
     setIsDeleting(true);
     try {
+      await deletePost(postToDelete.id);
+      
       setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
+
       setIsDeleteModalOpen(false);
       setPostToDelete(null);
     } catch (error) {
