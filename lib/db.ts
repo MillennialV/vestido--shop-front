@@ -5,7 +5,7 @@ import { slugify } from './slugify';
 import inventarioService from '../services/inventarioService';
 
 // URL del backend API desde variables de entorno (para upload de videos y otros servicios)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3005';
 
 // Garment Functions
 /**

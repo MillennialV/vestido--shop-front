@@ -34,12 +34,19 @@ class InventarioService {
       order,
     });
     const url = `${INVENTARIO_API_URL}/api/producto/obtener-listado-productos?${queryParams}`;
-    const res = await apiResponse<ProductsResponse>(url, { method: "GET" });
-    if (!res.success) throw new Error(res.error || 'Error al obtener listado de productos');
-    return {
-      products: (res?.data.products || []).map(mapProductToGarment),
-      pagination: res?.data.pagination || { page, limit, total: 0, totalPages: 0 }
-    };
+    try {
+      const res = await apiResponse<ProductsResponse>(url, { method: "GET" });
+      if (!res.success) throw new Error(res.error || 'Error al obtener listado de productos');
+      return {
+        products: (res?.data?.products || []).map(mapProductToGarment),
+        pagination: res?.data?.pagination || { page, limit, total: 0, totalPages: 0 }
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Failed to fetch')) {
+        throw new Error('No se pudo conectar al servidor. Verifica tu conexión de internet y que el servidor esté disponible.');
+      }
+      throw error;
+    }
   }
 
   async obtenerDetalleProducto(id: number | string): Promise<Garment> {

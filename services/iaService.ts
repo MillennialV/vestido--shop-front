@@ -83,13 +83,13 @@ class IAServiceClient {
 
   constructor(baseUrl?: string, token: string | null = null) {
     // Usar la variable de entorno si no se proporciona baseUrl
-    const url = baseUrl || import.meta.env.VITE_IA_URL || 'https://ia.iaimpacto.com';
+    const url = baseUrl || process.env.NEXT_PUBLIC_IA_URL || 'https://ia.iaimpacto.com';
     this.baseUrl = url.replace(/\/$/, '');
     this.token = token;
-    
+
     // Log para debugging
     console.log(`[IA Service] Inicializado con URL: ${this.baseUrl}`);
-    console.log(`[IA Service] VITE_IA_URL desde env:`, import.meta.env.VITE_IA_URL || 'no configurado');
+    console.log(`[IA Service] NEXT_PUBLIC_IA_URL desde env:`, process.env.NEXT_PUBLIC_IA_URL || 'no configurado');
   }
 
   /**
@@ -118,11 +118,11 @@ class IAServiceClient {
     try {
       console.log(`[IA Service] Haciendo request a: ${url}`);
       const response = await fetch(url, config);
-      
+
       // Verificar el tipo de contenido antes de parsear
       const contentType = response.headers.get('content-type');
       let data: ApiResponse<T>;
-      
+
       if (contentType && contentType.includes('application/json')) {
         try {
           data = await response.json();
@@ -150,12 +150,12 @@ class IAServiceClient {
         console.error(`[IA Service] Error de CORS o conexión a: ${url}`);
         throw new Error(`Error de conexión: No se pudo conectar al servicio de IA en ${this.baseUrl}. Verifica que la URL esté accesible y que CORS esté configurado correctamente para permitir requests desde ${window.location.origin}.`);
       }
-      
+
       if (error instanceof Error) {
         console.error(`[IA Service] Error:`, error.message);
         throw error;
       }
-      
+
       throw new Error(`Error de conexión: ${String(error)}`);
     }
   }
@@ -351,13 +351,13 @@ class IAServiceClient {
   async imageToTextFromFile(imageFile: File | Blob, prompt?: string | null, options: ImageToTextOptions = {}): Promise<string> {
     const formData = new FormData();
     formData.append('image', imageFile);
-    
+
     if (prompt || options.prompt) {
       formData.append('prompt', prompt || options.prompt || '');
     }
-    
+
     formData.append('model', options.model || 'Qwen/Qwen3-VL-8B-Instruct');
-    
+
     if (options.maxLength) {
       formData.append('maxLength', options.maxLength.toString());
     }
@@ -384,7 +384,7 @@ class IAServiceClient {
       prompt
     };
 
-    const result = await this._request<{ 
+    const result = await this._request<{
       success: boolean;
       generatedText?: string;
       generated_text?: string;
@@ -396,12 +396,12 @@ class IAServiceClient {
 
     // Extraer el texto generado (puede venir como generatedText o generated_text)
     const generatedText = result.data.generatedText || result.data.generated_text || '';
-    
+
     // Si generatedText es un objeto (ya parseado), devolverlo directamente
     if (typeof generatedText === 'object') {
       return this.parseGarmentAnalysis(JSON.stringify(generatedText));
     }
-    
+
     // Si es string, parsearlo
     return this.parseGarmentAnalysis(generatedText);
   }
@@ -421,7 +421,7 @@ class IAServiceClient {
       prompt
     };
 
-    const result = await this._request<{ 
+    const result = await this._request<{
       success: boolean;
       generatedText?: string;
       generated_text?: string;
@@ -438,17 +438,17 @@ class IAServiceClient {
 
     // Extraer el texto generado (puede venir como generatedText o generated_text)
     const generatedText = result.data.generatedText || result.data.generated_text || '';
-    
+
     if (!generatedText) {
       console.error('[IA Service] No se recibió generatedText en la respuesta:', result);
       throw new Error('La respuesta de la API no contiene texto generado');
     }
-    
+
     // Si generatedText es un objeto (ya parseado), devolverlo directamente
     if (typeof generatedText === 'object') {
       return this.parseGarmentAnalysis(JSON.stringify(generatedText));
     }
-    
+
     // Si es string, parsearlo
     return this.parseGarmentAnalysis(generatedText);
   }
@@ -467,7 +467,7 @@ class IAServiceClient {
     formData.append('model', options.model || 'Qwen/Qwen3-VL-8B-Instruct');
     formData.append('maxLength', (options.maxLength || 200).toString());
 
-    const result = await this._request<{ 
+    const result = await this._request<{
       success: boolean;
       generatedText?: string;
       generated_text?: string;
@@ -479,12 +479,12 @@ class IAServiceClient {
 
     // Extraer el texto generado (puede venir como generatedText o generated_text)
     const generatedText = result.data.generatedText || result.data.generated_text || '';
-    
+
     // Si generatedText es un objeto (ya parseado), devolverlo directamente
     if (typeof generatedText === 'object') {
       return this.parseGarmentAnalysis(JSON.stringify(generatedText));
     }
-    
+
     // Si es string, parsearlo
     return this.parseGarmentAnalysis(generatedText);
   }
@@ -536,19 +536,19 @@ Observa: estilo, detalles decorativos, tipo de tela, color, silueta, diseño.`;
 
       // Limpiar el string: remover caracteres de escape y espacios extra
       let cleaned = textResult.trim();
-      
+
       // Remover markdown code blocks si existen
       cleaned = cleaned.replace(/```json/g, '').replace(/```/g, '').trim();
-      
+
       // Intentar extraer JSON del texto si hay texto adicional
       const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         cleaned = jsonMatch[0];
       }
-      
+
       // Parsear el JSON
       const parsed = JSON.parse(cleaned);
-      
+
       return {
         title: parsed.title || '',
         brand: parsed.brand || '',

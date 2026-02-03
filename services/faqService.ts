@@ -13,7 +13,7 @@
 
 import type { FaqItem } from '@/types/FaqItem';
 
-const PREGUNTAS_API_URL = import.meta.env.VITE_API_PREGUNTAS_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
+const PREGUNTAS_API_URL = process.env.NEXT_PUBLIC_API_PREGUNTAS_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3005';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -121,7 +121,7 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
         errorData = { message: response.statusText };
       }
 
-      const errorMessage = errorData.message || errorData.error || `Error HTTP: ${response.status}`;
+      const errorMessage = errorData?.message || errorData?.error || `Error HTTP: ${response.status}`;
 
       switch (response.status) {
         case 401:
@@ -161,23 +161,39 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
       return {} as T;
     }
 
-    const jsonResponse: ApiResponse<T> = await response.json();
-
-    if (jsonResponse.success === false) {
+    let jsonResponse: ApiResponse<T>;
+    try {
+      jsonResponse = await response.json();
+    } catch (parseError) {
       throw new PreguntasServiceError(
-        jsonResponse.message || jsonResponse.error || 'Error en la respuesta del servidor',
+        'Error al parsear respuesta del servidor',
+        response.status,
+        parseError
+      );
+    }
+
+    if (jsonResponse?.success === false) {
+      throw new PreguntasServiceError(
+        jsonResponse?.message || jsonResponse?.error || 'Error en la respuesta del servidor',
         response.status,
         jsonResponse
       );
     }
 
-    return (jsonResponse.data !== undefined ? jsonResponse.data : jsonResponse) as T;
+    return (jsonResponse?.data !== undefined ? jsonResponse.data : jsonResponse) as T;
   } catch (error) {
     if (error instanceof PreguntasServiceError) {
       throw error;
     }
 
-    //console.error(`[PreguntasAPI] Error en ${endpoint}:`, error);
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      throw new PreguntasServiceError(
+        'No se pudo conectar al servidor. Verifica tu conexión de internet y que el servidor esté disponible.',
+        0,
+        error
+      );
+    }
+
     throw new PreguntasServiceError(
       error instanceof Error ? error.message : 'Error desconocido',
       0,
