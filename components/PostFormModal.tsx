@@ -38,7 +38,6 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
         featured_image_url: '',
         reading_time: '',
         seo_description: '',
-        seo_keywords: '',
         is_published: false,
         categoryId: 0,
     });
@@ -85,7 +84,6 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
                 featured_image_url: post.featured_image_url || '',
                 reading_time: post.reading_time ? String(post.reading_time) : '',
                 seo_description: post.seo_description || '',
-                seo_keywords: post.seo_keywords || '',
                 is_published: post.is_published,
                 categoryId: initialCategoryId,
             }));
@@ -178,10 +176,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
             newErrors.seo_description = "La descripción SEO es obligatoria.";
         }
 
-        // Validation for SEO keywords
-        if (!formData.seo_keywords.trim()) {
-            newErrors.seo_keywords = "Las palabras clave SEO son obligatorias.";
-        }
+
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -211,7 +206,6 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
             featured_image_url: finalImageUrl || "",
             reading_time: formData.reading_time ? Math.max(1, parseInt(formData.reading_time)) : 1,
             seo_description: formData.seo_description || "",
-            seo_keywords: formData.seo_keywords || "",
             is_published: formData.is_published,
         };
 
@@ -423,18 +417,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
                                 {errors.seo_description && <p className="text-red-500 text-xs mt-1">{errors.seo_description}</p>}
                             </div>
 
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Palabras Clave SEO (separadas por comas) *</label>
-                                <textarea
-                                    name="seo_keywords"
-                                    value={formData.seo_keywords}
-                                    onChange={handleChange}
-                                    rows={2}
-                                    className={`w-full p-2 border ${errors.seo_keywords ? 'border-red-500' : 'border-stone-300 dark:border-stone-600'} rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100`}
-                                    placeholder="ej: vestidos, moda, fiesta"
-                                />
-                                {errors.seo_keywords && <p className="text-red-500 text-xs mt-1">{errors.seo_keywords}</p>}
-                            </div>
+
                         </div>
 
                         <div className="flex flex-col gap-4 pt-6 mt-6 border-t border-stone-200 dark:border-stone-700">
