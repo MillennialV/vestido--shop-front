@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import React from "react";
+import { AuthProvider } from "../provider/AuthProvider";
 
 export const viewport: Viewport = {
   themeColor: "#f5f5f4",
@@ -264,7 +265,9 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-stone-50">
-        <div id="root">{children}</div>
+        <AuthProvider>
+          <div id="root">{children}</div>
+        </AuthProvider>
       </body>
     </html>
   );
