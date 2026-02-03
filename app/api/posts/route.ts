@@ -2,18 +2,43 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'http://localhost:3000';
 
+const getAuthHeaders = (req: NextRequest) => {
+    const token = req.cookies.get('authToken')?.value;
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+};
+
+
 // GET /api/posts
 export async function GET(req: NextRequest) {
     try {
-        const res = await fetch(`${BLOG_BASE_API}/api/blog/posts`, {
+        const { searchParams } = new URL(req.url);
+
+        const queryParams = new URLSearchParams({
+            page: searchParams.get('page') || '1',
+            limit: searchParams.get('limit') || '100',
+            sort: searchParams.get('sort') || 'title',
+            order: searchParams.get('order') || 'desc',
+        });
+
+        const res = await fetch(`${BLOG_BASE_API}/api/blog/posts?${queryParams}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         });
-        if (!res.ok) {
-            throw new Error('Error fetching posts');
-        }
-        const data = await res.json();
-        return NextResponse.json(data.posts || []);
+
+        if (!res.ok) throw new Error('Error al obtener los posts desde el servidor');
+
+        const result = await res.json();
+
+        const postsContent = result.data?.posts || [];
+        const paginationContent = result.data?.pagination || null;
+
+        return NextResponse.json({
+            posts: postsContent|| [],
+            pagination: paginationContent || null
+        });
     } catch (error) {
         console.error('Error fetching posts:', error);
         return NextResponse.json({ error: 'Error fetching posts' }, { status: 500 });
@@ -24,19 +49,23 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
+
+        const { slug, seo_description, seo_keywords, ...bodyWithoutSlug } = body;
+        
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
+            headers: getAuthHeaders(req),
+            body: JSON.stringify(bodyWithoutSlug),
         });
-        if (!res.ok) {
-            throw new Error('Error creating post');
-        }
+
         const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || 'Error al crear el post');
+
         return NextResponse.json(data);
-    } catch (error) {
-        console.error('Error creating post:', error);
-        return NextResponse.json({ error: 'Error creating post' }, { status: 500 });
+    } catch (error: any) {
+        console.error('POST Post Error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
@@ -45,21 +74,23 @@ export async function PUT(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
-        if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+        if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+
         const body = await req.json();
+
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(req),
             body: JSON.stringify(body),
         });
-        if (!res.ok) {
-            throw new Error('Error updating post');
-        }
+
         const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Error al actualizar el post');
+
         return NextResponse.json(data);
-    } catch (error) {
-        console.error('Error updating post:', error);
-        return NextResponse.json({ error: 'Error updating post' }, { status: 500 });
+    } catch (error: any) {
+        console.error('PUT Post Error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
@@ -68,17 +99,21 @@ export async function DELETE(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
-        if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+        if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts/${id}`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(req),
         });
+
         if (!res.ok) {
-            throw new Error('Error deleting post');
+            const data = await res.json();
+            throw new Error(data.message || 'Error al eliminar el post');
         }
+
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error('Error deleting post:', error);
-        return NextResponse.json({ error: 'Error deleting post' }, { status: 500 });
+    } catch (error: any) {
+        console.error('DELETE Post Error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

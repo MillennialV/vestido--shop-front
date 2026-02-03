@@ -14,27 +14,36 @@ export default function PostDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetch('/api/posts?limit=100');
-        if (!res.ok) throw new Error('Error al cargar posts');
-        const posts = await res.json();
-        const foundPost = posts.find((p: Post) => p.slug === slug);
-        if (!foundPost) {
-          setError("Post no encontrado");
-          return;
-        }
-        setPost(foundPost);
-      } catch (err) {
-        console.error("Error fetching post:", err);
-        setError("Error al cargar el post");
-      } finally {
-        setIsLoading(false);
+  const fetchPost = async () => {
+    try {
+      setIsLoading(true);
+      setError(null); // Limpiamos errores previos
+      
+      const res = await fetch('/api/posts?limit=100');
+      if (!res.ok) throw new Error('Error al cargar posts');
+      
+      const data = await res.json();
+      
+      // IMPORTANTE: Accedemos a la propiedad posts del objeto
+      const postsArray = data.posts || [];
+      
+      const foundPost = postsArray.find((p: Post) => p.slug === slug);
+      
+      if (!foundPost) {
+        setError("Post no encontrado");
+        return;
       }
-    };
-    fetchPost();
-  }, [slug]);
+      
+      setPost(foundPost);
+    } catch (err) {
+      console.error("Error fetching post:", err);
+      setError("Error al cargar el post");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  fetchPost();
+}, [slug]);
 
   const handleNavigate = (path: string) => {
     router.push(path);
@@ -94,10 +103,10 @@ export default function PostDetailClient({ slug }: { slug: string }) {
           {post.title}
         </h1>
         <div className="mb-6 text-stone-500 dark:text-stone-300 text-sm">
-          {post.published_at && (
+          {post.updated_at && (
             <span>
               Publicado el{" "}
-              {new Date(post.published_at).toLocaleDateString("es-PE", {
+              {new Date(post.updated_at).toLocaleDateString("es-PE", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",

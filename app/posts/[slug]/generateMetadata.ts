@@ -5,6 +5,7 @@ const DEFAULT_IMAGE_URL = "https://storage.googleapis.com/aistudio-hosting/VENIC
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/posts?limit=100`);
+    
     if (!res.ok) {
         return {
             title: "Post no encontrado | Vestidos de Fiesta",
@@ -12,8 +13,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
             robots: "noindex, nofollow",
         };
     }
-    const posts = await res.json();
-    const post = posts.find((p: any) => p.slug === params.slug);
+
+    const data = await res.json();
+    
+    // IMPORTANTE: Accedemos al array dentro de la propiedad 'posts'
+    const postsArray = data.posts || [];
+    
+    // Ahora sí podemos usar .find() sobre el array
+    const post = postsArray.find((p: any) => p.slug === params.slug);
+
     if (!post) {
         return {
             title: "Post no encontrado | Vestidos de Fiesta",
@@ -21,9 +29,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
             robots: "noindex, nofollow",
         };
     }
-    const description = post.seo_description || post.content?.slice(0, 160) || "Post de blog de vestidos de fiesta.";
+
+    const description = post.seo_description || post.content?.replace(/<[^>]*>?/gm, '').slice(0, 160) || "Post de blog de vestidos de fiesta.";
     const image = post.featured_image_url || DEFAULT_IMAGE_URL;
     const url = `${PUBLIC_URL}/posts/${post.slug}`;
+
     return {
         title: `${post.title} | Vestidos de Fiesta`,
         description,

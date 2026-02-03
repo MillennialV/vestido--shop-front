@@ -40,5 +40,5 @@ async function fetchInitialData() {
 
 export default async function Home() {
   const { garments, posts, faqs } = await fetchInitialData();
-  return <HomeClient initialGarments={garments} initialPosts={posts} initialFaqs={faqs} />;
+  return <HomeClient initialGarments={garments} initialPosts={posts.posts || []} initialFaqs={faqs} />;
 }

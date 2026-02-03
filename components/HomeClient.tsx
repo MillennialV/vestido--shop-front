@@ -155,11 +155,12 @@ export default function HomeClient({
   const handleSelectGarment = (garment: Garment) => {
     setSelectedGarment(garment);
     setGarments((prev) => {
-      const exists = prev.some((g) => g.id === garment.id);
+      const currentGarments = Array.isArray(prev) ? prev : [];
+      const exists = currentGarments.some((g) => g.id === garment.id);
       if (exists) {
-        return prev.map((g) => (g.id === garment.id ? garment : g));
+        return currentGarments.map((g) => (g.id === garment.id ? garment : g));
       }
-      return prev;
+      return currentGarments;
     });
     if (garment.slug) {
       const newPath = `/${garment.slug}`;
@@ -242,11 +243,13 @@ export default function HomeClient({
   };
   const handleSavePost = (post: Post) => {
     setPosts((prev) => {
-      const exists = prev.some((p) => p.id === post.id);
+      const currentPosts = Array.isArray(prev) ? prev : [];
+
+      const exists = currentPosts.some((p) => p.id === post.id);
       if (exists) {
-        return prev.map((p) => (p.id === post.id ? post : p));
+        return currentPosts.map((p) => (p.id === post.id ? post : p));
       }
-      return [post, ...prev];
+      return [post, ...currentPosts];
     });
     setIsPostModalOpen(false);
     setEditingPost(null);
