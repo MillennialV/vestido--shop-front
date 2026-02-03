@@ -1,16 +1,14 @@
 import { useState, useCallback } from 'react';
 import { postService } from '../services/postService';
-import { Post } from '@/types/post';
-import { Pagination } from '@/types/pagination';
+import { Post, BlogPagination } from '@/types/post';
 
 export const usePosts = () => {
 
     const [posts, setPosts] = useState<Post[]>([]);
-    const [pagination, setPagination] = useState<Pagination>({
+    const [pagination, setPagination] = useState<BlogPagination>({
         page: 1,
         limit: 10,
-        total: 0,
-        totalPages: 0
+        hasNextPage: false
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

@@ -34,7 +34,6 @@ const formats = [
 const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) => {
     const [formData, setFormData] = useState({
         title: '',
-        slug: '',
         content: '',
         featured_image_url: '',
         reading_time: '',
@@ -48,6 +47,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({}); // Validation errors
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const { createPost, updatePost } = usePosts();
     const firstInputRef = useRef<HTMLInputElement>(null);
@@ -81,13 +81,12 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
             setFormData(prev => ({
                 ...prev, // Keep current form state if user already edited something while categories were loading? No, this is reset on post change.
                 title: post.title,
-                slug: post.slug,
                 content: post.content,
                 featured_image_url: post.featured_image_url || '',
                 reading_time: post.reading_time ? String(post.reading_time) : '',
                 seo_description: post.seo_description || '',
                 seo_keywords: post.seo_keywords || '',
-                is_published: !!post.published_at,
+                is_published: post.is_published,
                 categoryId: initialCategoryId,
             }));
         }
@@ -109,6 +108,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+        if (submitError) setSubmitError(null);
     };
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,18 +119,12 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const title = e.target.value;
-        const slug = title
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)+/g, '');
 
         setFormData(prev => ({
             ...prev,
             title,
-            slug: post ? prev.slug : slug // Only auto-update slug on create
         }));
         if (errors.title) setErrors(prev => ({ ...prev, title: '' }));
-        if (errors.slug) setErrors(prev => ({ ...prev, slug: '' }));
     };
 
 
@@ -149,8 +143,15 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
         e.preventDefault();
         setIsSubmitting(true);
         setErrors({}); // Clear previous errors
+        setSubmitError(null);
 
         const newErrors: Record<string, string> = {};
+
+
+        // Validation for title
+        if (!formData.title.trim()) {
+            newErrors.title = "El título es obligatorio.";
+        }
 
         // Validation for category
         if (!formData.categoryId || Number(formData.categoryId) <= 0) {
@@ -162,15 +163,33 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
             newErrors.content = "El contenido es muy corto. Debe tener al menos 50 caracteres de texto.";
         }
 
+        // Validation for featured image
+        if (!imageFile && !formData.featured_image_url.trim()) {
+            newErrors.featured_image_url = "La imagen destacada es obligatoria.";
+        }
+
+        // Validation for reading time
+        if (!formData.reading_time || Number(formData.reading_time) <= 0) {
+            newErrors.reading_time = "El tiempo de lectura debe ser mayor a 0.";
+        }
+
+        // Validation for SEO description
+        if (!formData.seo_description.trim()) {
+            newErrors.seo_description = "La descripción SEO es obligatoria.";
+        }
+
+        // Validation for SEO keywords
+        if (!formData.seo_keywords.trim()) {
+            newErrors.seo_keywords = "Las palabras clave SEO son obligatorias.";
+        }
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             setIsSubmitting(false);
             return;
         }
 
-        const published_at = formData.is_published
-            ? (post?.published_at || new Date().toISOString())
-            : null;
+
 
         let finalImageUrl = formData.featured_image_url;
 
@@ -186,16 +205,21 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
             }
         }
 
-        const postData = {
+        const postData: any = {
             title: formData.title,
-            slug: formData.slug,
             content: formData.content,
-            featured_image_url: finalImageUrl || null, // Best to send null if empty
+            featured_image_url: finalImageUrl || "",
             reading_time: formData.reading_time ? Math.max(1, parseInt(formData.reading_time)) : 1,
-            seo_description: formData.seo_description || null,
+            seo_description: formData.seo_description || "",
+            seo_keywords: formData.seo_keywords || "",
             is_published: formData.is_published,
-            category_ids: [Number(formData.categoryId)],
         };
+
+        // Only send category_ids if it's a new post or if the category has changed
+        const initialCategoryId = post?.categories?.[0]?.id || 0;
+        if (!post || Number(formData.categoryId) !== initialCategoryId) {
+            postData.category_ids = [Number(formData.categoryId)];
+        }
 
 
         try {
@@ -221,8 +245,9 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
                 onSave(result);
                 onClose();
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving post:', error);
+            setSubmitError(error.message || 'Ocurrió un error al guardar el artículo. Por favor intente nuevamente.');
         } finally {
             setIsSubmitting(false);
         }
@@ -247,7 +272,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Título</label>
+                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Título *</label>
                                 <input
                                     ref={firstInputRef}
                                     type="text"
@@ -260,22 +285,11 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
                                 {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
                             </div>
 
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Slug (URL)</label>
-                                <input
-                                    type="text"
-                                    name="slug"
-                                    value={formData.slug}
-                                    onChange={handleChange}
-                                    required
-                                    className={`w-full p-2 border ${errors.slug ? 'border-red-500' : 'border-stone-300 dark:border-stone-600'} rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 font-mono text-sm`}
-                                />
-                                {errors.slug && <p className="text-red-500 text-xs mt-1">{errors.slug}</p>}
-                            </div>
+
 
                             {/* Category Select */}
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Categoría</label>
+                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Categoría *</label>
                                 <select
                                     name="categoryId"
                                     value={formData.categoryId}
@@ -292,7 +306,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Imagen Destacada</label>
+                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Imagen Destacada *</label>
                                 <div className="space-y-3">
                                     <div className="flex gap-2 mb-2">
                                         <div className="relative flex-grow">
@@ -354,7 +368,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Contenido</label>
+                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Contenido *</label>
                                 <div className="bg-white dark:bg-stone-700 rounded-md overflow-hidden text-stone-900 dark:text-stone-100">
                                     <ReactQuill
                                         theme="snow"
@@ -372,15 +386,16 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Tiempo de lectura (min)</label>
+                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Tiempo de lectura (min) *</label>
                                 <input
                                     type="number"
                                     name="reading_time"
                                     value={formData.reading_time}
                                     onChange={handleChange}
                                     min="1"
-                                    className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                                    className={`w-full p-2 border ${errors.reading_time ? 'border-red-500' : 'border-stone-300 dark:border-stone-600'} rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100`}
                                 />
+                                {errors.reading_time && <p className="text-red-500 text-xs mt-1">{errors.reading_time}</p>}
                             </div>
 
                             <div>
@@ -397,33 +412,54 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Descripción SEO</label>
+                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Descripción SEO *</label>
                                 <textarea
                                     name="seo_description"
                                     value={formData.seo_description}
                                     onChange={handleChange}
                                     rows={2}
-                                    className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                                    className={`w-full p-2 border ${errors.seo_description ? 'border-red-500' : 'border-stone-300 dark:border-stone-600'} rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100`}
                                 />
+                                {errors.seo_description && <p className="text-red-500 text-xs mt-1">{errors.seo_description}</p>}
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">Palabras Clave SEO (separadas por comas) *</label>
+                                <textarea
+                                    name="seo_keywords"
+                                    value={formData.seo_keywords}
+                                    onChange={handleChange}
+                                    rows={2}
+                                    className={`w-full p-2 border ${errors.seo_keywords ? 'border-red-500' : 'border-stone-300 dark:border-stone-600'} rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100`}
+                                    placeholder="ej: vestidos, moda, fiesta"
+                                />
+                                {errors.seo_keywords && <p className="text-red-500 text-xs mt-1">{errors.seo_keywords}</p>}
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-stone-200 dark:border-stone-700">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="px-4 py-2 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-lg transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2 px-6 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 flex items-center gap-2"
-                            >
-                                {isSubmitting && <SpinnerIcon className="w-4 h-4 animate-spin" />}
-                                {post ? 'Actualizar' : (formData.is_published ? 'Publicar' : 'Guardar Borrador')}
-                            </button>
+                        <div className="flex flex-col gap-4 pt-6 mt-6 border-t border-stone-200 dark:border-stone-700">
+                            {submitError && (
+                                <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm rounded-lg border border-red-200 dark:border-red-800">
+                                    {submitError}
+                                </div>
+                            )}
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-4 py-2 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-lg transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2 px-6 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {isSubmitting && <SpinnerIcon className="w-4 h-4 animate-spin" />}
+                                    {post ? 'Actualizar' : (formData.is_published ? 'Publicar' : 'Guardar Borrador')}
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div >

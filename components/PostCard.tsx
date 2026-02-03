@@ -18,9 +18,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, navigate, isAdmin, onEdit, on
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'Aún no publicado';
+    const date = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(date.getTime())) return 'Fecha inválida';
+
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('es-ES', options);
+    return date.toLocaleDateString('es-ES', options);
   };
 
   return (
@@ -38,16 +43,19 @@ const PostCard: React.FC<PostCardProps> = ({ post, navigate, isAdmin, onEdit, on
         />
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
 
-        {/* Categories as floating badges */}
-        {post.categories && post.categories.length > 0 && (
-          <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-            {post.categories.map(cat => (
-              <span key={cat.id} className="backdrop-blur-md bg-white/90 dark:bg-black/60 text-stone-900 dark:text-stone-100 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full shadow-sm">
-                {cat.name}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* Categories and Status Badges */}
+        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+          {!post.is_published && (
+            <span className="backdrop-blur-md bg-yellow-400/90 text-yellow-900 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full shadow-sm">
+              Borrador
+            </span>
+          )}
+          {post.categories && post.categories.length > 0 && post.categories.map(cat => (
+            <span key={cat.id} className="backdrop-blur-md bg-white/90 dark:bg-black/60 text-stone-900 dark:text-stone-100 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full shadow-sm">
+              {cat.name}
+            </span>
+          ))}
+        </div>
 
         {/* Admin Controls */}
         {isAdmin && (
@@ -84,7 +92,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, navigate, isAdmin, onEdit, on
 
       <div className="p-6 flex flex-col flex-grow relative">
         <div className="flex items-center gap-3 text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">
-          <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
+          <time dateTime={post.created_at}>{formatDate(post.created_at)}</time>
           <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-600" />
           <span>{post.reading_time} min</span>
         </div>
