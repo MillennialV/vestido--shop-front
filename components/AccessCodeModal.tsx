@@ -37,13 +37,9 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email && password && !isLoading) {
-      console.log("🔐 Datos de login ingresados:", { email, password });
       try {
-        console.log("📤 Enviando credenciales a onSubmit...");
         await onSubmit(email, password);
-        console.log("✅ onSubmit completó exitosamente");
       } catch (err) {
-        console.error("❌ Error en onSubmit:", err);
         throw err;
       }
     }

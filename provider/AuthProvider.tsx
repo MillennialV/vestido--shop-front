@@ -17,29 +17,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const onLogin = async (email: string, password: string) => {
-    console.log("[AuthProvider] onLogin iniciado para:", email);
     try {
-      console.log("[AuthProvider] Llamando a authService.login...");
       const result = await authService.login(email, password);
-      console.log("[AuthProvider] Resultado de login:", {
-        hasToken: !!result.token,
-        hasUser: !!result.user,
-        email: result.user?.email,
-      });
 
       if (result.token && result.user) {
-        console.log(
-          "[AuthProvider] Login exitoso para usuario:",
-          result.user.email,
-        );
         setAuthenticated(true);
-        console.log("[AuthProvider] Estado actualizado, authenticated = true");
       } else {
-        console.error("[AuthProvider] Resultado sin token o user");
         throw new Error("No se recibió token o usuario");
       }
     } catch (err) {
-      console.error("[AuthProvider] Error en onLogin:", err);
       throw err;
     }
   };

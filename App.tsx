@@ -324,23 +324,17 @@ const App: React.FC = () => {
   };
 
   const handleAccessCodeSubmit = async (email: string, password: string) => {
-    console.log("[App] handleAccessCodeSubmit iniciado con:", { email });
     setIsLoginLoading(true);
     setAccessCodeError(null);
     try {
-      console.log("[App] Llamando a onLogin...");
       await onLogin(email, password);
-      console.log("[App] onLogin completó, cerrando modal");
       setIsAccessCodeModalOpen(false);
       setAccessCodeError(null);
     } catch (error) {
-      console.error("[App] Error en onLogin:", error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      console.error("[App] Mensaje de error:", errorMessage);
       setAccessCodeError(`Error: ${errorMessage}`);
     } finally {
-      console.log("[App] Finalizando handleAccessCodeSubmit");
       setIsLoginLoading(false);
     }
   };
@@ -364,6 +358,7 @@ const App: React.FC = () => {
   };
 
   const handleCloseModal = () => {
+    setSelectedGarment(null);
     navigate("/");
   };
 
