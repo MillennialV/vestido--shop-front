@@ -23,10 +23,15 @@ const updateTag = (selector: string, attribute: string, content: string, isLink:
     if (!tag) {
         tag = document.createElement(isLink ? 'link' : 'meta');
         if (isLink) {
-            (tag as HTMLLinkElement).rel = selector.match(/\[rel='(.*?)']/)![1];
+            const relMatch = selector.match(/\[rel='(.*?)']/)
+            if (relMatch && relMatch[1]) {
+                (tag as HTMLLinkElement).rel = relMatch[1];
+            }
         } else {
-            const prop = selector.match(/\[(name|property)='(.*?)']/)!;
-            tag.setAttribute(prop[1], prop[2]);
+            const prop = selector.match(/\[(name|property)='(.*?)']/)
+            if (prop && prop[1] && prop[2]) {
+                tag.setAttribute(prop[1], prop[2]);
+            }
         }
         document.head.appendChild(tag);
     }

@@ -82,7 +82,7 @@ export const useCreateProduct = () => {
       const headers: HeadersInit = token ? { 'Authorization': `Bearer ${token}` } : {};
 
       // Hacer llamada al API
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3005';
       console.log('[useCreateProduct] Enviando POST a:', `${apiUrl}/api/producto/crear-producto`);
 
       const response = await fetch(`${apiUrl}/api/producto/crear-producto`, {

@@ -4,6 +4,9 @@ node_modules/
 # Production build
 dist/
 dist-ssr/
+build/
+.next/
+out/
 *.local
 
 # Environment variables
@@ -11,11 +14,8 @@ dist-ssr/
 .env.local
 .env.*.local
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# Next.js
+next-env.d.ts
 lerna-debug.log*
 
 # OS specific

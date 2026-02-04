@@ -1,10 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
-import type { Garment } from '@/types/Garment';
-import ThumbnailStrip from './ThumbnailStrip';
-import QrCodeModal from './QrCodeModal';
-import { PUBLIC_URL } from '../lib/seo';
-import AccordionItem from './AccordionItem';
-import { CloseIcon, SpinnerIcon, WhatsappIcon, ShareIcon, QrCodeIcon, TikTokIcon, InstagramIcon, ChevronDownIcon, ChevronUpIcon } from './Icons';
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import type { Garment } from "@/types/Garment";
+import ThumbnailStrip from "./ThumbnailStrip";
+import QrCodeModal from "./QrCodeModal";
+import { PUBLIC_URL } from "../lib/seo";
+import AccordionItem from "./AccordionItem";
+import {
+  CloseIcon,
+  SpinnerIcon,
+  WhatsappIcon,
+  ShareIcon,
+  QrCodeIcon,
+  TikTokIcon,
+  InstagramIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "./Icons";
 
 interface VideoModalProps {
   garment: Garment;
@@ -13,18 +25,48 @@ interface VideoModalProps {
   onChangeGarment: (garment: Garment) => void;
 }
 
-const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, onChangeGarment }) => {
+const VideoModal: React.FC<VideoModalProps> = ({
+  garment,
+  onClose,
+  garmentList,
+  onChangeGarment,
+}) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [isThumbnailStripVisible, setIsThumbnailStripVisible] = useState(true);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [openAccordion, setOpenAccordion] = useState<string | null>('description');
+  const [openAccordion, setOpenAccordion] = useState<string | null>(
+    "description",
+  );
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   const handleAccordionClick = (id: string) => {
-    setOpenAccordion(prev => (prev === id ? null : id));
+    setOpenAccordion((prev) => (prev === id ? null : id));
   };
 
+  const handleVideoCanPlay = () => {
+    console.log("[VideoModal] Video can play");
+    setIsVideoLoading(false);
+    setVideoError(null);
+  };
+
+  const handleVideoError = (
+    e: React.SyntheticEvent<HTMLVideoElement, Event>,
+  ) => {
+    const event = e.nativeEvent as ErrorEvent;
+    console.error("[VideoModal] Error loading video:", event);
+    setIsVideoLoading(false);
+    setVideoError("No se pudo cargar el video");
+  };
+
+  const handleVideoLoadStart = () => {
+    console.log("[VideoModal] Video loading started");
+    setIsVideoLoading(true);
+    setVideoError(null);
+  };
 
   const handleClose = () => {
     setIsClosing(true);
@@ -35,20 +77,21 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         handleClose();
         return;
       }
 
-      const currentIndex = garmentList.findIndex(g => g.id === garment.id);
+      const currentIndex = garmentList.findIndex((g) => g.id === garment.id);
       if (currentIndex === -1) return;
 
       let nextIndex = -1;
 
-      if (event.key === 'ArrowRight') {
+      if (event.key === "ArrowRight") {
         nextIndex = (currentIndex + 1) % garmentList.length;
-      } else if (event.key === 'ArrowLeft') {
-        nextIndex = (currentIndex - 1 + garmentList.length) % garmentList.length;
+      } else if (event.key === "ArrowLeft") {
+        nextIndex =
+          (currentIndex - 1 + garmentList.length) % garmentList.length;
       }
 
       if (nextIndex !== -1) {
@@ -59,52 +102,67 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
 
     closeButtonRef.current?.focus();
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose, garment, garmentList, onChangeGarment]);
 
+  useEffect(() => {
+    // Reset video loading state only when video URL changes (not on every render)
+    setIsVideoLoading(true);
+    setVideoError(null);
+  }, [garment.videoUrl]);
+
   const handleShare = () => {
     if (!garment.slug) {
-      setToastMessage('Error: No se pudo generar el enlace.');
+      setToastMessage("Error: No se pudo generar el enlace.");
       setTimeout(() => setToastMessage(null), 3000);
       return;
     }
     const shareUrl = `${PUBLIC_URL}/#/${garment.slug}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      setToastMessage('¡Enlace copiado!');
-      setTimeout(() => setToastMessage(null), 3000);
-    }).catch(err => {
-      console.error('Failed to copy link: ', err);
-      setToastMessage('Error al copiar el enlace.');
-      setTimeout(() => setToastMessage(null), 3000);
-    });
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        setToastMessage("¡Enlace copiado!");
+        setTimeout(() => setToastMessage(null), 3000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy link: ", err);
+        setToastMessage("Error al copiar el enlace.");
+        setTimeout(() => setToastMessage(null), 3000);
+      });
   };
 
-  const handleSocialShare = async (platform: 'TikTok' | 'Instagram') => {
+  const handleSocialShare = async (platform: "TikTok" | "Instagram") => {
     if (!garment.videoUrl) return;
 
-    const fileName = `vestidos-de-fiesta-${garment.title.toLowerCase().replace(/\s+/g, '-')}.mp4`;
+    const fileName = `vestidos-de-fiesta-${garment.title.toLowerCase().replace(/\s+/g, "-")}.mp4`;
     const shareDetails = {
       title: `${garment.title} - Colección Vestidos de Fiesta`,
-      text: `Descubre este vestido de la nueva colección de Vestidos de Fiesta por Womanity Boutique. #VestidosDeFiesta #WomanityBoutique #ModaDeLujo #${garment.brand.replace(/\s+/g, '')}`,
+      text: `Descubre este vestido de la nueva colección de Vestidos de Fiesta por Womanity Boutique. #VestidosDeFiesta #WomanityBoutique #ModaDeLujo #${garment.brand.replace(/\s+/g, "")}`,
     };
 
     try {
       const response = await fetch(garment.videoUrl);
       if (!response.ok) {
-        throw new Error(`La respuesta de la red no fue correcta, estado: ${response.status}`);
+        throw new Error(
+          `La respuesta de la red no fue correcta, estado: ${response.status}`,
+        );
       }
       const blob = await response.blob();
-      const file = new File([blob], fileName, { type: 'video/mp4' });
+      const file = new File([blob], fileName, { type: "video/mp4" });
 
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+      ) {
         await navigator.share({ ...shareDetails, files: [file] });
       } else {
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
+        const a = document.createElement("a");
+        a.style.display = "none";
         a.href = url;
         a.download = fileName;
 
@@ -114,18 +172,22 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        setToastMessage(`¡Video descargado! Súbelo a ${platform} para publicarlo.`);
+        setToastMessage(
+          `¡Video descargado! Súbelo a ${platform} para publicarlo.`,
+        );
         setTimeout(() => setToastMessage(null), 4000);
       }
     } catch (error: any) {
-      if (error.name !== 'AbortError') {
-        console.error(`Error al compartir/descargar el video para ${platform}:`, error);
-        setToastMessage('No se pudo compartir o descargar.');
+      if (error.name !== "AbortError") {
+        console.error(
+          `Error al compartir/descargar el video para ${platform}:`,
+          error,
+        );
+        setToastMessage("No se pudo compartir o descargar.");
         setTimeout(() => setToastMessage(null), 4000);
       }
     }
   };
-
 
   const phoneNumber = "51956382746";
   let message = `Hola, me interesa la siguiente prenda:\n\n`;
@@ -135,7 +197,10 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
   message += `*Talla:* ${garment.size}\n`;
   message += `*Color:* ${garment.color}\n`;
   if (garment.price) {
-    const priceValue = typeof garment.price === 'string' ? parseFloat(garment.price) : garment.price;
+    const priceValue =
+      typeof garment.price === "string"
+        ? parseFloat(garment.price)
+        : garment.price;
     if (!isNaN(priceValue)) {
       message += `*Precio:* S/ ${priceValue.toFixed(2)}\n`;
     } else {
@@ -150,17 +215,16 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
 
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
-
   return (
     <div
-      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 ${isClosing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}
-      onClick={handleClose}
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 ${isClosing ? "animate-backdrop-out pointer-events-none opacity-0" : "animate-backdrop-in opacity-100"}`}
+      onClick={!isClosing ? handleClose : undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div
-        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden ${isClosing ? 'animate-modal-out' : 'animate-modal-in'}`}
+        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden ${isClosing ? "animate-modal-out" : "animate-modal-in"}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -178,11 +242,28 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
           </div>
         )}
 
-        <div className="flex flex-col md:flex-row flex-grow overflow-y-auto custom-scrollbar">
-          <div className="relative w-full md:w-1/2 aspect-[9/16] bg-black flex items-center justify-center flex-shrink-0">
+        <div className="flex flex-col md:flex-row flex-grow overflow-y-auto md:overflow-hidden gap-0 custom-scrollbar">
+          {/* Video - Sticky on desktop, scrollable on mobile */}
+          <div className="relative w-full md:w-1/2 md:sticky md:top-0 aspect-[9/16] bg-black flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {isVideoLoading && (
+              <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/50">
+                <SpinnerIcon className="w-10 h-10 text-white animate-spin" />
+              </div>
+            )}
+            {videoError && (
+              <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/80">
+                <div className="text-center text-white">
+                  <p className="text-lg font-semibold mb-2">
+                    Error al cargar el video
+                  </p>
+                  <p className="text-sm">{videoError}</p>
+                </div>
+              </div>
+            )}
             {garment.videoUrl ? (
               <video
-                key={garment.videoUrl} // Force re-render when URL changes
+                ref={videoRef}
+                key={garment.videoUrl}
                 src={garment.videoUrl}
                 autoPlay
                 loop
@@ -190,49 +271,95 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
                 controls
                 playsInline
                 preload="auto"
-                onError={(e) => console.error("Error loading video in modal:", e)}
-                className="w-full h-full object-cover"
+                onCanPlay={handleVideoCanPlay}
+                onError={handleVideoError}
+                onLoadStart={handleVideoLoadStart}
+                className="w-full h-full object-contain"
               >
-                <title>Video de demostración para {garment.title} por {garment.brand}</title>
+                <title>
+                  Video de demostración para {garment.title} por {garment.brand}
+                </title>
               </video>
             ) : (
-              <SpinnerIcon className="w-10 h-10 text-white animate-spin" />
+              <div className="text-white text-center">
+                <p>No hay video disponible para este producto</p>
+              </div>
             )}
             <div className="absolute bottom-4 right-4 z-10 flex flex-col items-center gap-3">
-              <button onClick={() => setIsQrModalOpen(true)} className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group" aria-label="Mostrar código QR">
+              <button
+                onClick={() => setIsQrModalOpen(true)}
+                className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group"
+                aria-label="Mostrar código QR"
+              >
                 <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
                   <QrCodeIcon className="w-6 h-6 text-white" />
                 </span>
-                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">QR</span>
+                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">
+                  QR
+                </span>
               </button>
-              <button onClick={(e) => { e.stopPropagation(); handleSocialShare('TikTok'); }} className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group" aria-label="Publicar en TikTok">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSocialShare("TikTok");
+                }}
+                className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group"
+                aria-label="Publicar en TikTok"
+              >
                 <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
                   <TikTokIcon className="w-6 h-6 text-white" />
                 </span>
-                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">TikTok</span>
+                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">
+                  TikTok
+                </span>
               </button>
-              <button onClick={(e) => { e.stopPropagation(); handleSocialShare('Instagram'); }} className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group" aria-label="Publicar en Instagram">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSocialShare("Instagram");
+                }}
+                className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group"
+                aria-label="Publicar en Instagram"
+              >
                 <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
                   <InstagramIcon className="w-6 h-6 text-white" />
                 </span>
-                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">Instagram</span>
+                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">
+                  Instagram
+                </span>
               </button>
-              <button onClick={handleShare} className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group" aria-label="Copiar enlace de la prenda">
+              <button
+                onClick={handleShare}
+                className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group"
+                aria-label="Copiar enlace de la prenda"
+              >
                 <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
                   <ShareIcon className="w-6 h-6 text-white" />
                 </span>
-                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">Compartir</span>
+                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">
+                  Compartir
+                </span>
               </button>
             </div>
           </div>
 
-          <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col">
+          <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col md:overflow-y-auto custom-scrollbar">
             <div className="flex-shrink-0">
-              <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400">{garment.brand}</p>
-              <h2 id="modal-title" className="text-4xl lg:text-5xl font-semibold text-stone-900 dark:text-stone-100 mt-2 mb-4">{garment.title}</h2>
+              <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400">
+                {garment.brand}
+              </p>
+              <h2
+                id="modal-title"
+                className="text-4xl lg:text-5xl font-semibold text-stone-900 dark:text-stone-100 mt-2 mb-4"
+              >
+                {garment.title}
+              </h2>
               {garment.price && (
                 <p className="text-3xl text-stone-700 dark:text-stone-200 font-light mb-4">
-                  S/ {typeof garment.price === 'number' ? garment.price.toFixed(2) : garment.price}
+                  S/{" "}
+                  {typeof garment.price === "number"
+                    ? garment.price.toFixed(2)
+                    : garment.price}
                 </p>
               )}
               <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 flex-wrap">
@@ -257,20 +384,52 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
             </div>
 
             <div className="flex-grow">
-              <AccordionItem title="Descripción" isOpen={openAccordion === 'description'} onClick={() => handleAccordionClick('description')}>
+              <AccordionItem
+                title="Descripción"
+                isOpen={openAccordion === "description"}
+                onClick={() => handleAccordionClick("description")}
+              >
                 <p className="leading-relaxed">{garment.description}</p>
               </AccordionItem>
-              <AccordionItem title="Detalles del Producto" isOpen={openAccordion === 'details'} onClick={() => handleAccordionClick('details')}>
+              <AccordionItem
+                title="Detalles del Producto"
+                isOpen={openAccordion === "details"}
+                onClick={() => handleAccordionClick("details")}
+              >
                 <ul className="space-y-2 list-disc list-inside">
-                  {garment.material && <li><strong>Material:</strong> {garment.material}</li>}
-                  {garment.occasion && <li><strong>Ocasión Ideal:</strong> {garment.occasion}</li>}
-                  {garment.style_notes && <li><strong>Notas de Estilo:</strong> {garment.style_notes}</li>}
-                  <li><strong>Color:</strong> {garment.color}</li>
-                  <li><strong>Tallas Disponibles:</strong> {garment.size}</li>
+                  {garment.material && (
+                    <li>
+                      <strong>Material:</strong> {garment.material}
+                    </li>
+                  )}
+                  {garment.occasion && (
+                    <li>
+                      <strong>Ocasión Ideal:</strong> {garment.occasion}
+                    </li>
+                  )}
+                  {garment.style_notes && (
+                    <li>
+                      <strong>Notas de Estilo:</strong> {garment.style_notes}
+                    </li>
+                  )}
+                  <li>
+                    <strong>Color:</strong> {garment.color}
+                  </li>
+                  <li>
+                    <strong>Tallas Disponibles:</strong> {garment.size}
+                  </li>
                 </ul>
               </AccordionItem>
-              <AccordionItem title="Envíos y Devoluciones" isOpen={openAccordion === 'shipping'} onClick={() => handleAccordionClick('shipping')}>
-                <p className="leading-relaxed">Ofrecemos envío express a todo el país (24-48 horas). Devoluciones aceptadas dentro de los 7 días posteriores a la recepción, con la prenda en su estado original.</p>
+              <AccordionItem
+                title="Envíos y Devoluciones"
+                isOpen={openAccordion === "shipping"}
+                onClick={() => handleAccordionClick("shipping")}
+              >
+                <p className="leading-relaxed">
+                  Ofrecemos envío express a todo el país (24-48 horas).
+                  Devoluciones aceptadas dentro de los 7 días posteriores a la
+                  recepción, con la prenda en su estado original.
+                </p>
               </AccordionItem>
             </div>
           </div>
@@ -283,14 +442,23 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
             aria-expanded={isThumbnailStripVisible}
             aria-controls="thumbnail-strip-container"
           >
-            <span className="sr-only">{isThumbnailStripVisible ? 'Ocultar miniaturas' : 'Mostrar miniaturas'}</span>
-            {isThumbnailStripVisible ? <ChevronUpIcon className="w-6 h-6" /> : <ChevronDownIcon className="w-6 h-6" />}
+            <span className="sr-only">
+              {isThumbnailStripVisible
+                ? "Ocultar miniaturas"
+                : "Mostrar miniaturas"}
+            </span>
+            {isThumbnailStripVisible ? (
+              <ChevronUpIcon className="w-6 h-6" />
+            ) : (
+              <ChevronDownIcon className="w-6 h-6" />
+            )}
           </button>
         </div>
 
         <div
           id="thumbnail-strip-container"
-          className={`transition-all duration-300 ease-in-out overflow-hidden ${isThumbnailStripVisible ? 'max-h-48' : 'max-h-0'}`}>
+          className={`transition-all duration-300 ease-in-out overflow-hidden ${isThumbnailStripVisible ? "max-h-48" : "max-h-0"}`}
+        >
           <ThumbnailStrip
             garments={garmentList}
             currentGarment={garment}
@@ -317,7 +485,7 @@ const VideoModal: React.FC<VideoModalProps> = ({ garment, onClose, garmentList, 
           to { opacity: 0; } 
         }
         .animate-backdrop-in { animation: backdrop-in 0.3s ease-out forwards; }
-        .animate-backdrop-out { animation: backdrop-out 0.3s ease-out forwards; }
+        .animate-backdrop-out { animation: backdrop-out 0.3s ease-out forwards; transition: opacity 0.3s ease-out; }
 
         @keyframes modal-in {
           from { opacity: 0; transform: scale(0.95) translateY(20px); }

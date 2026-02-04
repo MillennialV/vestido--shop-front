@@ -1,8 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import type { Garment } from '@/types/Garment';
-import QRCode from 'qrcode';
-import { PUBLIC_URL } from '../lib/seo';
-import { CloseIcon, DownloadIcon } from './Icons';
+"use client";
+
+import React, { useEffect, useRef } from "react";
+import type { Garment } from "@/types/Garment";
+import QRCode from "qrcode";
+import { PUBLIC_URL } from "../lib/seo";
+import { CloseIcon, DownloadIcon } from "./Icons";
 
 interface QrCodeModalProps {
   isOpen: boolean;
@@ -10,49 +12,58 @@ interface QrCodeModalProps {
   garment: Garment | null;
 }
 
-const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose, garment }) => {
+const QrCodeModal: React.FC<QrCodeModalProps> = ({
+  isOpen,
+  onClose,
+  garment,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (isOpen && garment && garment.slug && canvasRef.current) {
       const shareUrl = `${PUBLIC_URL}/#/${garment.slug}`;
 
-      QRCode.toCanvas(canvasRef.current, shareUrl, {
-        width: 256,
-        margin: 2,
-        color: {
-          dark: '#292524', // stone-800
-          light: '#fafaf9' // stone-50
-        }
-      }, (error) => {
-        if (error) {
-          console.error("Failed to generate QR Code:", error);
-        }
-      });
+      QRCode.toCanvas(
+        canvasRef.current,
+        shareUrl,
+        {
+          width: 256,
+          margin: 2,
+          color: {
+            dark: "#292524", // stone-800
+            light: "#fafaf9", // stone-50
+          },
+        },
+        (error) => {
+          if (error) {
+            console.error("Failed to generate QR Code:", error);
+          }
+        },
+      );
     }
   }, [isOpen, garment]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
 
   const handleDownload = () => {
     if (canvasRef.current && garment) {
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.download = `vestidos-de-fiesta-qr-${garment.slug}.png`;
-      link.href = canvasRef.current.toDataURL('image/png');
+      link.href = canvasRef.current.toDataURL("image/png");
       link.click();
     }
   };
@@ -74,7 +85,10 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose, garment }) =
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8 text-center">
-          <h2 id="qr-code-modal-title" className="text-2xl font-semibold text-stone-900 dark:text-stone-100 mb-2">
+          <h2
+            id="qr-code-modal-title"
+            className="text-2xl font-semibold text-stone-900 dark:text-stone-100 mb-2"
+          >
             Compartir con QR
           </h2>
           <p className="text-stone-600 dark:text-stone-300 mb-6">

@@ -1,4 +1,9 @@
-import { Pagination } from "./pagination";
+export interface BlogPagination {
+    page: number;
+    limit: number;
+    hasNextPage: boolean;
+}
+
 export interface Post {
     id: number;
     title: string;
@@ -8,9 +13,9 @@ export interface Post {
     is_published: boolean;
     reading_time: number;
     seo_description: string;
-    seo_keywords: string;
     categories: Category[];
-    published_at: string;
+    created_at: string;
+    updated_at?: string;
 }
 
 export interface Category {
@@ -20,6 +25,6 @@ export interface Category {
 }
 
 export interface PostResponse {
-    posts?: Post[];
-    pagination?: Pagination;
+    posts: Post[];
+    pagination: BlogPagination;
 }
