@@ -5,7 +5,7 @@ Tienda online de vestidos elegantes importados construida con **Next.js 16**, **
 ## 🎯 Estado del Proyecto
 
 ✅ **Reestructuración de Arquitectura Completada (70%)**
-
+-
 La aplicación ha sido migrada de una arquitectura antigua (hash routing, App.tsx monolítico) a la **arquitectura moderna de Next.js App Router**.
 
 ## 📚 Documentación
