@@ -186,7 +186,7 @@ export const setPostPageSeo = (post: Post) => {
         'headline': post.title,
         'description': post.seo_description || post.content.substring(0, 160),
         'image': post.featured_image_url || DEFAULT_IMAGE_URL,
-        'datePublished': post.published_at,
+        'datePublished': post.updated_at || post.created_at,
         'author': {
             '@type': 'Organization',
             'name': 'Womanity Boutique',
