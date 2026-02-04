@@ -6,7 +6,6 @@ import "react-quill-new/dist/quill.snow.css";
 import type { Post } from "@/types/post";
 import { usePosts } from "@/hooks/usePosts";
 import { azureStorageService } from "@/services/azureStorageService";
-import { postService } from "@/services/postService";
 import { CloseIcon, SpinnerIcon, UploadIcon } from "@/components/Icons";
 import { Category } from "@/types/category";
 
@@ -72,7 +71,9 @@ const PostFormModal: React.FC<PostFormModalProps> = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await postService.getCategories();
+        const res = await fetch('/api/posts/categories');
+        if (!res.ok) throw new Error('Error al cargar categorías');
+        const data = await res.json();
         setCategories(data);
       } catch (error) {
         console.error("Failed to load categories", error);

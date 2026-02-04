@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import type { Garment } from "@/types/Garment";
-import { iaService } from "../services/iaService";
+// import { iaService } from "../services/iaService";
 import { useProducts } from "../hooks/useProducts";
 import { CloseIcon, SparklesIcon, SpinnerIcon } from "./Icons";
 
@@ -213,9 +213,17 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       // Capturar un frame del video
       const base64Image = await captureFrame(videoPreviewRef.current);
 
-      // Llamar a la API del servicio de IA
-      const result = await iaService.analyzeGarmentFromBase64(base64Image);
 
+      // Llamar al API route de Next.js para análisis de prenda
+      const response = await fetch("/api/ia/analyze-garment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64Image }),
+      });
+      if (!response.ok) {
+        throw new Error("Error al analizar la prenda con IA");
+      }
+      const result = await response.json();
       // Mostrar el resultado en consola
       console.log("Resultado del análisis de IA:", result);
 

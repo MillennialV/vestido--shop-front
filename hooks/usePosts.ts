@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { postService } from '../services/postService';
+// import eliminado: postService
 import { Post } from '@/types/post';
 import { Pagination } from '@/types/pagination';
 
@@ -19,9 +19,15 @@ export const usePosts = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const { posts, pagination } = await postService.readPosts(params);
-            setPosts(posts);
-            setPagination(pagination);
+            const page = params.page || 1;
+            const limit = params.limit || 10;
+            const res = await fetch(`/api/posts?page=${page}&limit=${limit}`);
+            if (!res.ok) throw new Error('Error al obtener posts');
+            const data = await res.json();
+            const postsArr = Array.isArray(data) ? data : data.posts || [];
+            const paginationObj = data.pagination || { page, limit, total: postsArr.length, totalPages: 1 };
+            setPosts(postsArr);
+            setPagination(paginationObj);
         } catch (err: any) {
             setError(err.message || 'Error al obtener productos');
         } finally {
@@ -38,7 +44,9 @@ export const usePosts = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const post = await postService.readPost(id);
+            const res = await fetch(`/api/posts?id=${id}`);
+            if (!res.ok) throw new Error('Error al obtener post');
+            const post = await res.json();
             return post;
         } catch (err: any) {
             setError(err.message || 'Error al obtener producto');
@@ -54,10 +62,14 @@ export const usePosts = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const newPost = await postService.createPost(postData);
-
+            const res = await fetch('/api/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData),
+            });
+            if (!res.ok) throw new Error('Error al crear el post');
+            const newPost = await res.json();
             setPosts((prev: Post[]) => [newPost, ...prev]);
-
             return newPost;
         } catch (err: any) {
             setError(err.message || 'Error al crear el producto');
@@ -74,10 +86,14 @@ export const usePosts = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const updatedPost = await postService.updatePost(id, postData);
-
+            const res = await fetch(`/api/posts?id=${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData),
+            });
+            if (!res.ok) throw new Error('Error al actualizar el post');
+            const updatedPost = await res.json();
             setPosts((prev: Post[]) => prev.map(p => (p.id === updatedPost.id ? updatedPost : p)));
-
             return updatedPost;
         } catch (err: any) {
             setError(err.message || 'Error al actualizar el producto');
@@ -91,8 +107,10 @@ export const usePosts = () => {
         setIsLoading(true);
         setError(null);
         try {
-            await postService.deletePost(id);
-
+            const res = await fetch(`/api/posts?id=${id}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw new Error('Error al eliminar el post');
             setPosts((prev: Post[]) => prev.filter(p => p.id !== id && String(p.id) !== String(id)));
         } catch (err: any) {
             setError(err.message || 'Error al eliminar el producto');

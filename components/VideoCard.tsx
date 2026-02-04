@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import type { Garment } from "@/types/Garment";
-import { inventarioService } from "../services/inventarioService";
+
 import {
   WhatsappIcon,
   EditIcon,
@@ -100,19 +100,18 @@ const VideoCard: React.FC<VideoCardProps> = ({
     if (isSelectionMode) {
       onToggleSelection(garment.id);
     } else {
-      inventarioService
-        .obtenerDetalleProducto(garment.id)
-        .then((fullGarment) => {
+      fetch(`/api/products/${garment.id}`)
+        .then(async (res) => {
+          if (!res.ok) throw new Error('No se pudo obtener el detalle');
+          const fullGarment = await res.json();
           const garmentWithSlug = {
             ...fullGarment,
-            // Mantener videoUrl del original si el detalle no lo incluye
             videoUrl: fullGarment.videoUrl || garment.videoUrl,
             slug: fullGarment.slug || garment.slug,
           };
           onSelect(garmentWithSlug);
         })
-        .catch((error) => {
-          // Si falla la llamada, abre con lo que tenemos
+        .catch(() => {
           onSelect(garment);
         });
     }

@@ -2,7 +2,6 @@
 import React, { useEffect, useState, use as useReact } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
-import { postService } from "@/services/postService";
 import type { Post } from "@/types/post";
 import { ArrowLeftIcon } from "@/components/Icons";
 import LoadingOverlay from "@/components/LoadingOverlay";
@@ -18,8 +17,10 @@ export default function PostDetailClient({ slug }: { slug: string }) {
     const fetchPost = async () => {
       try {
         setIsLoading(true);
-        const response = await postService.readPosts({ limit: 100 });
-        const foundPost = response.posts?.find((p) => p.slug === slug);
+        const res = await fetch('/api/posts?limit=100');
+        if (!res.ok) throw new Error('Error al cargar posts');
+        const posts = await res.json();
+        const foundPost = posts.find((p: Post) => p.slug === slug);
         if (!foundPost) {
           setError("Post no encontrado");
           return;

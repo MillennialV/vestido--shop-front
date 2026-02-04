@@ -1,13 +1,14 @@
 import PostDetailClient from "./PostDetailClient";
 import { generateMetadata } from "./generateMetadata";
-import { postService } from "@/services/postService";
 
 export { generateMetadata };
 
 // Para Static Generation de slugs de posts
 export async function generateStaticParams() {
-  const response = await postService.readPosts({ limit: 100 });
-  return response.posts?.map((post) => ({ slug: post.slug })) || [];
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/posts?limit=100`);
+  if (!res.ok) return [];
+  const posts = await res.json();
+  return posts.map((post: any) => ({ slug: post.slug })) || [];
 }
 
 export default async function PostDetailPage({

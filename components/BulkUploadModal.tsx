@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import type { Garment } from "@/types/Garment";
 import { uploadVideoFile, saveBulkGarments } from "../lib/db";
-import { iaService } from "../services/iaService";
+// import { iaService } from "../services/iaService";
 import { getFriendlySupabaseError } from "../lib/errorUtils";
 import {
   CloseIcon,
@@ -191,7 +191,17 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           const base64Image = await captureFrame(videoElement);
 
           // Llamar a la API del servicio de IA
-          const result = await iaService.analyzeGarmentFromBase64(base64Image);
+
+          // Llamar al API route de Next.js para análisis de prenda
+          const response = await fetch("/api/ia/analyze-garment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageBase64: base64Image }),
+          });
+          if (!response.ok) {
+            throw new Error("Error al analizar la prenda con IA");
+          }
+          const result = await response.json();
 
           // Actualizar los datos de la prenda con la información de IA
           setFiles((prev) =>

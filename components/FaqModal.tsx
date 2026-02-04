@@ -16,10 +16,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import {
-  preguntasService,
-  PreguntasServiceError,
-} from "../services/faqService";
+// Eliminado preguntasService y PreguntasServiceError
 import type { FaqItem } from "@/types/FaqItem";
 import { CloseIcon, SpinnerIcon, ExclamationTriangleIcon } from "./Icons";
 
@@ -122,31 +119,36 @@ const FaqModal: React.FC<FaqModalProps> = ({
     setFieldErrors({});
 
     try {
-      await preguntasService.crearPregunta({
-        pregunta: pregunta.trim(),
-        respuesta: respuesta.trim(),
-        estado: "activa",
+      const res = await fetch('/api/faqs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pregunta: pregunta.trim(),
+          respuesta: respuesta.trim(),
+          estado: 'activa',
+        }),
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          setError('No estás autenticado. Inicia sesión primero.');
+        } else if (res.status === 422) {
+          const validationErrors = parseValidationErrors(errorData);
+          if (Object.keys(validationErrors).length > 0) {
+            setFieldErrors(validationErrors);
+            setError('Por favor corrige los errores en el formulario');
+          } else {
+            setError('Error de validación. Verifica los datos ingresados.');
+          }
+        } else {
+          setError(errorData.error || errorData.message || 'Error al crear la pregunta');
+        }
+        return;
+      }
       onSuccess();
       onClose();
     } catch (err) {
-      if (err instanceof PreguntasServiceError) {
-        if (err.statusCode === 401) {
-          setError("No estás autenticado. Inicia sesión primero.");
-        } else if (err.statusCode === 422) {
-          const validationErrors = parseValidationErrors(err.originalError);
-          if (Object.keys(validationErrors).length > 0) {
-            setFieldErrors(validationErrors);
-            setError("Por favor corrige los errores en el formulario");
-          } else {
-            setError("Error de validación. Verifica los datos ingresados.");
-          }
-        } else {
-          setError(err.message || "Error al crear la pregunta");
-        }
-      } else {
-        setError("Error desconocido al crear la pregunta");
-      }
+      setError('Error desconocido al crear la pregunta');
     } finally {
       setIsLoading(false);
     }
@@ -164,32 +166,38 @@ const FaqModal: React.FC<FaqModalProps> = ({
     setFieldErrors({});
 
     try {
-      await preguntasService.actualizarPregunta(faq.id, {
-        pregunta: pregunta.trim(),
-        respuesta: respuesta.trim(),
+      const res = await fetch('/api/faqs', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: faq.id,
+          pregunta: pregunta.trim(),
+          respuesta: respuesta.trim(),
+        }),
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          setError('No estás autenticado. Inicia sesión primero.');
+        } else if (res.status === 404) {
+          setError('La pregunta no existe');
+        } else if (res.status === 422) {
+          const validationErrors = parseValidationErrors(errorData);
+          if (Object.keys(validationErrors).length > 0) {
+            setFieldErrors(validationErrors);
+            setError('Por favor corrige los errores en el formulario');
+          } else {
+            setError('Error de validación. Verifica los datos ingresados.');
+          }
+        } else {
+          setError(errorData.error || errorData.message || 'Error al actualizar la pregunta');
+        }
+        return;
+      }
       onSuccess();
       onClose();
     } catch (err) {
-      if (err instanceof PreguntasServiceError) {
-        if (err.statusCode === 401) {
-          setError("No estás autenticado. Inicia sesión primero.");
-        } else if (err.statusCode === 404) {
-          setError("La pregunta no existe");
-        } else if (err.statusCode === 422) {
-          const validationErrors = parseValidationErrors(err.originalError);
-          if (Object.keys(validationErrors).length > 0) {
-            setFieldErrors(validationErrors);
-            setError("Por favor corrige los errores en el formulario");
-          } else {
-            setError("Error de validación. Verifica los datos ingresados.");
-          }
-        } else {
-          setError(err.message || "Error al actualizar la pregunta");
-        }
-      } else {
-        setError("Error desconocido al actualizar la pregunta");
-      }
+      setError('Error desconocido al actualizar la pregunta');
     } finally {
       setIsLoading(false);
     }
@@ -202,21 +210,26 @@ const FaqModal: React.FC<FaqModalProps> = ({
     setError(null);
 
     try {
-      await preguntasService.eliminarPregunta(faq.id);
+      const res = await fetch('/api/faqs', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: faq.id }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          setError('No estás autenticado. Inicia sesión primero.');
+        } else if (res.status === 404) {
+          setError('La pregunta no existe');
+        } else {
+          setError(errorData.error || errorData.message || 'Error al eliminar la pregunta');
+        }
+        return;
+      }
       onSuccess();
       onClose();
     } catch (err) {
-      if (err instanceof PreguntasServiceError) {
-        if (err.statusCode === 401) {
-          setError("No estás autenticado. Inicia sesión primero.");
-        } else if (err.statusCode === 404) {
-          setError("La pregunta no existe");
-        } else {
-          setError(err.message || "Error al eliminar la pregunta");
-        }
-      } else {
-        setError("Error desconocido al eliminar la pregunta");
-      }
+      setError('Error desconocido al eliminar la pregunta');
     } finally {
       setIsLoading(false);
     }

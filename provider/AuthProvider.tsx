@@ -1,52 +1,64 @@
 "use client";
 
 import { AuthContext } from "../context/AuthContext";
-import authService from "../services/authService";
 import { ReactNode, useEffect, useState } from "react";
 import { AuthContextType } from "../context/AuthContext";
 import { User } from "../types/auth";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authenticated, setAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      setAuthenticated(true);
-    }
+    // Verifica la sesión llamando a un endpoint protegido
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/auth/session');
+        if (res.ok) {
+          const data = await res.json();
+          setAuthenticated(true);
+          setUser(data.user || null);
+        } else {
+          setAuthenticated(false);
+          setUser(null);
+        }
+      } catch {
+        setAuthenticated(false);
+        setUser(null);
+      }
+    };
+    checkSession();
   }, []);
 
   const onLogin = async (email: string, password: string) => {
-    try {
-      const result = await authService.login(email, password);
-
-      if (result.token && result.user) {
-        setAuthenticated(true);
-      } else {
-        throw new Error("No se recibió token o usuario");
-      }
-    } catch (err) {
-      throw err;
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Error en login');
     }
+    const data = await res.json();
+    setAuthenticated(true);
+    setUser(data.user || null);
   };
 
   const onLogout = async () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("user");
+    await fetch('/api/auth/logout', { method: 'POST' });
     setAuthenticated(false);
+    setUser(null);
   };
 
   const getUser = (): User | null => {
-    if (!mounted) return null;
-    const userStr = localStorage.getItem("user");
-    return userStr ? JSON.parse(userStr) : null;
+    return user;
   };
 
   const value: AuthContextType = { onLogin, onLogout, authenticated, getUser };
 
-  // Evitar que el contenido se renderice hasta que el cliente esté listo
   if (!mounted) {
     return <>{children}</>;
   }

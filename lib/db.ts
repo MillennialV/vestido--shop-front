@@ -2,7 +2,6 @@ import type { Garment } from '@/types/Garment';
 import type { Article } from '@/types/Article';
 import { defaultGarments } from './defaultGarments';
 import { slugify } from './slugify';
-import inventarioService from '../services/inventarioService';
 
 // URL del backend API desde variables de entorno (para upload de videos y otros servicios)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3005';
@@ -14,28 +13,18 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3
  */
 export async function getListProducts(page: number = 1, limit: number = 100, sort: string = 'title', order: 'asc' | 'desc' = 'desc'): Promise<Garment[]> {
     try {
-        const result = await inventarioService.obtenerListadoProductos({ page, limit, sort, order });
-
-        console.log('[getListProducts] Productos recibidos:', result.products?.length || 0);
-        if (result.products && result.products.length > 0) {
-            console.log('[getListProducts] Primer producto:', {
-                id: result.products[0].id,
-                title: result.products[0].title,
-                brand: result.products[0].brand,
-                videoUrl: result.products[0].videoUrl
-            });
-        }
-
-        if (!result.products || result.products.length === 0) {
+        const res = await fetch(`/api/products?page=${page}&limit=${limit}&sort=${sort}&order=${order}`);
+        if (!res.ok) throw new Error('Error al obtener productos');
+        const data = await res.json();
+        const products = Array.isArray(data) ? data : data.products || [];
+        if (!products || products.length === 0) {
             console.warn('[getListProducts] No hay productos, usando datos por defecto');
-            return Promise.resolve(defaultGarments);
+            return defaultGarments;
         }
-
-        return result.products;
+        return products;
     } catch (error) {
         console.error('Error fetching products:', error);
-        // Si falla, retornar datos por defecto
-        return Promise.resolve(defaultGarments);
+        return defaultGarments;
     }
 }
 
@@ -121,27 +110,40 @@ async function saveGarmentData(
     garmentData: Omit<Garment, 'id' | 'slug' | 'created_at'> & { id?: number },
 ): Promise<Garment> {
     const { id, ...restOfGarmentData } = garmentData;
-
     let savedData: Garment;
-
     if (id) {
         // Actualizar prenda existente
-        savedData = await inventarioService.actualizarProducto(id, restOfGarmentData);
+        const res = await fetch('/api/products', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, ...restOfGarmentData }),
+        });
+        if (!res.ok) throw new Error('Error al actualizar producto');
+        savedData = await res.json();
     } else {
         // Crear nueva prenda
-        savedData = await inventarioService.crearProducto(restOfGarmentData);
+        const res = await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(restOfGarmentData),
+        });
+        if (!res.ok) throw new Error('Error al crear producto');
+        savedData = await res.json();
     }
-
     // Actualizar slug si es necesario
     const newSlug = slugify(savedData.title, savedData.id);
     if (savedData.slug !== newSlug) {
         try {
-            savedData = await inventarioService.actualizarProducto(savedData.id, { slug: newSlug });
+            const res = await fetch('/api/products', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: savedData.id, slug: newSlug }),
+            });
+            if (res.ok) savedData = await res.json();
         } catch (updateError) {
             console.warn("Failed to update slug, but continuing...", updateError);
         }
     }
-
     return savedData;
 }
 
@@ -213,17 +215,30 @@ export async function saveBulkGarments(garmentsToSave: Omit<Garment, 'id' | 'slu
     if (garmentsToSave.length === 0) {
         return [];
     }
-
-    return await inventarioService.crearProductosEnLote(garmentsToSave);
+    // No hay endpoint batch, guardar uno por uno
+    const results: Garment[] = [];
+    for (const garment of garmentsToSave) {
+        try {
+            const saved = await saveGarmentData(garment);
+            results.push(saved);
+        } catch (e) {
+            console.error('Error saving garment in bulk:', e);
+        }
+    }
+    return results;
 }
 
 export async function deleteGarment(garment: Garment): Promise<void> {
     if (garment.videoUrl) {
         await deleteVideoFile(garment.videoUrl);
     }
-
     try {
-        await inventarioService.eliminarProducto(garment.id);
+        const res = await fetch('/api/products', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: garment.id }),
+        });
+        if (!res.ok) throw new Error('Error al eliminar prenda');
     } catch (error) {
         console.error('Error deleting garment:', error);
         throw new Error(`Error al eliminar la prenda de la base de datos: ${error instanceof Error ? error.message : 'Error desconocido'}`);
@@ -232,7 +247,6 @@ export async function deleteGarment(garment: Garment): Promise<void> {
 
 export async function deleteGarments(garments: Garment[]): Promise<void> {
     if (garments.length === 0) return;
-
     // Eliminar videos primero
     for (const garment of garments) {
         if (garment.videoUrl) {
@@ -243,10 +257,14 @@ export async function deleteGarments(garments: Garment[]): Promise<void> {
             }
         }
     }
-
-    // Eliminar productos usando el servicio
-    const garmentIds = garments.map(g => g.id);
-    await inventarioService.eliminarProductosEnLote(garmentIds);
+    // Eliminar productos uno por uno
+    for (const garment of garments) {
+        try {
+            await deleteGarment(garment);
+        } catch (error) {
+            console.error(`Error deleting garment ${garment.id}:`, error);
+        }
+    }
 }
 
 // Helper para requests de otros servicios (no inventario)

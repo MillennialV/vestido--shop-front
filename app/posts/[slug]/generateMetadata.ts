@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import { postService } from "@/services/postService";
+import { PUBLIC_URL } from "@/lib/seo";
 
-// Metadata dinámica para cada post (solo server)
+const DEFAULT_IMAGE_URL = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-    const response = await postService.readPosts({ limit: 100 });
-    const post = response.posts?.find((p) => p.slug === params.slug);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/posts?limit=100`);
+    if (!res.ok) {
+        return {
+            title: "Post no encontrado | Vestidos de Fiesta",
+            description: "No se encontró el post solicitado.",
+            robots: "noindex, nofollow",
+        };
+    }
+    const posts = await res.json();
+    const post = posts.find((p: any) => p.slug === params.slug);
     if (!post) {
         return {
             title: "Post no encontrado | Vestidos de Fiesta",
@@ -12,26 +21,24 @@ export async function generateMetadata({ params }: { params: { slug: string } })
             robots: "noindex, nofollow",
         };
     }
+    const description = post.seo_description || post.content?.slice(0, 160) || "Post de blog de vestidos de fiesta.";
+    const image = post.featured_image_url || DEFAULT_IMAGE_URL;
+    const url = `${PUBLIC_URL}/posts/${post.slug}`;
     return {
-        title: post.title + " | Vestidos de Fiesta",
-        description:
-            post.seo_description ||
-            post.content?.slice(0, 160) ||
-            "Post de blog de vestidos de fiesta.",
+        title: `${post.title} | Vestidos de Fiesta`,
+        description,
         openGraph: {
             title: post.title,
-            description: post.seo_description || post.content?.slice(0, 160),
-            url: `https://www.vestido.shop/posts/${post.slug}`,
+            description,
+            url,
             type: "article",
-            images: post.featured_image_url
-                ? [{ url: post.featured_image_url, width: 1200, height: 630 }]
-                : [
-                    {
-                        url: "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
-                        width: 1200,
-                        height: 630,
-                    },
-                ],
+            images: [
+                {
+                    url: image,
+                    width: 1200,
+                    height: 630,
+                },
+            ],
             locale: "es_PE",
         },
         robots: "index, follow",
