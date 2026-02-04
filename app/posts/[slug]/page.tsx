@@ -1,3 +1,5 @@
+export const dynamicParams = true;
+
 import PostDetailClient from "./PostDetailClient";
 import { generateMetadata } from "./generateMetadata";
 
@@ -5,17 +7,28 @@ export { generateMetadata };
 
 // Para Static Generation de slugs de posts
 export async function generateStaticParams() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/posts?limit=100`);
-  if (!res.ok) return [];
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  
+  if (!baseUrl) {
+    return [];
+  }
+
+  try {
+    const res = await fetch(`${baseUrl}/api/posts?limit=100`, {
+        next: { revalidate: 3600 } 
+    });
+    
+    if (!res.ok) throw new Error("Respuesta de API no exitosa");
 
     const data = await res.json();
-
-    // Accedemos a la propiedad 'posts' que contiene el array
     const postsArray = data.posts || [];
 
     return postsArray.map((post: any) => ({ 
       slug: post.slug 
     }));
+  } catch (error) {
+    return [];
+  }
 }
 
 export default async function PostDetailPage({
