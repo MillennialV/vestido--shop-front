@@ -23,7 +23,6 @@ export const useProducts = () => {
       const res = await fetch(`/api/products?page=${page}&limit=${limit}&sort=created_at&order=desc`);
       if (!res.ok) throw new Error('Error al cargar productos');
       const data = await res.json();
-      // Si la respuesta tiene paginación, úsala, si no, solo productos
       const fetchedProducts = Array.isArray(data) ? data : data.products || [];
       const fetchedPagination = data.pagination || { page, limit, total: fetchedProducts.length, totalPages: 1 };
       setProducts(fetchedProducts);
@@ -39,7 +38,6 @@ export const useProducts = () => {
     }
   }, []);
 
-  // Load products on mount
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
@@ -79,18 +77,19 @@ export const useProducts = () => {
       if (videoFile) {
         formData.append('video', videoFile);
       }
-      // POST multipart a /api/products
       const res = await fetch('/api/products', {
         method: 'POST',
         body: formData,
       });
-      if (!res.ok) throw new Error('Error al crear producto');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw errorData;
+      }
       const newProduct = await res.json();
       setProducts((prev: Garment[]) => [newProduct, ...prev]);
       return newProduct;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al crear producto';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Error al crear producto');
       throw err;
     } finally {
       setIsLoading(false);
@@ -109,7 +108,10 @@ export const useProducts = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...productData }),
       });
-      if (!res.ok) throw new Error('Error al actualizar producto');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw errorData;
+      }
       const updatedProduct = await res.json();
       setProducts((prev: Garment[]) => prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p)));
       if (selectedProduct && selectedProduct.id === updatedProduct.id) {
@@ -117,8 +119,7 @@ export const useProducts = () => {
       }
       return updatedProduct;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al actualizar producto';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Error al actualizar producto');
       throw err;
     } finally {
       setIsLoading(false);

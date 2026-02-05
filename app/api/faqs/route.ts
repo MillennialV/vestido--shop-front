@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     return NextResponse.json(data?.data || {});
   } catch (error) {
-    console.error('Catch Error POST:', error);
     return NextResponse.json({ error: 'Error creating faq' }, { status: 500 });
   }
 }
@@ -79,7 +78,6 @@ export async function PUT(request: NextRequest) {
     const data = await res.json();
     return NextResponse.json(data?.data || {});
   } catch (error) {
-    console.error('Catch Error PUT:', error);
     return NextResponse.json({ error: 'Error updating faq' }, { status: 500 });
   }
 }

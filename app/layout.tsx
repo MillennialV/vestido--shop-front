@@ -84,6 +84,12 @@ export default function RootLayout({
           h1, h2, h3, h4, h5, h6 {
             font-family: 'Cormorant Garamond', serif;
           }
+          button {
+            cursor: pointer;
+          }
+          button:disabled {
+            cursor: default;
+          }
           @keyframes fade-in-down {
             from {
               opacity: 0;
