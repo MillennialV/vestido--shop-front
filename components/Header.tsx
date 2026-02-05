@@ -34,20 +34,20 @@ const Header: React.FC<HeaderProps> = ({
     <header className="py-4 border-b border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="absolute top-1/2 right-4 sm:right-6 lg:right-8 -translate-y-1/2 flex items-center gap-2">
-            {mounted && (
-              <button
-                onClick={toggleDarkMode}
-                onMouseDown={(e) => e.currentTarget.blur()}
-                className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 dark:focus-visible:ring-stone-400 active:bg-stone-200 dark:active:bg-stone-700"
-                aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-              >
-                {isDark ? (
-                  <SunIcon className="w-6 h-6" />
-                ) : (
-                  <MoonIcon className="w-6 h-6" />
-                )}
-              </button>
-            )}
+          {mounted && (
+            <button
+              onClick={toggleDarkMode}
+              onMouseDown={(e) => e.currentTarget.blur()}
+              className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 dark:focus-visible:ring-stone-400 active:bg-stone-200 dark:active:bg-stone-700"
+              aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            >
+              {isDark ? (
+                <SunIcon className="w-6 h-6" />
+              ) : (
+                <MoonIcon className="w-6 h-6" />
+              )}
+            </button>
+          )}
           <button
             onClick={onToggleAdmin}
             onMouseDown={(e) => e.currentTarget.blur()}

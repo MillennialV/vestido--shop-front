@@ -304,7 +304,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   type="button"
                   onClick={onClose}
                   disabled={isLoading}
-                  className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2.5 px-6 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2.5 px-6 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer disabled:cursor-not-allowed"
                 >
                   Cancelar
                 </button>
@@ -312,7 +312,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   type="button"
                   onClick={handleDelete}
                   disabled={isLoading}
-                  className="bg-red-600 dark:bg-red-700 text-white font-medium py-2.5 px-6 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="bg-red-600 dark:bg-red-700 text-white font-medium py-2.5 px-6 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <>
@@ -354,11 +354,10 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   }}
                   required
                   disabled={isLoading}
-                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    fieldErrors.pregunta
-                      ? "border-red-500 dark:border-red-500"
-                      : "border-stone-300 dark:border-stone-600"
-                  }`}
+                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed ${fieldErrors.pregunta
+                    ? "border-red-500 dark:border-red-500"
+                    : "border-stone-300 dark:border-stone-600"
+                    }`}
                   placeholder="Ej: ¿Cómo puedo saber cuál es mi talla correcta?"
                 />
                 {fieldErrors.pregunta && (
@@ -391,11 +390,10 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   required
                   disabled={isLoading}
                   rows={5}
-                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed resize-y ${
-                    fieldErrors.respuesta
-                      ? "border-red-500 dark:border-red-500"
-                      : "border-stone-300 dark:border-stone-600"
-                  }`}
+                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed resize-y ${fieldErrors.respuesta
+                    ? "border-red-500 dark:border-red-500"
+                    : "border-stone-300 dark:border-stone-600"
+                    }`}
                   placeholder="Escribe la respuesta a la pregunta..."
                 />
                 {fieldErrors.respuesta && (
@@ -409,14 +407,14 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   type="button"
                   onClick={onClose}
                   disabled={isLoading}
-                  className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2.5 px-6 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2.5 px-6 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2.5 px-6 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2.5 px-6 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                 >
                   {isLoading ? (
                     <>
@@ -436,7 +434,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
         {!isLoading && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400"
+            className="absolute top-4 right-4 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400 cursor-pointer disabled:cursor-not-allowed"
             aria-label="Cerrar"
           >
             <CloseIcon className="w-6 h-6" />

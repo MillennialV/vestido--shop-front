@@ -62,14 +62,41 @@ export default function HomeClient({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set<number>());
   const [selectedGarment, setSelectedGarment] = useState<Garment | null>(null);
+  const [isProductLoading, setIsProductLoading] = useState(false);
   const { authenticated, onLogout, onLogin } = useAuth();
   const { fetchProducts, fetchProductById } = useProducts();
   const { fetchPosts } = usePosts();
   const { deletePost } = usePosts();
-  const { fetchFaqs, faqs: allFaqs } = useFaqs();
+  const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
   const ITEMS_PER_PAGE = 10;
   const POSTS_PER_PAGE = 6;
   const FAQ_LIMIT = Number(process.env.NEXT_PUBLIC_FAQ_LIMIT) || 5;
+
+  const handleSelectGarmentWrapper = async (garment: Garment) => {
+    // If we're already loading a product, or a modal is open, do nothing.
+    if (isProductLoading || selectedGarment) return;
+
+    setIsProductLoading(true);
+    try {
+      // Use the logic that was previously in VideoCard
+      const fullGarment = await fetchProductById(garment.id);
+
+      const garmentWithSlug = {
+        ...(fullGarment || garment),
+        videoUrl: fullGarment?.videoUrl || garment.videoUrl,
+        slug: fullGarment?.slug || garment.slug,
+      };
+
+      handleSelectGarment(garmentWithSlug);
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      // Fallback: open with what we have
+      handleSelectGarment(garment);
+    } finally {
+      setIsProductLoading(false);
+    }
+  };
+
   const sortByCreatedAt = <T extends { created_at: string }>(items: T[]): T[] => {
     return [...items].sort((a, b) => {
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -249,7 +276,7 @@ export default function HomeClient({
       const exists = currentPosts.some((p) => Number(p.id) === Number(post.id));
       console.log("Saving post:", post, "Exists:", exists);
       if (exists) {
-        return currentPosts.map((p) => 
+        return currentPosts.map((p) =>
           Number(p.id) === Number(post.id) ? post : p
         );
       }
@@ -257,7 +284,7 @@ export default function HomeClient({
       return [post, ...currentPosts];
     });
 
-    
+
     setIsPostModalOpen(false);
     setEditingPost(null);
   };
@@ -270,7 +297,7 @@ export default function HomeClient({
     setIsDeleting(true);
     try {
       await deletePost(postToDelete.id);
-      
+
       setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
 
       setIsDeleteModalOpen(false);
@@ -353,7 +380,7 @@ export default function HomeClient({
                   <VideoCard
                     key={garment.id}
                     garment={garment}
-                    onSelect={handleSelectGarment}
+                    onSelect={handleSelectGarmentWrapper}
                     isAdmin={authenticated}
                     onEdit={handleOpenForm}
                     onDelete={() => {
@@ -364,6 +391,7 @@ export default function HomeClient({
                     isSelectionMode={isSelectionMode}
                     isSelected={selectedIds.has(garment.id)}
                     onToggleSelection={handleToggleSelection}
+                    isDisabled={isProductLoading || !!selectedGarment}
                   />
                 ))}
               </div>
@@ -388,10 +416,13 @@ export default function HomeClient({
               />
             </section>
             <section className="mt-24 max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-3xl md:text-4xl font-semibold text-stone-800 dark:text-stone-100">
+              <header className="flex flex-col items-center text-center mb-12 gap-4">
+                <h1 className="text-5xl md:text-6xl font-semibold text-stone-900 dark:text-stone-100 tracking-wider">
                   Preguntas Frecuentes
-                </h2>
+                </h1>
+                <p className="mt-4 text-lg text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">
+                  Estamos aquí para ayudarte. Encuentra las respuestas a las preguntas más comunes de nuestra comunidad y compra con total confianza.
+                </p>
                 {authenticated && (
                   <button
                     onClick={() => {
@@ -399,23 +430,15 @@ export default function HomeClient({
                       setEditingFaq(null);
                       setIsFaqModalOpen(true);
                     }}
-                    className="inline-flex items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
+                    className="inline-flex mt-8 items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
                   >
                     <PlusIcon className="w-4 h-4" />
                     <span>Agregar pregunta</span>
                   </button>
                 )}
-              </div>
+              </header>
               <FaqAccordion
-                items={
-                  authenticated
-                    ? faqsLocal.length > 0
-                      ? faqsLocal
-                      : allFaqs
-                    : allFaqs.length > 0
-                      ? allFaqs
-                      : faqData
-                }
+                items={allFaqs.length > 0 ? allFaqs : faqData}
                 isAdmin={authenticated}
                 onEdit={(faq) => {
                   const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;

@@ -7,7 +7,5 @@ export async function GET(req: NextRequest) {
   if (!token) {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
-  // Opcional: puedes decodificar el token o pedir el usuario al backend
-  // Aquí solo devolvemos que está autenticado
   return NextResponse.json({ authenticated: true });
 }

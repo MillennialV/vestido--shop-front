@@ -274,11 +274,9 @@ const VideoModal: React.FC<VideoModalProps> = ({
                 onCanPlay={handleVideoCanPlay}
                 onError={handleVideoError}
                 onLoadStart={handleVideoLoadStart}
+                title={`Video de demostración para ${garment.title} por ${garment.brand}`}
                 className="w-full h-full object-contain"
               >
-                <title>
-                  Video de demostración para {garment.title} por {garment.brand}
-                </title>
               </video>
             ) : (
               <div className="text-white text-center">

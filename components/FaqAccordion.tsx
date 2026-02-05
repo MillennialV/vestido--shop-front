@@ -78,11 +78,10 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`border-b border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 transition-shadow ${
-                          snapshot.isDragging
-                            ? "shadow-lg z-50 border-stone-400"
-                            : ""
-                        }`}
+                        className={`border-b border-stone-200 dark:border-stone-700 bg-white-200 dark:bg-stone-900 transition-shadow ${snapshot.isDragging
+                          ? "shadow-lg z-50 border-stone-400"
+                          : ""
+                          }`}
                       >
                         <div className="flex items-center w-full group">
                           {/* Icono de Arrastre a la izquierda */}
@@ -109,26 +108,26 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                               <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => onEdit?.(item)}
-                                  className="p-1.5 rounded-md hover:bg-stone-200 text-stone-600"
+                                  className="p-1.5 rounded-md hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-200 cursor-pointer"
                                 >
-                                  <EditIcon className="w-4 h-4" />
+                                  <EditIcon className="w-5 h-5" />
                                 </button>
                                 <button
                                   onClick={() => onDelete?.(item)}
-                                  className="p-1.5 rounded-md hover:bg-red-100 text-red-600"
+                                  className="p-1.5 rounded-md hover:bg-red-100 text-red-600 cursor-pointer"
                                 >
-                                  <DeleteIcon className="w-4 h-4" />
+                                  <DeleteIcon className="w-5 h-5" />
                                 </button>
                               </div>
                             )}
                             <button
                               onClick={() => setOpenId(isOpen ? null : item.id)}
-                              className="p-2"
+                              className="p-2 cursor-pointer"
                             >
                               {isOpen ? (
-                                <MinusIcon className="w-5 h-5" />
+                                <MinusIcon className="w-6 h-6" />
                               ) : (
-                                <PlusIcon className="w-5 h-5" />
+                                <PlusIcon className="w-6 h-6" />
                               )}
                             </button>
                           </div>

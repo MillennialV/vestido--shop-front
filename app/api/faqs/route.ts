@@ -14,7 +14,10 @@ export async function GET(request: NextRequest) {
     if (order) params.append('order', order);
     const url = `${BACKEND_URL}/api/preguntas${params.toString() ? '?' + params.toString() : ''}`;
     const res = await fetch(url, { method: 'GET' });
-    if (!res.ok) throw new Error('Failed to fetch faqs');
+    if (!res.ok) {
+      const errorData = await res.text();
+      throw new Error('Failed to fetch faqs');
+    }
     const data = await res.json();
     return NextResponse.json(data?.data?.preguntas || []);
   } catch (error) {
@@ -34,10 +37,19 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error('Failed to create faq');
+    if (!res.ok) {
+      const errorData = await res.text();
+      try {
+        const parsedError = JSON.parse(errorData);
+        return NextResponse.json(parsedError, { status: res.status });
+      } catch {
+        return NextResponse.json({ error: 'Failed to create faq', details: errorData }, { status: res.status });
+      }
+    }
     const data = await res.json();
     return NextResponse.json(data?.data || {});
   } catch (error) {
+    console.error('Catch Error POST:', error);
     return NextResponse.json({ error: 'Error creating faq' }, { status: 500 });
   }
 }
@@ -56,15 +68,18 @@ export async function PUT(request: NextRequest) {
       body: JSON.stringify(updateData),
     });
     if (!res.ok) {
-      let backendError = '';
+      const errorData = await res.text();
       try {
-        backendError = await res.text();
-      } catch {}
-      throw new Error('Failed to update faq: ' + backendError);
+        const parsedError = JSON.parse(errorData);
+        return NextResponse.json(parsedError, { status: res.status });
+      } catch {
+        return NextResponse.json({ error: 'Failed to update faq', details: errorData }, { status: res.status });
+      }
     }
     const data = await res.json();
     return NextResponse.json(data?.data || {});
   } catch (error) {
+    console.error('Catch Error PUT:', error);
     return NextResponse.json({ error: 'Error updating faq' }, { status: 500 });
   }
 }
@@ -79,7 +94,11 @@ export async function DELETE(request: NextRequest) {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
-    if (!res.ok) throw new Error('Failed to delete faq');
+    if (!res.ok) {
+      const errorData = await res.text();
+      console.log('DELETE Error Response:', { status: res.status, body: errorData });
+      throw new Error('Failed to delete faq');
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Error deleting faq' }, { status: 500 });
