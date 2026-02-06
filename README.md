@@ -3,7 +3,7 @@
 Tienda online de vestidos elegantes importados construida con **Next.js 16**, **React 19**, y **Tailwind CSS**.
 
 ## 🎯 Estado del Proyecto
-wssswsddSADSSFDGd
+wssswsddSADSSFDGdff
 ✅ **Reestructuración de Arquitectura Completada (70%)**
 -
 La aplicación ha sido migrada de una arquitectura antigua (hash routing, App.tsx monolítico) a la **arquitectura moderna de Next.js App Router**.
