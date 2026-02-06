@@ -1,16 +1,39 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { CloseIcon, EyeIcon, EyeSlashIcon, SpinnerIcon } from './Icons';
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { CloseIcon, EyeIcon, EyeSlashIcon, SpinnerIcon } from "./Icons";
 
 interface AccessCodeModalProps {
+  isOpen: boolean;
   onClose: () => void;
   onSubmit: (email: string, password: string) => Promise<void>;
   error: string | null;
   isLoading?: boolean;
 }
 
-const AccessCodeModal: React.FC<AccessCodeModalProps> = ({ onClose, onSubmit, error, isLoading = false }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  error,
+  isLoading = false,
+}) => {
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
 
@@ -18,39 +41,49 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({ onClose, onSubmit, er
     emailRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !isLoading) {
+      if (event.key === "Escape" && !isLoading) {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose, isLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email && password && !isLoading) {
-      console.log('🔐 Datos de login ingresados:', { email, password });
-      await onSubmit(email, password);
+      try {
+        await onSubmit(email, password);
+      } catch (err) {
+        throw err;
+      }
     }
   };
 
+  if (!isRendered) return null;
+
   return (
     <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in"
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       onClick={!isLoading ? onClose : undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="access-code-modal-title"
     >
       <div
-        className="relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-sm animate-modal-in"
+        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-sm transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`p-8 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
-          <h2 id="access-code-modal-title" className="text-2xl font-semibold text-stone-900 dark:text-stone-100 mb-4 text-center">
+        <div
+          className={`p-8 ${isLoading ? "opacity-50 pointer-events-none" : ""}`}
+        >
+          <h2
+            id="access-code-modal-title"
+            className="text-2xl font-semibold text-stone-900 dark:text-stone-100 mb-4 text-center"
+          >
             Iniciar sesión
           </h2>
           <p className="text-stone-600 dark:text-stone-300 mb-6 text-center">
@@ -58,7 +91,10 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({ onClose, onSubmit, er
           </p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-2"
+              >
                 Correo electrónico
               </label>
               <input
@@ -69,24 +105,27 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({ onClose, onSubmit, er
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 ${error ? 'border-red-500 dark:border-red-500' : 'border-stone-300 dark:border-stone-600'}`}
+                className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-stone-600"}`}
                 aria-invalid={!!error}
                 placeholder="tu@correo.com"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-2"
+              >
                 Contraseña
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className={`w-full p-3 pr-10 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 ${error ? 'border-red-500 dark:border-red-500' : 'border-stone-300 dark:border-stone-600'}`}
+                  className={`w-full p-3 pr-10 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-stone-600"}`}
                   aria-invalid={!!error}
                   aria-describedby="code-error"
                   placeholder="••••••••"
@@ -95,7 +134,9 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({ onClose, onSubmit, er
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors focus:outline-none focus:ring-2 focus:ring-stone-500 dark:focus:ring-stone-400 rounded"
-                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  aria-label={
+                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="w-5 h-5" />
@@ -104,7 +145,14 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({ onClose, onSubmit, er
                   )}
                 </button>
               </div>
-              {error && <p id="code-error" className="text-red-600 dark:text-red-400 text-sm mt-2 text-center">{error}</p>}
+              {error && (
+                <p
+                  id="code-error"
+                  className="text-red-600 dark:text-red-400 text-sm mt-2 text-center"
+                >
+                  {error}
+                </p>
+              )}
             </div>
             <div className="flex justify-center gap-4 pt-4">
               <button
@@ -134,25 +182,19 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({ onClose, onSubmit, er
             <CloseIcon className="w-6 h-6" />
           </button>
         )}
-        
+
         {isLoading && (
           <div className="absolute inset-0 bg-stone-50/95 dark:bg-stone-800/95 rounded-lg flex items-center justify-center z-20">
             <div className="flex flex-col items-center gap-4">
               <SpinnerIcon className="w-12 h-12 text-stone-800 dark:text-stone-200 animate-spin" />
-              <p className="text-stone-700 dark:text-stone-200 font-medium text-lg">Iniciando sesión...</p>
+              <p className="text-stone-700 dark:text-stone-200 font-medium text-lg">
+                Iniciando sesión...
+              </p>
             </div>
           </div>
         )}
       </div>
-       <style>{`
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-        @keyframes modal-in {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-modal-in { animation: modal-in 0.3s ease-out forwards; }
-      `}</style>
+
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import { createContext } from 'react';
-import { User } from '../types/auth';
+import { createContext } from "react";
+import { User } from "../types/auth";
 
 export interface AuthContextType {
   onLogin: (email: string, password: string) => Promise<any>;
@@ -8,5 +8,6 @@ export interface AuthContextType {
   getUser?: () => User | null;
 }
 
-export const AuthContext = createContext<AuthContextType>({});
-
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined,
+);

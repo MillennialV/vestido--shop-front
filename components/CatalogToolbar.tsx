@@ -30,6 +30,7 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                         <button
                             onClick={onAddGarment}
                             className="inline-flex items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
+                            aria-label="Añadir nueva prenda al catálogo"
                         >
                             <PlusIcon className="w-4 h-4" />
                             <span>Añadir Prenda</span>
@@ -37,6 +38,7 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                         <button
                             onClick={onBulkUpload}
                             className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold py-2.5 px-5 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700 hover:border-stone-400 dark:hover:border-stone-500 active:bg-stone-100 dark:active:bg-stone-600 transition-all duration-200 text-sm shadow-sm hover:shadow-md"
+                            aria-label="Subir múltiples prendas mediante archivo"
                         >
                             <UploadIcon className="w-4 h-4" />
                             <span>Carga Masiva</span>
@@ -52,6 +54,7 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                                 ? 'bg-sky-600 text-white shadow-md hover:bg-sky-700 hover:shadow-lg'
                                 : 'bg-white dark:bg-stone-800 text-sky-700 dark:text-white border border-sky-300 dark:border-stone-600 hover:bg-sky-50 dark:hover:bg-stone-700 hover:border-sky-400 dark:hover:border-stone-500 shadow-sm hover:shadow-md'
                                 }`}
+                            aria-label={isSelectionMode ? 'Cancelar modo de selección múltiple' : 'Activar modo de selección múltiple'}
                         >
                             <CheckCircleIcon className={`w-4 h-4 ${isSelectionMode ? '' : 'opacity-70'}`} />
                             <span>{isSelectionMode ? 'Cancelar Selección' : 'Seleccionar Múltiples'}</span>
@@ -60,6 +63,7 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                             <button
                                 onClick={onBulkDelete}
                                 className="inline-flex items-center gap-2 bg-red-600 dark:bg-red-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 active:bg-red-800 dark:active:bg-red-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
+                                aria-label={`Eliminar ${selectedCount} ${selectedCount === 1 ? 'prenda seleccionada' : 'prendas seleccionadas'}`}
                             >
                                 <DeleteIcon className="w-4 h-4" />
                                 <span>Eliminar</span>
@@ -76,9 +80,10 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                     <button
                         onClick={onWhatsapp}
                         className="inline-flex items-center gap-2 bg-[#25D366] text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-[#20BA5A] active:bg-[#1DA851] transition-all duration-200 text-sm shadow-md hover:shadow-lg"
+                        aria-label="Agregar número de WhatsApp para contacto"
                     >
                         <WhatsappIcon className="w-5 h-5" />
-                        <span>Agrega número</span>
+                        <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">Agrega número</span>
                     </button>
                 </div>
             </div>

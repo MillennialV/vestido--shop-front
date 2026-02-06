@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { inventarioService } from '../services/inventarioService';
+import { useState, useCallback, useEffect } from 'react';
+
 import type { Garment } from '@/types/Garment';
 
 export const useProducts = () => {
@@ -11,20 +11,20 @@ export const useProducts = () => {
     totalPages: 0
   });
   const [selectedProduct, setSelectedProduct] = useState<Garment | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async (params: { page?: number; limit?: number } = {}) => {
     setIsLoading(true);
     setError(null);
     try {
-      const { products: fetchedProducts, pagination: fetchedPagination } = await inventarioService.obtenerListadoProductos({
-        limit: params.limit || 10,
-        page: params.page || 1,
-        sort: 'created_at',
-        order: 'desc'
-      });
-
+      const page = params.page || 1;
+      const limit = params.limit || 10;
+      const res = await fetch(`/api/products?page=${page}&limit=${limit}&sort=created_at&order=desc`);
+      if (!res.ok) throw new Error('Error al cargar productos');
+      const data = await res.json();
+      const fetchedProducts = Array.isArray(data) ? data : data.products || [];
+      const fetchedPagination = data.pagination || { page, limit, total: fetchedProducts.length, totalPages: 1 };
       setProducts(fetchedProducts);
       setPagination(fetchedPagination);
       return fetchedProducts;
@@ -38,11 +38,17 @@ export const useProducts = () => {
     }
   }, []);
 
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
   const fetchProductById = useCallback(async (id: number | string): Promise<Garment | null> => {
     setIsLoading(true);
     setError(null);
     try {
-      const product = await inventarioService.obtenerDetalleProducto(id);
+      const res = await fetch(`/api/products/${id}`);
+      if (!res.ok) throw new Error('Error al cargar el detalle del producto');
+      const product = await res.json();
       setSelectedProduct(product);
       return product;
     } catch (err) {
@@ -63,25 +69,27 @@ export const useProducts = () => {
     setError(null);
     try {
       const formData = new FormData();
-
       Object.entries(productData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           formData.append(key, String(value));
         }
       });
-
       if (videoFile) {
         formData.append('video', videoFile);
       }
-
-      const newProduct = await inventarioService.crearProductoMultipart(formData);
-
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw errorData;
+      }
+      const newProduct = await res.json();
       setProducts((prev: Garment[]) => [newProduct, ...prev]);
-
       return newProduct;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al crear producto';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Error al crear producto');
       throw err;
     } finally {
       setIsLoading(false);
@@ -95,18 +103,23 @@ export const useProducts = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const updatedProduct = await inventarioService.actualizarProducto(id, productData);
-
+      const res = await fetch(`/api/products`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...productData }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw errorData;
+      }
+      const updatedProduct = await res.json();
       setProducts((prev: Garment[]) => prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p)));
-
       if (selectedProduct && selectedProduct.id === updatedProduct.id) {
         setSelectedProduct(updatedProduct);
       }
-
       return updatedProduct;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al actualizar producto';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Error al actualizar producto');
       throw err;
     } finally {
       setIsLoading(false);
@@ -117,10 +130,13 @@ export const useProducts = () => {
     setIsLoading(true);
     setError(null);
     try {
-      await inventarioService.eliminarProducto(id);
-
+      const res = await fetch(`/api/products`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error('Error al eliminar producto');
       setProducts((prev: Garment[]) => prev.filter(p => p.id !== id && String(p.id) !== String(id)));
-
       if (selectedProduct && (selectedProduct.id === id || String(selectedProduct.id) === String(id))) {
         setSelectedProduct(null);
       }
@@ -137,7 +153,14 @@ export const useProducts = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const filteredProducts = await inventarioService.filtrarBusqueda(filters);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value != null && value !== '') params.append(key, String(value));
+      });
+      const res = await fetch(`/api/products?${params.toString()}`);
+      if (!res.ok) throw new Error('Error al filtrar productos');
+      const data = await res.json();
+      const filteredProducts = Array.isArray(data) ? data : data.products || [];
       setProducts(filteredProducts);
       return filteredProducts;
     } catch (err) {

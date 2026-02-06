@@ -19,7 +19,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({ brands, sizes, colors, 
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onFilterChange({ size: e.target.value });
   };
-  
+
   const handleColorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onFilterChange({ color: e.target.value });
   };
@@ -40,7 +40,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({ brands, sizes, colors, 
         >
           <option value="all">Todas las marcas</option>
           {brands.map((brand) => (
-            <option key={brand} value={brand}>
+            <option key={`brand-${brand}`} value={brand}>
               {brand}
             </option>
           ))}
@@ -59,7 +59,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({ brands, sizes, colors, 
         >
           <option value="all">Todas las tallas</option>
           {sizes.map((size) => (
-            <option key={size} value={size}>
+            <option key={`size-${size}`} value={size}>
               {size}
             </option>
           ))}
@@ -78,7 +78,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({ brands, sizes, colors, 
         >
           <option value="all">Todos los colores</option>
           {colors.map((color) => (
-            <option key={color} value={color}>
+            <option key={`color-${color}`} value={color}>
               {color}
             </option>
           ))}
@@ -86,13 +86,13 @@ const FilterControls: React.FC<FilterControlsProps> = ({ brands, sizes, colors, 
       </div>
       {hasActiveFilters && (
         <div className="w-full sm:w-auto self-end sm:self-center">
-           <button 
-             onClick={onClearAll}
-             className="w-full sm:w-auto text-sm text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 font-semibold transition-colors py-2 px-3 rounded-md hover:bg-stone-100 dark:hover:bg-stone-700"
-             aria-label="Limpiar todos los filtros y búsqueda"
-           >
-              Limpiar
-           </button>
+          <button
+            onClick={onClearAll}
+            className="w-full sm:w-auto text-sm text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 font-semibold transition-colors py-2 px-3 rounded-md hover:bg-stone-100 dark:hover:bg-stone-700"
+            aria-label="Limpiar todos los filtros y búsqueda"
+          >
+            Limpiar
+          </button>
         </div>
       )}
     </div>

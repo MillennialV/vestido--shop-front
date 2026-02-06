@@ -1,16 +1,31 @@
-import React, { useState, useRef } from 'react';
-import type { Garment } from '@/types/Garment';
-import { uploadVideoFile, saveBulkGarments } from '../lib/db';
-import { iaService } from '../services/iaService';
-import { getFriendlySupabaseError } from '../lib/errorUtils';
-import { CloseIcon, UploadIcon, SpinnerIcon, CheckCircleIcon, ExclamationTriangleIcon, SparklesIcon } from './Icons';
+"use client";
+
+import React, { useState, useRef } from "react";
+import type { Garment } from "@/types/Garment";
+import { uploadVideoFile, saveBulkGarments } from "../lib/db";
+// import { iaService } from "../services/iaService";
+import { getFriendlySupabaseError } from "../lib/errorUtils";
+import {
+  CloseIcon,
+  UploadIcon,
+  SpinnerIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  SparklesIcon,
+} from "./Icons";
 
 interface BulkUploadModalProps {
+  isOpen: boolean;
   onClose: () => void;
   onBulkSaveComplete: (newGarments: Garment[]) => void;
 }
 
-type UploadStatus = 'pending' | 'uploading' | 'processing' | 'completed' | 'error';
+type UploadStatus =
+  | "pending"
+  | "uploading"
+  | "processing"
+  | "completed"
+  | "error";
 
 interface UploadableFile {
   id: string;
@@ -31,74 +46,133 @@ interface UploadableFile {
     style_notes: string;
   };
   videoUrl?: string;
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
+  validationErrors?: {
+    [key: string]: string;
+  };
 }
 
-const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ onClose, onBulkSaveComplete }) => {
+const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
+  isOpen,
+  onClose,
+  onBulkSaveComplete,
+}) => {
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [files, setFiles] = useState<UploadableFile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => {
+        setIsRendered(false);
+        // Reset state when modal is completely hidden
+        if (files.length > 0) {
+          files.forEach(f => URL.revokeObjectURL(f.previewUrl));
+        }
+        setFiles([]);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (selectedFiles: FileList | null) => {
+  if (!isRendered) return null;
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
     if (!selectedFiles) return;
     const newFiles: UploadableFile[] = Array.from(selectedFiles)
-      .filter(file => file.type.startsWith('video/'))
-      .map(file => ({
+      .filter((file) => file.type.startsWith("video/"))
+      .map((file) => ({
         id: crypto.randomUUID(),
         file,
         previewUrl: URL.createObjectURL(file),
-        status: 'pending',
+        status: "pending",
         progress: 0,
-        garmentData: { title: file.name.replace(/\.[^/.]+$/, ""), brand: '', description: '', size: 'M', color: '', price: '', material: '', occasion: '', style_notes: '' },
+        garmentData: {
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          brand: "",
+          description: "",
+          size: "M",
+          color: "",
+          price: "",
+          material: "",
+          occasion: "",
+          style_notes: "",
+        },
         videoRef: React.createRef<HTMLVideoElement>(),
       }));
-    setFiles(prev => [...prev, ...newFiles]);
+    setFiles((prev) => [...prev, ...newFiles]);
+
+    // Limpiar el valor del input para permitir volver a seleccionar el mismo archivo si se elimina
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleRemoveFile = (id: string) => {
-    const fileToRemove = files.find(f => f.id === id);
+    const fileToRemove = files.find((f) => f.id === id);
     if (fileToRemove) {
       URL.revokeObjectURL(fileToRemove.previewUrl);
     }
-    setFiles(prev => prev.filter(f => f.id !== id));
+    setFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   const updateFileState = (id: string, updates: Partial<UploadableFile>) => {
-    setFiles(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+    setFiles((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, ...updates } : f)),
+    );
   };
 
-  const handleInputChange = (id: string, field: keyof UploadableFile['garmentData'], value: string) => {
-    setFiles(prev => prev.map(f => {
-      if (f.id === id) {
-        return { ...f, garmentData: { ...f.garmentData, [field]: value } };
-      }
-      return f;
-    }));
+  const handleInputChange = (
+    id: string,
+    field: keyof UploadableFile["garmentData"],
+    value: string,
+  ) => {
+    setFiles((prev) =>
+      prev.map((f) => {
+        if (f.id === id) {
+          return { ...f, garmentData: { ...f.garmentData, [field]: value } };
+        }
+        return f;
+      }),
+    );
   };
 
   // Función helper para capturar un frame del video
   const captureFrame = (videoEl: HTMLVideoElement): Promise<string> => {
     return new Promise((resolve, reject) => {
       const onSeeked = () => {
-        videoEl.removeEventListener('seeked', onSeeked);
-        const canvas = document.createElement('canvas');
+        videoEl.removeEventListener("seeked", onSeeked);
+        const canvas = document.createElement("canvas");
         canvas.width = videoEl.videoWidth;
         canvas.height = videoEl.videoHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject(new Error("No se pudo obtener el contexto del canvas"));
+        const ctx = canvas.getContext("2d");
+        if (!ctx)
+          return reject(new Error("No se pudo obtener el contexto del canvas"));
 
         ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
         try {
-          const base64ImageData = canvas.toDataURL('image/jpeg').split(',')[1];
+          const base64ImageData = canvas.toDataURL("image/jpeg").split(",")[1];
           resolve(base64ImageData);
         } catch (e) {
           reject(e);
         }
       };
 
-      videoEl.addEventListener('seeked', onSeeked, { once: true });
-      videoEl.addEventListener('error', (e) => reject(new Error(`Error en el elemento de video: ${e}`)), { once: true });
+      videoEl.addEventListener("seeked", onSeeked, { once: true });
+      videoEl.addEventListener(
+        "error",
+        (e) => reject(new Error(`Error en el elemento de video: ${e}`)),
+        { once: true },
+      );
 
       videoEl.currentTime = Math.min(1, videoEl.duration / 2);
     });
@@ -106,130 +180,236 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ onClose, onBulkSaveCo
 
   const processQueue = async () => {
     setIsProcessing(true);
-    for (const file of files) {
-      if (file.status === 'pending') {
-        try {
-          // 1. Upload video
-          updateFileState(file.id, { status: 'uploading' });
-          const videoUrl = await uploadVideoFile(file.file, (progress) => {
+
+    // Obtenemos solo los que están pendientes o en error para reintentar
+    const pendingFiles = files.filter(f => f.status === "pending" || f.status === "error");
+
+    for (const file of pendingFiles) {
+      try {
+        // 1. Upload video (si no tiene ya una URL)
+        let currentVideoUrl = file.videoUrl;
+        if (!currentVideoUrl) {
+          updateFileState(file.id, { status: "uploading", errorMessage: undefined });
+          currentVideoUrl = await uploadVideoFile(file.file, (progress) => {
             updateFileState(file.id, { progress });
           });
-          updateFileState(file.id, { videoUrl, progress: 100 });
+          updateFileState(file.id, { videoUrl: currentVideoUrl, progress: 100 });
+        }
 
-          // 2. Analyze with AI - DEBE EJECUTARSE POR CADA PRENDA
-          updateFileState(file.id, { status: 'processing' });
+        // 2. Analyze with AI
+        updateFileState(file.id, { status: "processing" });
 
-          // Esperar a que el video esté disponible y cargado
-          const videoElement = file.videoRef.current;
-          if (!videoElement) {
-            throw new Error("El elemento de video no está disponible.");
-          }
+        const videoElement = file.videoRef.current;
+        if (!videoElement) {
+          throw new Error("El elemento de video no está disponible para captura.");
+        }
 
-          // Verificar que el video esté cargado antes de analizarlo
-          if (videoElement.readyState < 2) {
-            await new Promise((resolve, reject) => {
-              videoElement.addEventListener('loadeddata', resolve, { once: true });
-              videoElement.addEventListener('error', () => reject(new Error("Error al cargar los datos del video.")), { once: true });
-              // Timeout de seguridad
-              setTimeout(() => reject(new Error("Timeout esperando a que el video se cargue.")), 30000);
-            });
-          }
+        // Asegurar que el video intente cargar si no lo ha hecho
+        if (videoElement.readyState < 2) {
+          videoElement.load();
+          await new Promise((resolve, reject) => {
+            const handleLoaded = () => {
+              videoElement.removeEventListener("loadeddata", handleLoaded);
+              resolve(true);
+            };
+            const handleError = () => {
+              videoElement.removeEventListener("error", handleError);
+              reject(new Error("Error al cargar los datos del video para análisis."));
+            };
+            videoElement.addEventListener("loadeddata", handleLoaded);
+            videoElement.addEventListener("error", handleError);
+            // Timeout de 15 segundos para carga de video local (debería ser instantáneo)
+            setTimeout(() => reject(new Error("Timeout cargando video local.")), 15000);
+          });
+        }
 
-          // Capturar un frame del video
-          const base64Image = await captureFrame(videoElement);
+        // Capturar un frame del video
+        const base64Image = await captureFrame(videoElement);
 
-          // Llamar a la API del servicio de IA
-          const result = await iaService.analyzeGarmentFromBase64(base64Image);
+        // Llamar al API route de Next.js para análisis de prenda
+        const response = await fetch("/api/ia/analyze-garment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageBase64: base64Image }),
+        });
 
-          // Actualizar los datos de la prenda con la información de IA
-          setFiles(prev => prev.map(f => {
+        if (!response.ok) {
+          throw new Error("Error al analizar la prenda con IA");
+        }
+
+        const result = await response.json();
+
+        // Actualizar los datos de la prenda con la información de IA
+        setFiles((prev) =>
+          prev.map((f) => {
             if (f.id === file.id) {
               const updatedData = { ...f.garmentData };
               const newPrice = result.price;
-              let priceString = updatedData.price; // Mantener el valor actual por defecto
+              let priceString = updatedData.price;
 
-              if (typeof newPrice === 'number' && !isNaN(newPrice) && newPrice > 0) {
+              if (typeof newPrice === "number" && !isNaN(newPrice) && newPrice > 0) {
                 priceString = String(newPrice);
               }
 
-              // Safely merge AI data, providing fallbacks for undefined values
-              updatedData.title = result.title || updatedData.title;
-              updatedData.brand = result.brand || updatedData.brand;
-              updatedData.description = result.description || updatedData.description;
-              updatedData.color = result.color || updatedData.color;
-              updatedData.price = priceString;
-              updatedData.material = result.material || updatedData.material;
-              updatedData.occasion = result.occasion || updatedData.occasion;
-              updatedData.style_notes = result.style_notes || updatedData.style_notes;
-              return { ...f, garmentData: updatedData };
+              // Protect manual entry: Only update if the field is empty
+              if (!updatedData.title) updatedData.title = result.title || "";
+              if (!updatedData.brand) updatedData.brand = result.brand || "";
+              if (!updatedData.description) updatedData.description = result.description || "";
+              if (!updatedData.color) updatedData.color = result.color || "";
+              if (!updatedData.price && priceString) updatedData.price = priceString || "";
+              if (!updatedData.material) updatedData.material = result.material || "";
+              if (!updatedData.occasion) updatedData.occasion = result.occasion || "";
+              if (!updatedData.style_notes) updatedData.style_notes = result.style_notes || "";
+
+              return { ...f, garmentData: updatedData, status: "completed" as UploadStatus };
             }
             return f;
-          }));
+          }),
+        );
 
-          updateFileState(file.id, { status: 'completed' });
-
-        } catch (error: any) {
-          console.error(`[BulkUpload] Error al procesar ${file.file.name}:`, error);
-          let errorMessage = error instanceof Error ? error.message : String(error);
-
-          // Mensajes de error más descriptivos
-          if (errorMessage.includes('CORS') || errorMessage.includes('conexión') || errorMessage.includes('Failed to fetch')) {
-            errorMessage = `Error de conexión: No se pudo conectar al servicio de IA. Verifica que el servicio esté disponible y que CORS esté configurado correctamente.`;
-          } else if (errorMessage.includes('parsear') || errorMessage.includes('JSON')) {
-            errorMessage = `Error al procesar respuesta: ${errorMessage}`;
-          } else if (errorMessage.includes('clave de API') || errorMessage.includes('API key')) {
-            errorMessage = `Error de autenticación: ${errorMessage}. Nota: El servicio de IA no requiere clave de API.`;
-          } else if (errorMessage.includes('video')) {
-            errorMessage = `Error al procesar el video: ${errorMessage}`;
-          }
-
-          console.error(`[BulkUpload] Mensaje de error final para ${file.file.name}:`, errorMessage);
-          updateFileState(file.id, { status: 'error', errorMessage });
-        }
+      } catch (error: any) {
+        console.error(`[BulkUpload] Error en ${file.file.name}:`, error);
+        updateFileState(file.id, {
+          status: "error",
+          errorMessage: error instanceof Error ? error.message : String(error)
+        });
       }
     }
     setIsProcessing(false);
   };
 
   const handleSaveAll = async () => {
-    const completedFiles = files.filter(f => f.status === 'completed');
-    if (completedFiles.length === 0) {
-      console.log("No hay prendas completadas para guardar.");
+    // Una prenda está lista para el proceso de guardado si tiene campos obligatorios: título, marca, talla y color
+    const filesToProcess = files.filter((f) =>
+      f.garmentData.title &&
+      f.garmentData.brand &&
+      f.garmentData.size &&
+      f.garmentData.color
+    );
+
+    if (filesToProcess.length === 0) {
+      console.log("No hay prendas con título y marca para guardar.");
       return;
     }
 
     setIsSaving(true);
 
-    const garmentsToSave: Omit<Garment, 'id' | 'created_at' | 'slug'>[] = completedFiles.map(f => {
-      const price = f.garmentData.price ? parseFloat(f.garmentData.price) : undefined;
-      return {
-        ...f.garmentData,
-        price,
-        videoUrl: f.videoUrl!,
-      };
-    });
-
     try {
-      const savedGarments = await saveBulkGarments(garmentsToSave);
-      onBulkSaveComplete(savedGarments);
+      const savedGarments: Garment[] = [];
+
+      for (const f of filesToProcess) {
+        try {
+          let response;
+
+          // Si ya tenemos una videoUrl (por la IA), enviamos JSON
+          if (f.videoUrl) {
+            response = await fetch("/api/products", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...f.garmentData,
+                price: f.garmentData.price ? parseFloat(f.garmentData.price) : undefined,
+                videoUrl: f.videoUrl,
+              }),
+            });
+          }
+          // Si no tenemos URL, enviamos Multipart (Archivo + Datos) en una sola petición
+          else {
+            const formData = new FormData();
+            formData.append("video", f.file);
+            formData.append("title", f.garmentData.title);
+            formData.append("brand", f.garmentData.brand);
+            formData.append("description", f.garmentData.description);
+            formData.append("size", f.garmentData.size);
+            formData.append("color", f.garmentData.color);
+            if (f.garmentData.price) formData.append("price", f.garmentData.price);
+            formData.append("material", f.garmentData.material);
+            formData.append("occasion", f.garmentData.occasion);
+            formData.append("style_notes", f.garmentData.style_notes);
+
+            response = await fetch("/api/products", {
+              method: "POST",
+              body: formData,
+            });
+          }
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const backendError = errorData.message || errorData.error || `Error al guardar "${f.garmentData.title}"`;
+
+            // Si hay errores específicos por campo, los mapeamos
+            const fieldErrors: { [key: string]: string } = {};
+            if (Array.isArray(errorData.errors)) {
+              errorData.errors.forEach((err: { field: string, message: string }) => {
+                fieldErrors[err.field] = err.message;
+              });
+            }
+
+            updateFileState(f.id, {
+              status: "error",
+              errorMessage: backendError,
+              validationErrors: fieldErrors
+            });
+            continue; // Seguimos con el siguiente producto
+          }
+
+          const savedProduct = await response.json();
+          savedGarments.push(savedProduct);
+
+          // Marcamos como completado en la UI
+          updateFileState(f.id, { status: "completed", errorMessage: undefined, validationErrors: undefined });
+        } catch (individualError: any) {
+          console.error(`Error procesando prenda ${f.garmentData.title}:`, individualError);
+          updateFileState(f.id, {
+            status: "error",
+            errorMessage: individualError.message || "Error inesperado al guardar"
+          });
+        }
+      }
+
+      if (savedGarments.length > 0) {
+        onBulkSaveComplete(savedGarments);
+      }
     } catch (error: any) {
       console.error("Failed to save bulk garments:", error);
-      const alertMessage = getFriendlySupabaseError(error);
-      console.log(`Error al guardar las prendas:\n\nDetalles: ${alertMessage}`);
+      // Solo mostramos alerta para errores catastróficos, no de validación individual
     } finally {
       setIsSaving(false);
     }
   };
 
-  const completedCount = files.filter(f => f.status === 'completed').length;
-  const pendingCount = files.filter(f => f.status === 'pending').length;
+  const readyToSaveCount = files.filter((f) =>
+    f.garmentData.title &&
+    f.garmentData.brand &&
+    f.garmentData.size &&
+    f.garmentData.color
+  ).length;
+  const pendingCount = files.filter((f) => f.status === "pending" || f.status === "error").length;
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="bulk-upload-title">
-      <div className="relative bg-stone-50 rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <header className="p-6 border-b border-stone-200 flex justify-between items-center">
-          <h2 id="bulk-upload-title" className="text-2xl font-semibold text-stone-900">Carga Masiva de Videos</h2>
-          <button onClick={onClose} className="text-stone-600 hover:text-stone-900" aria-label="Cerrar">
+    <div
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bulk-upload-title"
+    >
+      <div
+        className={`relative bg-stone-50 dark:bg-stone-900 rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="p-6 border-b border-stone-200 dark:border-stone-800 flex justify-between items-center">
+          <h2
+            id="bulk-upload-title"
+            className="text-2xl font-semibold text-stone-900 dark:text-stone-100"
+          >
+            Carga Masiva de Videos
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+            aria-label="Cerrar"
+          >
             <CloseIcon className="w-6 h-6" />
           </button>
         </header>
@@ -237,77 +417,254 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ onClose, onBulkSaveCo
         <main className="flex-grow p-6 overflow-y-auto space-y-6">
           {files.length === 0 ? (
             <div
-              className="border-2 border-dashed border-stone-300 rounded-lg h-full flex flex-col items-center justify-center text-center text-stone-500"
+              className="border-2 border-dashed border-stone-300 dark:border-stone-700 rounded-lg h-full flex flex-col items-center justify-center text-center text-stone-500 dark:text-stone-400"
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
-                handleFileSelect(e.dataTransfer.files);
+                const simulatedEvent = {
+                  target: { files: e.dataTransfer.files }
+                } as unknown as React.ChangeEvent<HTMLInputElement>;
+                handleFileSelect(simulatedEvent);
               }}
             >
-              <UploadIcon className="w-12 h-12 mb-4" />
-              <p className="font-semibold">Arrastra y suelta tus videos aquí</p>
+              <UploadIcon className="w-12 h-12 mb-4 opacity-50" />
+              <p className="font-semibold text-stone-700 dark:text-stone-300">Arrastra y suelta tus videos aquí</p>
               <p className="text-sm">o</p>
-              <button onClick={() => fileInputRef.current?.click()} className="mt-2 text-sky-600 font-semibold hover:underline">Selecciona tus archivos</button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-2 text-sky-600 dark:text-sky-400 font-semibold hover:underline"
+              >
+                Selecciona tus archivos
+              </button>
             </div>
           ) : (
             <div className="space-y-4">
-              {files.map(file => (
-                <div key={file.id} className="bg-white p-4 rounded-lg shadow-sm border border-stone-200 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="w-full aspect-[9/16] bg-black rounded-md overflow-hidden relative">
-                    <video ref={file.videoRef} src={file.previewUrl} muted playsInline className="w-full h-full object-cover" crossOrigin="anonymous" />
+              {files.map((file) => (
+                <div
+                  key={file.id}
+                  className="bg-white dark:bg-stone-800 p-4 rounded-lg shadow-sm border border-stone-200 dark:border-stone-700 grid grid-cols-1 md:grid-cols-3 gap-4"
+                >
+                  <div className="w-full aspect-[9/16] bg-black rounded-md overflow-hidden relative shadow-inner">
+                    <video
+                      ref={file.videoRef}
+                      src={file.previewUrl}
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                      crossOrigin="anonymous"
+                    />
                     <div className="absolute top-2 right-2">
                       <StatusIndicator status={file.status} />
                     </div>
                   </div>
                   <div className="md:col-span-2 space-y-3">
-                    <input type="text" placeholder="Título" value={file.garmentData.title} onChange={e => handleInputChange(file.id, 'title', e.target.value)} className="w-full p-2 border border-stone-300 rounded-md text-sm text-stone-900 placeholder:text-stone-400" />
+                    <div className="space-y-1">
+                      <input
+                        type="text"
+                        placeholder="Título"
+                        value={file.garmentData.title}
+                        onChange={(e) =>
+                          handleInputChange(file.id, "title", e.target.value)
+                        }
+                        className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.title ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                      />
+                      {file.validationErrors?.title && (
+                        <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
+                          {file.validationErrors.title}
+                        </span>
+                      )}
+                    </div>
+
                     <div className="grid grid-cols-3 gap-3">
-                      <input type="text" placeholder="Marca" value={file.garmentData.brand} onChange={e => handleInputChange(file.id, 'brand', e.target.value)} className="w-full p-2 border border-stone-300 rounded-md text-sm text-stone-900 placeholder:text-stone-400" />
-                      <input type="text" placeholder="Talla" value={file.garmentData.size} onChange={e => handleInputChange(file.id, 'size', e.target.value)} className="w-full p-2 border border-stone-300 rounded-md text-sm text-stone-900 placeholder:text-stone-400" />
-                      <input type="text" placeholder="Color" value={file.garmentData.color} onChange={e => handleInputChange(file.id, 'color', e.target.value)} className="w-full p-2 border border-stone-300 rounded-md text-sm text-stone-900 placeholder:text-stone-400" />
+                      <div className="space-y-1">
+                        <input
+                          type="text"
+                          placeholder="Marca"
+                          value={file.garmentData.brand}
+                          onChange={(e) =>
+                            handleInputChange(file.id, "brand", e.target.value)
+                          }
+                          className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.brand ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                        />
+                        {file.validationErrors?.brand && (
+                          <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
+                            {file.validationErrors.brand}
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <input
+                          type="text"
+                          placeholder="Talla"
+                          value={file.garmentData.size}
+                          onChange={(e) =>
+                            handleInputChange(file.id, "size", e.target.value)
+                          }
+                          className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.size ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                        />
+                        {file.validationErrors?.size && (
+                          <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
+                            {file.validationErrors.size}
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <input
+                          type="text"
+                          placeholder="Color"
+                          value={file.garmentData.color}
+                          onChange={(e) =>
+                            handleInputChange(file.id, "color", e.target.value)
+                          }
+                          className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.color ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                        />
+                        {file.validationErrors?.color && (
+                          <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
+                            {file.validationErrors.color}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-stone-500 text-sm">S/</span>
-                      <input type="number" placeholder="Precio" value={file.garmentData.price} onChange={e => handleInputChange(file.id, 'price', e.target.value)} className="w-full p-2 pl-8 border border-stone-300 rounded-md text-sm text-stone-900 placeholder:text-stone-400" />
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-stone-500 dark:text-stone-400 text-sm">
+                          S/
+                        </span>
+                        <input
+                          type="number"
+                          placeholder="Precio"
+                          value={file.garmentData.price}
+                          onChange={(e) =>
+                            handleInputChange(file.id, "price", e.target.value)
+                          }
+                          className={`w-full p-2 pl-8 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.price ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                        />
+                      </div>
+                      {file.validationErrors?.price && (
+                        <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
+                          {file.validationErrors.price}
+                        </span>
+                      )}
                     </div>
-                    <textarea placeholder="Descripción" value={file.garmentData.description} onChange={e => handleInputChange(file.id, 'description', e.target.value)} rows={3} className="w-full p-2 border border-stone-300 rounded-md text-sm text-stone-900 placeholder:text-stone-400" />
+                    <div className="space-y-1">
+                      <textarea
+                        placeholder="Descripción"
+                        value={file.garmentData.description}
+                        onChange={(e) =>
+                          handleInputChange(
+                            file.id,
+                            "description",
+                            e.target.value,
+                          )
+                        }
+                        rows={3}
+                        className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.description ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                      />
+                      {file.validationErrors?.description && (
+                        <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
+                          {file.validationErrors.description}
+                        </span>
+                      )}
+                    </div>
 
-                    <input type="text" placeholder="Materiales (ej: Seda, Lino)" value={file.garmentData.material} onChange={e => handleInputChange(file.id, 'material', e.target.value)} className="w-full p-2 border border-stone-300 rounded-md text-sm text-stone-900 placeholder:text-stone-400" />
-                    <input type="text" placeholder="Ocasión (ej: Boda, Gala)" value={file.garmentData.occasion} onChange={e => handleInputChange(file.id, 'occasion', e.target.value)} className="w-full p-2 border border-stone-300 rounded-md text-sm text-stone-900 placeholder:text-stone-400" />
-                    <input type="text" placeholder="Notas de Estilo (ej: Corte sirena)" value={file.garmentData.style_notes} onChange={e => handleInputChange(file.id, 'style_notes', e.target.value)} className="w-full p-2 border border-stone-300 rounded-md text-sm text-stone-900 placeholder:text-stone-400" />
+                    <input
+                      type="text"
+                      placeholder="Materiales (ej: Seda, Lino)"
+                      value={file.garmentData.material}
+                      onChange={(e) =>
+                        handleInputChange(file.id, "material", e.target.value)
+                      }
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Ocasión (ej: Boda, Gala)"
+                      value={file.garmentData.occasion}
+                      onChange={(e) =>
+                        handleInputChange(file.id, "occasion", e.target.value)
+                      }
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Notas de Estilo (ej: Corte sirena)"
+                      value={file.garmentData.style_notes}
+                      onChange={(e) =>
+                        handleInputChange(
+                          file.id,
+                          "style_notes",
+                          e.target.value,
+                        )
+                      }
+                      className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors"
+                    />
 
-                    {file.status === 'uploading' && <ProgressBar progress={file.progress} />}
-                    {file.status === 'error' && <p className="text-xs text-red-600">Error: {file.errorMessage}</p>}
+                    {file.status === "uploading" && (
+                      <ProgressBar progress={file.progress} />
+                    )}
+                    {file.errorMessage && (
+                      <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                        <p className="text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-2">
+                          <ExclamationTriangleIcon className="w-4 h-4" />
+                          {file.errorMessage}
+                        </p>
+                      </div>
+                    )}
                     <div className="text-right">
-                      <button onClick={() => handleRemoveFile(file.id)} className="text-xs text-red-500 hover:underline">Eliminar</button>
+                      <button
+                        onClick={() => handleRemoveFile(file.id)}
+                        className="text-xs text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors font-medium"
+                      >
+                        Eliminar
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
-          <input ref={fileInputRef} type="file" multiple accept="video/*" onChange={(e) => handleFileSelect(e.target.files)} className="hidden" />
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="video/*"
+            onChange={(e) => handleFileSelect(e)}
+            className="hidden"
+          />
         </main>
 
-        <footer className="p-4 border-t border-stone-200 bg-white/50 backdrop-blur-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-0">
+        <footer className="p-4 border-t border-stone-200 dark:border-stone-800 bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-0">
           <div className="w-full sm:w-auto">
-            <button onClick={() => fileInputRef.current?.click()} className="w-full sm:w-auto bg-white text-stone-700 font-medium py-2 px-4 rounded-lg border border-stone-300 hover:bg-stone-100 transition-colors text-sm">+ Añadir más</button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full sm:w-auto bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-medium py-2 px-4 rounded-lg border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-sm"
+            >
+              + Añadir más
+            </button>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button
               onClick={processQueue}
               disabled={isProcessing || pendingCount === 0}
-              className="w-full sm:w-auto bg-stone-800 text-white font-medium py-2 px-4 rounded-lg hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm inline-flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-stone-800 dark:bg-stone-100 text-white dark:text-stone-900 font-medium py-2 px-4 rounded-lg hover:bg-stone-700 dark:hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm inline-flex items-center justify-center gap-2 shadow-sm"
             >
-              {isProcessing ? <SpinnerIcon className="w-4 h-4 animate-spin" /> : <SparklesIcon className="w-4 h-4" />}
-              {isProcessing ? 'Autocompletando...' : `Autocompletar (${pendingCount}) con IA`}
+              {isProcessing ? (
+                <SpinnerIcon className="w-4 h-4 animate-spin" />
+              ) : (
+                <SparklesIcon className="w-4 h-4" />
+              )}
+              {isProcessing
+                ? "Autocompletando..."
+                : `Autocompletar (${pendingCount}) con IA`}
             </button>
             <button
               onClick={handleSaveAll}
-              disabled={isSaving || completedCount === 0}
-              className="w-full sm:w-auto bg-sky-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              disabled={isSaving || readyToSaveCount === 0}
+              className="w-full sm:w-auto bg-sky-600 dark:bg-sky-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-sky-700 dark:hover:bg-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-sm"
             >
-              {isSaving ? 'Guardando...' : `Guardar Completados (${completedCount})`}
+              {isSaving
+                ? "Guardando..."
+                : `Guardar Listos (${readyToSaveCount})`}
             </button>
           </div>
         </footer>
@@ -319,10 +676,22 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ onClose, onBulkSaveCo
 const StatusIndicator: React.FC<{ status: UploadStatus }> = ({ status }) => {
   const statusMap = {
     pending: { text: "Pendiente", icon: null },
-    uploading: { text: "Subiendo...", icon: <SpinnerIcon className="w-4 h-4 text-white animate-spin" /> },
-    processing: { text: "Analizando...", icon: <SpinnerIcon className="w-4 h-4 text-white animate-spin" /> },
-    completed: { text: "Completo", icon: <CheckCircleIcon className="w-5 h-5 text-green-400" /> },
-    error: { text: "Error", icon: <ExclamationTriangleIcon className="w-5 h-5 text-red-400" /> },
+    uploading: {
+      text: "Subiendo...",
+      icon: <SpinnerIcon className="w-4 h-4 text-white animate-spin" />,
+    },
+    processing: {
+      text: "Analizando...",
+      icon: <SpinnerIcon className="w-4 h-4 text-white animate-spin" />,
+    },
+    completed: {
+      text: "Completo",
+      icon: <CheckCircleIcon className="w-5 h-5 text-green-400" />,
+    },
+    error: {
+      text: "Error",
+      icon: <ExclamationTriangleIcon className="w-5 h-5 text-red-400" />,
+    },
   };
   const { icon } = statusMap[status];
   if (!icon) return null;
@@ -330,8 +699,11 @@ const StatusIndicator: React.FC<{ status: UploadStatus }> = ({ status }) => {
 };
 
 const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => (
-  <div className="w-full bg-stone-200 rounded-full h-1.5">
-    <div className="bg-sky-500 h-1.5 rounded-full" style={{ width: `${progress}%` }}></div>
+  <div className="w-full bg-stone-200 dark:bg-stone-700 rounded-full h-1.5 overflow-hidden">
+    <div
+      className="bg-sky-500 dark:bg-sky-400 h-1.5 rounded-full transition-all duration-300 ease-out"
+      style={{ width: `${progress}%` }}
+    ></div>
   </div>
 );
 

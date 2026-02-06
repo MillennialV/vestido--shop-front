@@ -1,0 +1,25 @@
+name: Deploy to Vercel (pro)
+
+on:
+  push:
+    branches:
+      - pro
+
+jobs:
+  deploy:
+    name: Trigger Vercel deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel Deploy Hook
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST "https://api.vercel.com/v1/integrations/deploy/prj_W2jb48mMT1uH1x3pfYwCGlp8332n/XrsrqPk1cg")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "Deploy triggered successfully"
+          else
+            echo "Deploy hook failed with status $http_code"
+            exit 1
+          fi

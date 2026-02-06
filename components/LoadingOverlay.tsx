@@ -1,11 +1,17 @@
-import React from 'react';
-import { SpinnerIcon } from './Icons';
+import React from "react";
+import { SpinnerIcon } from "./Icons";
 
 interface LoadingOverlayProps {
   message?: string;
+  isOpen?: boolean;
 }
 
-const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ message = 'Cargando...' }) => {
+const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
+  message = "Cargando...",
+  isOpen = true,
+}) => {
+  if (!isOpen) return null;
+
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-fade-in"
@@ -31,4 +37,3 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ message = 'Cargando...'
 };
 
 export default LoadingOverlay;
-

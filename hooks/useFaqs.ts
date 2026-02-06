@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { preguntasService, mapFaqItemToComponent } from '../services/faqService';
+import { mapFaqItemToComponent } from '../lib/faqData';
 import { faqData } from '../lib/faqData';
 import type { FaqItem } from '@/types/FaqItem';
 
@@ -30,8 +30,8 @@ export interface FaqComponentItem {
  * - error: Mensaje de error si existe
  * - fetchFaqs: Función para cargar las preguntas desde el servicio
  */
-export const useFaqs = () => {
-  const [faqs, setFaqs] = useState<FaqItem[]>([]);
+export const useFaqs = (initialItems: FaqItem[] = []) => {
+  const [faqs, setFaqs] = useState<FaqItem[]>(initialItems);
   const [faqsForComponent, setFaqsForComponent] = useState<FaqComponentItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,14 +58,16 @@ export const useFaqs = () => {
     setError(null);
 
     try {
-      const fetchedFaqs = await preguntasService.obtenerPreguntas(params);
-
+      // Llamar a la API route local
+      const query = params ? new URLSearchParams(params as any).toString() : '';
+      const res = await fetch(`/api/faqs${query ? '?' + query : ''}`);
+      if (!res.ok) throw new Error('Error al cargar preguntas frecuentes');
+      const data = await res.json();
+      const fetchedFaqs = Array.isArray(data) ? data : data.faqs || data.preguntas || [];
       const componentFaqs = fetchedFaqs.map(mapFaqItemToComponent);
-
       setFaqs(fetchedFaqs);
       setFaqsForComponent(componentFaqs);
       setHasFetched(true);
-
       return componentFaqs;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al cargar preguntas frecuentes';

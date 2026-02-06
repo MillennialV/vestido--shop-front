@@ -1,8 +1,11 @@
-import React, { useEffect, useRef } from 'react';
-import type { Garment } from '@/types/Garment';
-import QRCode from 'qrcode';
-import { PUBLIC_URL } from '../lib/seo';
-import { CloseIcon, DownloadIcon } from './Icons';
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import type { Garment } from "@/types/Garment";
+import QRCode from "qrcode";
+import { PUBLIC_URL } from "../lib/seo";
+import { slugify } from "../lib/slugify";
+import { CloseIcon, DownloadIcon } from "./Icons";
 
 interface QrCodeModalProps {
   isOpen: boolean;
@@ -10,71 +13,98 @@ interface QrCodeModalProps {
   garment: Garment | null;
 }
 
-const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose, garment }) => {
+const QrCodeModal: React.FC<QrCodeModalProps> = ({
+  isOpen,
+  onClose,
+  garment,
+}) => {
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (isOpen && garment && garment.slug && canvasRef.current) {
-      const shareUrl = `${PUBLIC_URL}/#/${garment.slug}`;
-
-      QRCode.toCanvas(canvasRef.current, shareUrl, {
-        width: 256,
-        margin: 2,
-        color: {
-          dark: '#292524', // stone-800
-          light: '#fafaf9' // stone-50
-        }
-      }, (error) => {
-        if (error) {
-          console.error("Failed to generate QR Code:", error);
-        }
-      });
+    if (isOpen) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, garment]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isRendered && garment && canvasRef.current) {
+      const currentSlug = garment.slug || slugify(garment.title, garment.id);
+      const shareUrl = `${PUBLIC_URL}/#/${currentSlug}`;
+
+      QRCode.toCanvas(
+        canvasRef.current,
+        shareUrl,
+        {
+          width: 256,
+          margin: 4,
+          color: {
+            dark: "#000000",
+            light: "#ffffff",
+          },
+        },
+        (error) => {
+          if (error) {
+            console.error("[QrCodeModal] Error al generar QR:", error);
+          }
+        },
+      );
+    }
+  }, [isRendered, garment, isVisible]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
 
   const handleDownload = () => {
     if (canvasRef.current && garment) {
-      const link = document.createElement('a');
-      link.download = `vestidos-de-fiesta-qr-${garment.slug}.png`;
-      link.href = canvasRef.current.toDataURL('image/png');
+      const currentSlug = garment.slug || slugify(garment.title, garment.id);
+      const link = document.createElement("a");
+      link.download = `vestidos-de-fiesta-qr-${currentSlug}.png`;
+      link.href = canvasRef.current.toDataURL("image/png");
       link.click();
     }
   };
 
-  if (!isOpen) {
+  if (!isRendered) {
     return null;
   }
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in"
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="qr-code-modal-title"
     >
       <div
-        className="relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-sm animate-modal-in"
+        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-sm transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8 text-center">
-          <h2 id="qr-code-modal-title" className="text-2xl font-semibold text-stone-900 dark:text-stone-100 mb-2">
+          <h2
+            id="qr-code-modal-title"
+            className="text-2xl font-semibold text-stone-900 dark:text-stone-100 mb-2"
+          >
             Compartir con QR
           </h2>
           <p className="text-stone-600 dark:text-stone-300 mb-6">
@@ -102,15 +132,7 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose, garment }) =
           <CloseIcon className="w-6 h-6" />
         </button>
       </div>
-      <style>{`
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-        @keyframes modal-in {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-modal-in { animation: modal-in 0.3s ease-out forwards; }
-      `}</style>
+
     </div>
   );
 };
