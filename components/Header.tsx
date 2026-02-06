@@ -77,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({
               role="heading"
               aria-level={1}
             >
-              Vestidos de Fiesta Desarrollo 2
+              Vestidos de Fiesta Desarrollo 3
             </h1>
             <p className="mt-1 text-base text-stone-500 dark:text-stone-400 tracking-widest uppercase">
               by Womanity
