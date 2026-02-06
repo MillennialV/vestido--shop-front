@@ -23,6 +23,7 @@ import { CloseIcon, SpinnerIcon, ExclamationTriangleIcon } from "./Icons";
 type FaqModalMode = "create" | "edit" | "delete";
 
 interface FaqModalProps {
+  isOpen: boolean;
   mode: FaqModalMode;
   faq?: FaqItem | null;
   onClose: () => void;
@@ -35,11 +36,26 @@ interface ValidationError {
 }
 
 const FaqModal: React.FC<FaqModalProps> = ({
+  isOpen,
   mode,
   faq,
   onClose,
   onSuccess,
 }) => {
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   const [pregunta, setPregunta] = useState("");
   const [respuesta, setRespuesta] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -248,16 +264,18 @@ const FaqModal: React.FC<FaqModalProps> = ({
     }
   };
 
+  if (!isRendered) return null;
+
   return (
     <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in"
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       onClick={!isLoading ? onClose : undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="faq-modal-title"
     >
       <div
-        className="relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-lg animate-modal-in"
+        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-lg transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -455,15 +473,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
           </div>
         )}
       </div>
-      <style>{`
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-        @keyframes modal-in {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-modal-in { animation: modal-in 0.3s ease-out forwards; }
-      `}</style>
+
     </div>
   );
 };

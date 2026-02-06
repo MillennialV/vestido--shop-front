@@ -7,16 +7,32 @@ import { useProducts } from "../hooks/useProducts";
 import { CloseIcon, SparklesIcon, SpinnerIcon } from "./Icons";
 
 interface AdminFormModalProps {
+  isOpen: boolean;
   garment: Garment | null;
   onClose: () => void;
   onSave?: (product: Garment) => void;
 }
 
 const AdminFormModal: React.FC<AdminFormModalProps> = ({
+  isOpen,
   garment,
   onClose,
   onSave,
 }) => {
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   const [formData, setFormData] = useState({
     title: "",
     brand: "",
@@ -44,7 +60,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (garment) {
+    if (isOpen && garment) {
       setFormData({
         title: garment.title,
         brand: garment.brand,
@@ -58,9 +74,29 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         videoUrl: garment.videoUrl || "",
       });
       setPreviewUrl(garment.videoUrl);
+
+      // Delay focus to allow entry animation
+      const timer = setTimeout(() => firstInputRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
+    } else if (isOpen && !garment) {
+      // Reset form for "Add New" mode
+      setFormData({
+        title: "",
+        brand: "",
+        size: "M",
+        color: "",
+        description: "",
+        price: "",
+        material: "",
+        occasion: "",
+        style_notes: "",
+        videoUrl: "",
+      });
+      setPreviewUrl(null);
+      setVideoFile(null);
+      setFormErrors({});
     }
-    firstInputRef.current?.focus();
-  }, [garment]);
+  }, [isOpen, garment]);
 
   useEffect(() => {
     const currentPreviewUrl = previewUrl;
@@ -113,7 +149,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!previewUrl && !videoFile && !formData.videoUrl) {
-      console.log("Por favor, sube un video o proporciona una URL de video.");
       return;
     }
 
@@ -121,7 +156,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       ? parseFloat(formData.price)
       : undefined;
     if (formData.price && isNaN(priceAsNumber!)) {
-      console.log("Por favor, introduce un precio válido.");
       return;
     }
 
@@ -148,7 +182,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
     savePromise
       .then((product) => {
-        console.log("[AdminFormModal] Producto guardado:", product);
         setFormErrors({});
         if (onSave) {
           try {
@@ -161,8 +194,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         setTimeout(() => onClose(), 100);
       })
       .catch((error) => {
-        console.error("Error al guardar producto:", error);
-
         // Manejar errores de validación del backend
         if (error.errors && Array.isArray(error.errors)) {
           const errorsObj: Record<string, string> = {};
@@ -215,7 +246,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
   const handleAiAutocomplete = async () => {
     if (!videoPreviewRef.current || !previewUrl) {
-      console.log("No hay un video para analizar.");
       return;
     }
 
@@ -250,8 +280,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         throw new Error("Error al analizar la prenda con IA");
       }
       const result = await response.json();
-      // Mostrar el resultado en consola
-      console.log("Resultado del análisis de IA:", result);
 
       // Autocompletar los campos con la información del análisis
       setFormData((prev) => {
@@ -275,7 +303,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         };
       });
     } catch (error) {
-      console.error("Error con IA:", error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
 
@@ -307,16 +334,18 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
   const isAiDisabled = !previewUrl || isAiLoading;
 
+  if (!isRendered) return null;
+
   return (
     <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in"
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="form-modal-title"
     >
       <div
-        className="relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-modal-in"
+        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8">
@@ -664,15 +693,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
           <CloseIcon className="w-8 h-8" />
         </button>
       </div>
-      <style>{`
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-        @keyframes modal-in {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-modal-in { animation: modal-in 0.3s ease-out forwards; }
-      `}</style>
+
     </div>
   );
 };

@@ -16,7 +16,7 @@ interface VideoCardProps {
   onSelect: (garment: Garment) => void;
   isAdmin: boolean;
   onEdit: (garment: Garment) => void;
-  onDelete: (id: number) => void;
+  onDelete: (garment: Garment) => void;
   isSelectionMode: boolean;
   isSelected: boolean;
   onToggleSelection: (id: number) => void;
@@ -122,13 +122,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (
-      window.confirm(
-        `¿Estás seguro de que quieres eliminar la prenda "${garment.title}"?`,
-      )
-    ) {
-      onDelete(garment.id);
-    }
+    onDelete(garment);
   };
 
   const handleWhatsappClick = (e: React.MouseEvent) => {

@@ -5,6 +5,7 @@ import type { Garment } from "@/types/Garment";
 import ThumbnailStrip from "./ThumbnailStrip";
 import QrCodeModal from "./QrCodeModal";
 import { PUBLIC_URL } from "../lib/seo";
+import { slugify } from "../lib/slugify";
 import AccordionItem from "./AccordionItem";
 import {
   CloseIcon,
@@ -19,21 +20,35 @@ import {
 } from "./Icons";
 
 interface VideoModalProps {
-  garment: Garment;
+  isOpen: boolean;
+  garment?: Garment;
   onClose: () => void;
   garmentList: Garment[];
   onChangeGarment: (garment: Garment) => void;
 }
 
 const VideoModal: React.FC<VideoModalProps> = ({
+  isOpen,
   garment,
   onClose,
   garmentList,
   onChangeGarment,
 }) => {
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isClosing, setIsClosing] = useState(false);
   const [isThumbnailStripVisible, setIsThumbnailStripVisible] = useState(true);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -69,10 +84,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   };
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-    }, 300); // Corresponds to animation duration
+    onClose();
   };
 
   useEffect(() => {
@@ -82,6 +94,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
         return;
       }
 
+      if (!garment) return;
       const currentIndex = garmentList.findIndex((g) => g.id === garment.id);
       if (currentIndex === -1) return;
 
@@ -112,15 +125,12 @@ const VideoModal: React.FC<VideoModalProps> = ({
     // Reset video loading state only when video URL changes (not on every render)
     setIsVideoLoading(true);
     setVideoError(null);
-  }, [garment.videoUrl]);
+  }, [garment?.videoUrl]);
 
   const handleShare = () => {
-    if (!garment.slug) {
-      setToastMessage("Error: No se pudo generar el enlace.");
-      setTimeout(() => setToastMessage(null), 3000);
-      return;
-    }
-    const shareUrl = `${PUBLIC_URL}/#/${garment.slug}`;
+    if (!garment) return;
+    const currentSlug = garment.slug || slugify(garment.title, garment.id);
+    const shareUrl = `${PUBLIC_URL}/#/${currentSlug}`;
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {
@@ -135,7 +145,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   };
 
   const handleSocialShare = async (platform: "TikTok" | "Instagram") => {
-    if (!garment.videoUrl) return;
+    if (!garment?.videoUrl || !garment?.title || !garment?.brand) return;
 
     const fileName = `vestidos-de-fiesta-${garment.title.toLowerCase().replace(/\s+/g, "-")}.mp4`;
     const shareDetails = {
@@ -191,40 +201,44 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   const phoneNumber = "51956382746";
   let message = `Hola, me interesa la siguiente prenda:\n\n`;
-  message += `*Producto:* ${garment.title}\n`;
-  message += `*Marca:* ${garment.brand}\n`;
-  message += `*ID de Producto:* ${garment.id}\n`;
-  message += `*Talla:* ${garment.size}\n`;
-  message += `*Color:* ${garment.color}\n`;
-  if (garment.price) {
-    const priceValue =
-      typeof garment.price === "string"
-        ? parseFloat(garment.price)
-        : garment.price;
-    if (!isNaN(priceValue)) {
-      message += `*Precio:* S/ ${priceValue.toFixed(2)}\n`;
-    } else {
-      message += `*Precio:* S/ ${garment.price}\n`;
+  if (garment) {
+    message += `*Producto:* ${garment.title}\n`;
+    message += `*Marca:* ${garment.brand}\n`;
+    message += `*ID de Producto:* ${garment.id}\n`;
+    message += `*Talla:* ${garment.size}\n`;
+    message += `*Color:* ${garment.color}\n`;
+    if (garment.price) {
+      const priceValue =
+        typeof garment.price === "string"
+          ? parseFloat(garment.price)
+          : garment.price;
+      if (!isNaN(priceValue)) {
+        message += `*Precio:* S/ ${priceValue.toFixed(2)}\n`;
+      } else {
+        message += `*Precio:* S/ ${garment.price}\n`;
+      }
     }
-  }
-  if (garment.slug) {
-    const productUrl = `${PUBLIC_URL}/#/${garment.slug}`;
-    message += `*Enlace:* ${productUrl}\n`;
+    if (garment.slug) {
+      const productUrl = `${PUBLIC_URL}/#/${garment.slug}`;
+      message += `*Enlace:* ${productUrl}\n`;
+    }
   }
   message += `\n¿Podrían darme más información sobre la disponibilidad?`;
 
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
+  if (!isRendered || !garment) return null;
+
   return (
     <div
-      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 ${isClosing ? "animate-backdrop-out pointer-events-none opacity-0" : "animate-backdrop-in opacity-100"}`}
-      onClick={!isClosing ? handleClose : undefined}
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      onClick={handleClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div
-        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden ${isClosing ? "animate-modal-out" : "animate-modal-in"}`}
+        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -465,45 +479,13 @@ const VideoModal: React.FC<VideoModalProps> = ({
         </div>
       </div>
 
-      {isQrModalOpen && (
-        <QrCodeModal
-          isOpen={isQrModalOpen}
-          onClose={() => setIsQrModalOpen(false)}
-          garment={garment}
-        />
-      )}
+      <QrCodeModal
+        isOpen={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+        garment={garment}
+      />
 
       <style>{`
-        @keyframes backdrop-in { 
-          from { opacity: 0; } 
-          to { opacity: 1; } 
-        }
-        @keyframes backdrop-out { 
-          from { opacity: 1; } 
-          to { opacity: 0; } 
-        }
-        .animate-backdrop-in { animation: backdrop-in 0.3s ease-out forwards; }
-        .animate-backdrop-out { animation: backdrop-out 0.3s ease-out forwards; transition: opacity 0.3s ease-out; }
-
-        @keyframes modal-in {
-          from { opacity: 0; transform: scale(0.95) translateY(20px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes modal-out {
-          from { opacity: 1; transform: scale(1) translateY(0); }
-          to { opacity: 0; transform: scale(0.95) translateY(20px); }
-        }
-        .animate-modal-in { animation: modal-in 0.3s ease-out forwards; }
-        .animate-modal-out { animation: modal-out 0.3s ease-out forwards; }
-        
-        @keyframes fade-in-out {
-            0% { opacity: 0; transform: translateY(10px); }
-            20% { opacity: 1; transform: translateY(0); }
-            80% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(10px); }
-        }
-        .animate-fade-in-out { animation: fade-in-out 4s ease-in-out forwards; }
-        
         /* Scrollbar styles */
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;

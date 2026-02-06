@@ -6,7 +6,7 @@ interface ConfirmationModalProps {
     onClose: () => void;
     onConfirm: () => void;
     title: string;
-    message: string;
+    message: React.ReactNode;
     isProcessing?: boolean;
     confirmText?: string;
     cancelText?: string;
@@ -24,7 +24,22 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     cancelText = 'Cancelar',
     variant = 'danger'
 }) => {
-    if (!isOpen) return null;
+    const [isRendered, setIsRendered] = React.useState(false);
+    const [isVisible, setIsVisible] = React.useState(false);
+
+    React.useEffect(() => {
+        if (isOpen) {
+            setIsRendered(true);
+            // Pequeño delay para asegurar que el DOM existe antes de animar entrada
+            setTimeout(() => setIsVisible(true), 10);
+        } else {
+            setIsVisible(false);
+            const timer = setTimeout(() => setIsRendered(false), 300); // Mismo tiempo que la animación
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
+    if (!isRendered) return null;
 
     const bgColors = {
         danger: 'bg-red-600 hover:bg-red-700',
@@ -40,13 +55,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in"
+            className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
             onClick={!isProcessing ? onClose : undefined}
             role="dialog"
             aria-modal="true"
         >
             <div
-                className="relative bg-white dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-modal-in"
+                className={`relative bg-white dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-md overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6">
@@ -58,9 +73,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             <h3 className="text-xl font-semibold text-stone-900 dark:text-stone-100 mb-2">
                                 {title}
                             </h3>
-                            <p className="text-stone-600 dark:text-stone-300 leading-relaxed">
+                            <div className="text-stone-600 dark:text-stone-300 leading-relaxed">
                                 {message}
-                            </p>
+                            </div>
                         </div>
                     </div>
 
@@ -92,15 +107,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     </button>
                 )}
             </div>
-            <style>{`
-                @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-                .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
-                @keyframes modal-in { 
-                  from { opacity: 0; transform: scale(0.95) translateY(10px); } 
-                  to { opacity: 1; transform: scale(1) translateY(0); } 
-                }
-                .animate-modal-in { animation: modal-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-            `}</style>
+
         </div>
     );
 };
