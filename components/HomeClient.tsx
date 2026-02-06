@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { slugify } from "@/lib/slugify";
 import type { Garment } from "@/types/Garment";
 import type { FaqItem } from "@/types/FaqItem";
@@ -11,17 +11,19 @@ import { useFaqs } from "@/hooks/useFaqs";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import VideoModal from "@/components/product/VideoModal";
-import AdminFormModal from "@/components/modals/AdminFormModal";
-import AccessCodeModal from "@/components/AccessCodeModal";
-import BulkUploadModal from "@/components/BulkUploadModal";
+
+const AdminFormModal = dynamic(() => import("@/components/modals/AdminFormModal"), { ssr: false });
+const AccessCodeModal = dynamic(() => import("@/components/AccessCodeModal"), { ssr: false });
+const BulkUploadModal = dynamic(() => import("@/components/BulkUploadModal"), { ssr: false });
+const FaqModal = dynamic(() => import("@/components/FaqModal"), { ssr: false });
+const PostFormModal = dynamic(() => import("@/components/PostFormModal"), { ssr: false });
+const WhatsappModal = dynamic(() => import("@/components/WhatsappModal"), { ssr: false });
+
 import Pagination from "@/components/Pagination";
 import FaqAccordion from "@/components/FaqAccordion";
-import FaqModal from "@/components/FaqModal";
-import PostFormModal from "@/components/PostFormModal";
 import CatalogToolbar from "@/components/CatalogToolbar";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import Blog from "@/components/Blog";
-import WhatsappModal from "@/components/WhatsappModal";
 import VideoCard from "@/components/VideoCard";
 import { faqData } from "@/lib/faqData";
 import { PlusIcon } from "@/components/Icons";

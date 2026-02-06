@@ -37,7 +37,6 @@ const Header: React.FC<HeaderProps> = ({
           {mounted && (
             <button
               onClick={toggleDarkMode}
-              onMouseDown={(e) => e.currentTarget.blur()}
               className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 dark:focus-visible:ring-stone-400 active:bg-stone-200 dark:active:bg-stone-700"
               aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
             >
@@ -50,7 +49,6 @@ const Header: React.FC<HeaderProps> = ({
           )}
           <button
             onClick={onToggleAdmin}
-            onMouseDown={(e) => e.currentTarget.blur()}
             className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 dark:focus-visible:ring-stone-400 active:bg-stone-200 dark:active:bg-stone-700"
             aria-label={
               isAdmin

@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, use as useReact } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import type { Post } from "@/types/post";
@@ -115,11 +116,16 @@ export default function PostDetailClient({ slug }: { slug: string }) {
           )}
         </div>
         {post.featured_image_url && (
-          <img
-            src={post.featured_image_url}
-            alt={post.title}
-            className="w-full max-h-96 object-cover rounded-lg mb-8"
-          />
+          <div className="relative w-full aspect-video max-h-[400px] overflow-hidden rounded-xl mb-8 shadow-md">
+            <Image
+              src={post.featured_image_url}
+              alt={post.title}
+              fill
+              priority
+              sizes="(max-width: 896px) 100vw, 896px"
+              className="object-cover"
+            />
+          </div>
         )}
         <div
           className="prose prose-stone dark:prose-invert max-w-none break-words break-all whitespace-pre-wrap"

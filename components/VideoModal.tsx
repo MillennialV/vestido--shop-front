@@ -485,41 +485,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
         garment={garment}
       />
 
-      <style>{`
-        /* Scrollbar styles */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f5f5f4;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #d6d3d1;
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #a8a29e;
-        }
-        
-        .dark .custom-scrollbar::-webkit-scrollbar-track {
-          background: #292524;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #57534e;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #78716c;
-        }
-        
-        /* Firefox scrollbar */
-        .custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: #d6d3d1 #f5f5f4;
-        }
-        .dark .custom-scrollbar {
-          scrollbar-color: #57534e #292524;
-        }
-      `}</style>
+
     </div>
   );
 };

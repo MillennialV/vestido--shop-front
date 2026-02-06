@@ -56,6 +56,59 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
     onReorder(updatedItems);
   };
 
+  if (!isAdmin) {
+    return (
+      <div className="w-full space-y-2">
+        {items.map((item) => {
+          const isOpen = openId === item.id;
+          return (
+            <div
+              key={item.id}
+              className="border-b border-stone-200 dark:border-stone-700 bg-white-200 dark:bg-stone-900 transition-all duration-300"
+            >
+              <div className="flex items-center w-full group">
+                <h2 className="flex-grow">
+                  <button
+                    type="button"
+                    aria-label={isOpen ? `Cerrar: ${item.pregunta}` : `Abrir: ${item.pregunta}`}
+                    onClick={() => setOpenId(isOpen ? null : item.id)}
+                    className="flex justify-between items-center w-full py-5 text-left font-semibold text-stone-800 dark:text-stone-100 text-lg"
+                  >
+                    <span>{item.pregunta}</span>
+                  </button>
+                </h2>
+                <div className="flex items-center gap-3 ml-4">
+                  <button
+                    type="button"
+                    aria-label={isOpen ? `Cerrar: ${item.pregunta}` : `Abrir: ${item.pregunta}`}
+                    onClick={() => setOpenId(isOpen ? null : item.id)}
+                    className="p-2 cursor-pointer text-stone-500 dark:text-stone-400"
+                  >
+                    {isOpen ? (
+                      <MinusIcon className="w-6 h-6" />
+                    ) : (
+                      <PlusIcon className="w-6 h-6" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div
+                className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+              >
+                <div className="overflow-hidden">
+                  <p className="pb-5 text-stone-600 dark:text-stone-300">
+                    {item.respuesta}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="faq-list">
@@ -89,31 +142,40 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                             <div
                               {...provided.dragHandleProps}
                               className="pr-2 cursor-grab active:cursor-grabbing text-stone-400 hover:text-stone-600"
+                              role="button"
+                              aria-label={`Reordenar pregunta: ${item.pregunta}`}
+                              tabIndex={0}
                             >
                               <GripVerticalIcon className="w-5 h-5" />
                             </div>
                           )}
 
-                          <h3 className="flex-grow">
+                          <h2 className="flex-grow">
                             <button
+                              type="button"
                               onClick={() => setOpenId(isOpen ? null : item.id)}
+                              aria-label={isOpen ? "Cerrar" : "Abrir"}
                               className="flex justify-between items-center w-full py-5 text-left font-semibold text-stone-800 dark:text-stone-100 text-lg"
                             >
                               <span>{item.pregunta}</span>
                             </button>
-                          </h3>
+                          </h2>
 
                           <div className="flex items-center gap-3 ml-4">
                             {isAdmin && (
                               <div className="flex items-center gap-2">
                                 <button
+                                  type="button"
                                   onClick={() => onEdit?.(item)}
+                                  aria-label="Editar"
                                   className="p-1.5 rounded-md hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-200 cursor-pointer"
                                 >
                                   <EditIcon className="w-5 h-5" />
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={() => onDelete?.(item)}
+                                  aria-label="Eliminar"
                                   className="p-1.5 rounded-md hover:bg-red-100 text-red-600 cursor-pointer"
                                 >
                                   <DeleteIcon className="w-5 h-5" />
@@ -121,7 +183,9 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                               </div>
                             )}
                             <button
+                              type="button"
                               onClick={() => setOpenId(isOpen ? null : item.id)}
+                              aria-label={isOpen ? "Cerrar" : "Abrir"}
                               className="p-2 cursor-pointer"
                             >
                               {isOpen ? (

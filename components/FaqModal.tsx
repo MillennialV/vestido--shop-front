@@ -320,6 +320,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
+                  aria-label="Cancelar"
                   onClick={onClose}
                   disabled={isLoading}
                   className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2.5 px-6 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer disabled:cursor-not-allowed"
@@ -328,6 +329,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
                 </button>
                 <button
                   type="button"
+                  aria-label="Eliminar"
                   onClick={handleDelete}
                   disabled={isLoading}
                   className="bg-red-600 dark:bg-red-700 text-white font-medium py-2.5 px-6 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
@@ -423,6 +425,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
+                  aria-label="Cancelar"
                   onClick={onClose}
                   disabled={isLoading}
                   className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2.5 px-6 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
@@ -431,6 +434,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
                 </button>
                 <button
                   type="submit"
+                  aria-label="Guardar"
                   disabled={isLoading}
                   className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2.5 px-6 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                 >
@@ -451,9 +455,10 @@ const FaqModal: React.FC<FaqModalProps> = ({
         </div>
         {!isLoading && (
           <button
+            type="button"
+            aria-label="Cerrar"
             onClick={onClose}
             className="absolute top-4 right-4 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400 cursor-pointer disabled:cursor-not-allowed"
-            aria-label="Cerrar"
           >
             <CloseIcon className="w-6 h-6" />
           </button>

@@ -554,6 +554,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                     crossOrigin="anonymous"
                     className="w-full rounded-lg bg-black"
                     style={{ maxHeight: "300px" }}
+                    aria-label="Vista previa del video de la prenda"
                   />
                 </div>
               )}

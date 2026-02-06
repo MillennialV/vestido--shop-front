@@ -188,7 +188,11 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
         className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 text-stone-500 hover:text-red-500 z-10">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-stone-500 hover:text-red-500 z-10"
+          aria-label="Cerrar modal de artículo"
+        >
           <CloseIcon className="w-6 h-6" />
         </button>
 

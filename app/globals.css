@@ -1,3 +1,95 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+    body {
+        font-family: var(--font-inter), sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-cormorant), serif;
+    }
+
+    button {
+        cursor: pointer;
+    }
+
+    button:disabled {
+        cursor: default;
+    }
+}
+
+@theme {
+    --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+}
+
+@layer utilities {
+    .animate-fade-in-down {
+        animation: fade-in-down 0.3s ease-out forwards;
+    }
+}
+
+@keyframes fade-in-down {
+    from {
+        opacity: 0;
+        transform: translateY(-1rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Optimized scrollbar styles - loaded after critical path */
+@layer components {
+
+    html,
+    body,
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #d6d3d1 #f5f5f4;
+    }
+
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f5f5f4;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #d6d3d1;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a8a29e;
+    }
+
+    /* Dark mode scrollbar - consolidated */
+    .dark :is(html, body, .custom-scrollbar) {
+        scrollbar-color: #57534e #292524;
+    }
+
+    .dark ::-webkit-scrollbar-track {
+        background: #292524;
+    }
+
+    .dark ::-webkit-scrollbar-thumb {
+        background: #57534e;
+    }
+
+    .dark ::-webkit-scrollbar-thumb:hover {
+        background: #78716c;
+    }
+}
