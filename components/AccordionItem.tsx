@@ -2,10 +2,10 @@ import React from 'react';
 import { ChevronDownIcon, ChevronUpIcon } from './Icons';
 
 interface AccordionItemProps {
-  title: string;
-  children: React.ReactNode;
-  isOpen: boolean;
-  onClick: () => void;
+    title: string;
+    children: React.ReactNode;
+    isOpen: boolean;
+    onClick: () => void;
 }
 
 const AccordionItem: React.FC<AccordionItemProps> = ({ title, children, isOpen, onClick }) => (
@@ -13,6 +13,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, children, isOpen, 
         <h2>
             <button
                 type="button"
+                aria-label={isOpen ? `Cerrar: ${title}` : `Abrir: ${title}`}
                 className="flex justify-between items-center w-full py-4 font-semibold text-left text-stone-800 dark:text-stone-100 hover:text-stone-900 dark:hover:text-stone-50 transition-colors"
                 onClick={onClick}
                 aria-expanded={isOpen}

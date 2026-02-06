@@ -16,10 +16,11 @@ interface VideoCardProps {
   onSelect: (garment: Garment) => void;
   isAdmin: boolean;
   onEdit: (garment: Garment) => void;
-  onDelete: (id: number) => void;
+  onDelete: (garment: Garment) => void;
   isSelectionMode: boolean;
   isSelected: boolean;
   onToggleSelection: (id: number) => void;
+  isDisabled?: boolean;
 }
 
 const VideoCard: React.FC<VideoCardProps> = ({
@@ -31,6 +32,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   isSelectionMode,
   isSelected,
   onToggleSelection,
+  isDisabled = false,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLElement>(null);
@@ -97,23 +99,12 @@ const VideoCard: React.FC<VideoCardProps> = ({
   };
 
   const handleClick = () => {
+    if (isDisabled) return;
+
     if (isSelectionMode) {
       onToggleSelection(garment.id);
     } else {
-      fetch(`/api/products/${garment.id}`)
-        .then(async (res) => {
-          if (!res.ok) throw new Error('No se pudo obtener el detalle');
-          const fullGarment = await res.json();
-          const garmentWithSlug = {
-            ...fullGarment,
-            videoUrl: fullGarment.videoUrl || garment.videoUrl,
-            slug: fullGarment.slug || garment.slug,
-          };
-          onSelect(garmentWithSlug);
-        })
-        .catch(() => {
-          onSelect(garment);
-        });
+      onSelect(garment);
     }
   };
 
@@ -131,13 +122,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (
-      window.confirm(
-        `¿Estás seguro de que quieres eliminar la prenda "${garment.title}"?`,
-      )
-    ) {
-      onDelete(garment.id);
-    }
+    onDelete(garment);
   };
 
   const handleWhatsappClick = (e: React.MouseEvent) => {
@@ -179,7 +164,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
     <article
       ref={cardRef}
       className={`relative group aspect-[9/16] overflow-hidden rounded-lg shadow-lg transform transition-all duration-300 ease-in-out bg-stone-200 
-        ${isSelectionMode ? "cursor-pointer" : "cursor-pointer hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500"}
+        ${isDisabled ? "cursor-not-allowed opacity-75 grayscale-[0.5]" : isSelectionMode ? "cursor-pointer" : "cursor-pointer hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500"}
         ${isSelected ? "ring-4 ring-offset-2 ring-sky-500" : ""}
       `}
       onMouseEnter={!isSelectionMode ? handleMouseEnter : undefined}
@@ -233,8 +218,8 @@ const VideoCard: React.FC<VideoCardProps> = ({
           onCanPlay={handleCanPlay}
           onError={handleError}
           className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} brightness-90 ${!isSelectionMode ? "group-hover:brightness-100" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
+          title={`Vista previa en video de ${garment.title}`}
         >
-          <title>Vista previa en video de {garment.title}</title>
         </video>
       )}
       <div

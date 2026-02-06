@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import type { Post } from "../types/post";
 import { EditIcon, DeleteIcon } from "./Icons";
 
@@ -23,10 +24,10 @@ const PostCard: React.FC<PostCardProps> = ({
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return 'Fecha inválida';
 
-    const options: Intl.DateTimeFormatOptions = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     };
     return date.toLocaleDateString('es-ES', options);
   };
@@ -37,11 +38,12 @@ const PostCard: React.FC<PostCardProps> = ({
       className="group flex flex-col h-full bg-white dark:bg-stone-800/50 rounded-xl overflow-hidden border border-stone-100 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-500 transition-all duration-300 hover:shadow-xl"
     >
       <div className="relative aspect-[16/10] overflow-hidden">
-        <img
+        <Image
           src={post.featured_image_url}
           alt={post.title}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-          loading="lazy"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
 
@@ -52,8 +54,8 @@ const PostCard: React.FC<PostCardProps> = ({
             </span>
           )}
           {post.categories && post.categories.length > 0 && post.categories.map(cat => (
-            <span 
-              key={cat.id} 
+            <span
+              key={cat.id}
               className="backdrop-blur-md bg-white/90 dark:bg-black/60 text-stone-900 dark:text-stone-100 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full shadow-sm"
             >
               {cat.name}
@@ -72,7 +74,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   onEdit(post);
                 }}
                 className="p-2 bg-white text-stone-700 hover:text-sky-600 rounded-full shadow-lg hover:bg-stone-50 transition-colors"
-                title="Editar artículo"
+                aria-label={`Editar ${post.title}`}
               >
                 <EditIcon className="w-4 h-4" />
               </button>
@@ -85,7 +87,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   onDelete(post);
                 }}
                 className="p-2 bg-white text-stone-700 hover:text-red-600 rounded-full shadow-lg hover:bg-stone-50 transition-colors"
-                title="Eliminar artículo"
+                aria-label={`Eliminar ${post.title}`}
               >
                 <DeleteIcon className="w-4 h-4" />
               </button>
@@ -103,9 +105,9 @@ const PostCard: React.FC<PostCardProps> = ({
           <span>{post.reading_time} min</span>
         </div>
 
-        <h3 className="text-xl md:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-3 leading-tight group-hover:text-stone-600 dark:group-hover:text-stone-300 transition-colors">
+        <h2 className="text-xl md:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-3 leading-tight group-hover:text-stone-600 dark:group-hover:text-stone-300 transition-colors">
           {post.title}
-        </h3>
+        </h2>
 
         <p className="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-6 line-clamp-3">
           {post.seo_description}
@@ -123,7 +125,7 @@ const PostCard: React.FC<PostCardProps> = ({
           </svg>
         </div>
       </div>
-    </Link>
+    </Link >
   );
 };
 

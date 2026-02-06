@@ -15,6 +15,7 @@ const ReactQuill = dynamic(() => import("react-quill-new"), {
 });
 
 interface PostFormModalProps {
+  isOpen: boolean;
   post?: Post | null;
   onClose: () => void;
   onSave?: (post: Post) => void;
@@ -32,7 +33,21 @@ const modules = {
 
 const formats = ["header", "bold", "italic", "underline", "strike", "blockquote", "list", "link"];
 
-const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) => {
+const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, onSave }) => {
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -114,7 +129,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
-    
+
     // Validaciones
     const newErrors: Record<string, string> = {};
     if (!formData.title.trim()) newErrors.title = "Título obligatorio";
@@ -162,25 +177,37 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
     }
   };
 
+  if (!isRendered) return null;
+
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-stone-50 dark:bg-stone-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-stone-500 hover:text-red-500 z-10">
+    <div
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      onClick={onClose}
+    >
+      <div
+        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-stone-500 hover:text-red-500 z-10"
+          aria-label="Cerrar modal de artículo"
+        >
           <CloseIcon className="w-6 h-6" />
         </button>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <h2 className="text-2xl font-bold">{post ? "Editar Artículo" : "Nuevo Artículo"}</h2>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Título *</label>
-              <input 
-                type="text" 
-                name="title" 
-                value={formData.title} 
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
                 onChange={handleTitleChange}
-                className="w-full p-2 border rounded dark:bg-stone-700" 
+                className="w-full p-2 border rounded dark:bg-stone-700"
               />
               {errors.title && <span className="text-red-500 text-xs">{errors.title}</span>}
             </div>
@@ -188,9 +215,9 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Categoría *</label>
-                <select 
-                  name="categoryId" 
-                  value={formData.categoryId} 
+                <select
+                  name="categoryId"
+                  value={formData.categoryId}
                   onChange={handleChange}
                   className="w-full p-2 border rounded dark:bg-stone-700"
                 >
@@ -199,11 +226,11 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Lectura (min)</label>
-                <input 
-                  type="number" 
-                  name="reading_time" 
-                  value={formData.reading_time} 
-                  onChange={handleChange} 
+                <input
+                  type="number"
+                  name="reading_time"
+                  value={formData.reading_time}
+                  onChange={handleChange}
                   className="w-full p-2 border rounded dark:bg-stone-700"
                 />
               </div>
@@ -212,10 +239,10 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
             <div>
               <label className="block text-sm font-medium mb-1">Imagen Destacada *</label>
               <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  name="featured_image_url" 
-                  value={imageFile ? imageFile.name : formData.featured_image_url} 
+                <input
+                  type="text"
+                  name="featured_image_url"
+                  value={imageFile ? imageFile.name : formData.featured_image_url}
                   disabled={!!imageFile}
                   onChange={handleChange}
                   className="flex-grow p-2 border rounded dark:bg-stone-700"
@@ -231,10 +258,10 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
             <div>
               <label className="block text-sm font-medium mb-1">Contenido</label>
               <div className="bg-white dark:bg-stone-700 rounded overflow-hidden">
-                <ReactQuill 
-                  theme="snow" 
-                  value={formData.content} 
-                  onChange={(val) => setFormData(f => ({...f, content: val}))}
+                <ReactQuill
+                  theme="snow"
+                  value={formData.content}
+                  onChange={(val) => setFormData(f => ({ ...f, content: val }))}
                   modules={modules}
                   className="h-64 mb-12"
                 />
@@ -243,9 +270,9 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
 
             <div>
               <label className="block text-sm font-medium mb-1">Descripción SEO</label>
-              <textarea 
-                name="seo_description" 
-                value={formData.seo_description} 
+              <textarea
+                name="seo_description"
+                value={formData.seo_description}
                 onChange={handleChange}
                 className="w-full p-2 border rounded dark:bg-stone-700"
                 rows={2}
@@ -253,11 +280,11 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
             </div>
 
             <label className="flex items-center gap-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                name="is_published" 
-                checked={formData.is_published} 
-                onChange={(e) => setFormData(f => ({...f, is_published: e.target.checked}))}
+              <input
+                type="checkbox"
+                name="is_published"
+                checked={formData.is_published}
+                onChange={(e) => setFormData(f => ({ ...f, is_published: e.target.checked }))}
               />
               <span className="text-sm">Publicar artículo</span>
             </label>
@@ -265,8 +292,8 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ post, onClose, onSave }) 
 
           <div className="flex justify-end gap-3 pt-4">
             <button type="button" onClick={onClose} className="px-4 py-2 hover:bg-stone-200 rounded">Cancelar</button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isSubmitting}
               className="px-6 py-2 bg-stone-800 text-white rounded hover:bg-black disabled:opacity-50 flex items-center gap-2"
             >

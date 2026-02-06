@@ -1,9 +1,23 @@
-export const dynamic = "force-dynamic";
+
 
 import type { Metadata, Viewport } from "next";
+import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import React from "react";
 import { AuthProvider } from "@/provider/AuthProvider";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  display: "swap",
+  variable: "--font-cormorant",
+});
 
 export const viewport: Viewport = {
   themeColor: "#f5f5f4",
@@ -60,94 +74,9 @@ export default function RootLayout({
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-        <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-        <script>
-          {`
-            tailwind.config = {
-              darkMode: 'class',
-            }
-          `}
-        </script>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preconnect"
-          href="https://storage.googleapis.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500&display=swap"
-          rel="stylesheet"
-        />
 
-        <style>{`
-          body {
-            font-family: 'Inter', sans-serif;
-          }
-          h1, h2, h3, h4, h5, h6 {
-            font-family: 'Cormorant Garamond', serif;
-          }
-          @keyframes fade-in-down {
-            from {
-              opacity: 0;
-              transform: translateY(-1rem);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          .animate-fade-in-down {
-            animation: fade-in-down 0.3s ease-out forwards;
-          }
-          
-          /* Global scrollbar styles */
-          * {
-            scrollbar-width: thin;
-            scrollbar-color: #d6d3d1 #f5f5f4;
-          }
-          
-          *::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-          }
-          
-          *::-webkit-scrollbar-track {
-            background: #f5f5f4;
-          }
-          
-          *::-webkit-scrollbar-thumb {
-            background: #d6d3d1;
-            border-radius: 4px;
-          }
-          
-          *::-webkit-scrollbar-thumb:hover {
-            background: #a8a29e;
-          }
-          
-          /* Dark mode scrollbar */
-          .dark * {
-            scrollbar-color: #57534e #292524;
-          }
-          
-          .dark *::-webkit-scrollbar-track {
-            background: #292524;
-          }
-          
-          .dark *::-webkit-scrollbar-thumb {
-            background: #57534e;
-          }
-          
-          .dark *::-webkit-scrollbar-thumb:hover {
-            background: #78716c;
-          }
-        `}</style>
+
 
         {/* JSON-LD Structured Data for SEO & AI Understanding */}
         <script
@@ -268,7 +197,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-stone-50">
+      <body className={`${inter.variable} ${cormorant.variable} bg-stone-50 font-sans`}>
         <AuthProvider>
           <div id="root">{children}</div>
         </AuthProvider>

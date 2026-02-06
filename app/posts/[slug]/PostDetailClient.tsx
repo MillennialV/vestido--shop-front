@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, use as useReact } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import type { Post } from "@/types/post";
@@ -14,36 +15,36 @@ export default function PostDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
 
   useEffect(() => {
-  const fetchPost = async () => {
-    try {
-      setIsLoading(true);
-      setError(null); // Limpiamos errores previos
-      
-      const res = await fetch('/api/posts?limit=100');
-      if (!res.ok) throw new Error('Error al cargar posts');
-      
-      const data = await res.json();
-      
-      // IMPORTANTE: Accedemos a la propiedad posts del objeto
-      const postsArray = data.posts || [];
-      
-      const foundPost = postsArray.find((p: Post) => p.slug === slug);
-      
-      if (!foundPost) {
-        setError("Post no encontrado");
-        return;
+    const fetchPost = async () => {
+      try {
+        setIsLoading(true);
+        setError(null); // Limpiamos errores previos
+
+        const res = await fetch('/api/posts?limit=100');
+        if (!res.ok) throw new Error('Error al cargar posts');
+
+        const data = await res.json();
+
+        // IMPORTANTE: Accedemos a la propiedad posts del objeto
+        const postsArray = data.posts || [];
+
+        const foundPost = postsArray.find((p: Post) => p.slug === slug);
+
+        if (!foundPost) {
+          setError("Post no encontrado");
+          return;
+        }
+
+        setPost(foundPost);
+      } catch (err) {
+        console.error("Error fetching post:", err);
+        setError("Error al cargar el post");
+      } finally {
+        setIsLoading(false);
       }
-      
-      setPost(foundPost);
-    } catch (err) {
-      console.error("Error fetching post:", err);
-      setError("Error al cargar el post");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  fetchPost();
-}, [slug]);
+    };
+    fetchPost();
+  }, [slug]);
 
   const handleNavigate = (path: string) => {
     router.push(path);
@@ -99,7 +100,7 @@ export default function PostDetailClient({ slug }: { slug: string }) {
         >
           <ArrowLeftIcon className="w-5 h-5" /> Volver al blog
         </button>
-        <h1 className="text-3xl font-bold mb-4 break-words break-all whitespace-pre-wrap">
+        <h1 className="text-3xl text-stone-500 dark:text-stone-300  font-bold mb-4 break-words break-all whitespace-pre-wrap">
           {post.title}
         </h1>
         <div className="mb-6 text-stone-500 dark:text-stone-300 text-sm">
@@ -115,11 +116,16 @@ export default function PostDetailClient({ slug }: { slug: string }) {
           )}
         </div>
         {post.featured_image_url && (
-          <img
-            src={post.featured_image_url}
-            alt={post.title}
-            className="w-full max-h-96 object-cover rounded-lg mb-8"
-          />
+          <div className="relative w-full aspect-video max-h-[400px] overflow-hidden rounded-xl mb-8 shadow-md">
+            <Image
+              src={post.featured_image_url}
+              alt={post.title}
+              fill
+              priority
+              sizes="(max-width: 896px) 100vw, 896px"
+              className="object-cover"
+            />
+          </div>
         )}
         <div
           className="prose prose-stone dark:prose-invert max-w-none break-words break-all whitespace-pre-wrap"

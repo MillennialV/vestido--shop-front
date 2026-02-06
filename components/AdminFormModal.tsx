@@ -7,16 +7,32 @@ import { useProducts } from "../hooks/useProducts";
 import { CloseIcon, SparklesIcon, SpinnerIcon } from "./Icons";
 
 interface AdminFormModalProps {
+  isOpen: boolean;
   garment: Garment | null;
   onClose: () => void;
   onSave?: (product: Garment) => void;
 }
 
 const AdminFormModal: React.FC<AdminFormModalProps> = ({
+  isOpen,
   garment,
   onClose,
   onSave,
 }) => {
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   const [formData, setFormData] = useState({
     title: "",
     brand: "",
@@ -29,6 +45,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     style_notes: "",
     videoUrl: "", // URL manual de video como alternativa
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -40,9 +57,10 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
   const firstInputRef = useRef<HTMLInputElement>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (garment) {
+    if (isOpen && garment) {
       setFormData({
         title: garment.title,
         brand: garment.brand,
@@ -56,9 +74,29 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         videoUrl: garment.videoUrl || "",
       });
       setPreviewUrl(garment.videoUrl);
+
+      // Delay focus to allow entry animation
+      const timer = setTimeout(() => firstInputRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
+    } else if (isOpen && !garment) {
+      // Reset form for "Add New" mode
+      setFormData({
+        title: "",
+        brand: "",
+        size: "M",
+        color: "",
+        description: "",
+        price: "",
+        material: "",
+        occasion: "",
+        style_notes: "",
+        videoUrl: "",
+      });
+      setPreviewUrl(null);
+      setVideoFile(null);
+      setFormErrors({});
     }
-    firstInputRef.current?.focus();
-  }, [garment]);
+  }, [isOpen, garment]);
 
   useEffect(() => {
     const currentPreviewUrl = previewUrl;
@@ -94,13 +132,23 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       setPreviewUrl(url);
       // Limpiar archivo cuando se ingresa URL manual
       setVideoFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
+  const handleRemoveVideo = () => {
+    setVideoFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    // Si ya había un video en el garment original, restaurarlo o no?
+    // El usuario pide quitar el video seleccionado, así que asumo que quiere dejarlo vacío.
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!previewUrl && !videoFile && !formData.videoUrl) {
-      console.log("Por favor, sube un video o proporciona una URL de video.");
       return;
     }
 
@@ -108,7 +156,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       ? parseFloat(formData.price)
       : undefined;
     if (formData.price && isNaN(priceAsNumber!)) {
-      console.log("Por favor, introduce un precio válido.");
       return;
     }
 
@@ -135,8 +182,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
     savePromise
       .then((product) => {
-        console.log("[AdminFormModal] Producto guardado:", product);
-        console.log("Producto guardado exitosamente");
+        setFormErrors({});
         if (onSave) {
           try {
             onSave(product);
@@ -148,10 +194,21 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         setTimeout(() => onClose(), 100);
       })
       .catch((error) => {
-        console.error("Error al guardar producto:", error);
-        console.log(
-          `Error al guardar el producto: ${error instanceof Error ? error.message : "Error desconocido"}`,
-        );
+        // Manejar errores de validación del backend
+        if (error.errors && Array.isArray(error.errors)) {
+          const errorsObj: Record<string, string> = {};
+          error.errors.forEach((err: any) => {
+            if (err.field) {
+              errorsObj[err.field] = err.message;
+            }
+          });
+          setFormErrors(errorsObj);
+        } else if (error.message || error.error) {
+          // Error general
+          setFormErrors({ general: error.message || error.error });
+        } else {
+          setFormErrors({ general: "Error desconocido al guardar el producto" });
+        }
       });
   };
 
@@ -189,7 +246,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
   const handleAiAutocomplete = async () => {
     if (!videoPreviewRef.current || !previewUrl) {
-      console.log("No hay un video para analizar.");
       return;
     }
 
@@ -224,8 +280,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         throw new Error("Error al analizar la prenda con IA");
       }
       const result = await response.json();
-      // Mostrar el resultado en consola
-      console.log("Resultado del análisis de IA:", result);
 
       // Autocompletar los campos con la información del análisis
       setFormData((prev) => {
@@ -249,7 +303,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         };
       });
     } catch (error) {
-      console.error("Error con IA:", error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
 
@@ -281,16 +334,18 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
   const isAiDisabled = !previewUrl || isAiLoading;
 
+  if (!isRendered) return null;
+
   return (
     <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in"
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="form-modal-title"
     >
       <div
-        className="relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-modal-in"
+        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8">
@@ -318,6 +373,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 required
                 className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
               />
+              {formErrors.title && <p className="text-red-500 text-xs mt-1">{formErrors.title}</p>}
             </div>
             <div>
               <label
@@ -335,6 +391,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 required
                 className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
               />
+              {formErrors.brand && <p className="text-red-500 text-xs mt-1">{formErrors.brand}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -353,6 +410,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   required
                   className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
                 />
+                {formErrors.size && <p className="text-red-500 text-xs mt-1">{formErrors.size}</p>}
               </div>
               <div>
                 <label
@@ -370,6 +428,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   required
                   className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
                 />
+                {formErrors.color && <p className="text-red-500 text-xs mt-1">{formErrors.color}</p>}
               </div>
             </div>
             <div>
@@ -397,6 +456,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   className="w-full p-2 pl-8 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
                 />
               </div>
+              {formErrors.price && <p className="text-red-500 text-xs mt-1">{formErrors.price}</p>}
             </div>
             <div>
               <label
@@ -414,6 +474,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                     Subir archivo de video
                   </label>
                   <input
+                    ref={fileInputRef}
                     type="file"
                     name="videoFile"
                     id="videoFile"
@@ -427,9 +488,19 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                                 hover:file:bg-stone-300 dark:hover:file:bg-stone-600 transition-colors cursor-pointer"
                   />
                   {videoFile && (
-                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">
-                      Archivo seleccionado: {videoFile.name}
-                    </p>
+                    <div className="flex items-center justify-between mt-2 p-2 bg-stone-100 dark:bg-stone-700/50 rounded-md">
+                      <p className="text-xs text-stone-500 dark:text-stone-400 truncate pr-4">
+                        Archivo seleccionado: {videoFile.name}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleRemoveVideo}
+                        className="text-stone-400 hover:text-red-500 transition-colors"
+                        title="Quitar video"
+                      >
+                        <CloseIcon className="w-5 h-5" />
+                      </button>
+                    </div>
                   )}
                   {!videoFile && garment && (
                     <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">
@@ -468,6 +539,9 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   </p>
                 </div>
               </div>
+              {(formErrors.video || formErrors.image_principal) && (
+                <p className="text-red-500 text-xs mt-2">{formErrors.video || formErrors.image_principal}</p>
+              )}
 
               {previewUrl && (
                 <div className="mt-4">
@@ -480,6 +554,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                     crossOrigin="anonymous"
                     className="w-full rounded-lg bg-black"
                     style={{ maxHeight: "300px" }}
+                    aria-label="Vista previa del video de la prenda"
                   />
                 </div>
               )}
@@ -525,6 +600,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 rows={3}
                 className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
               />
+              {formErrors.description && <p className="text-red-500 text-xs mt-1">{formErrors.description}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -578,7 +654,13 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 placeholder="Ej: Corte sirena, Espalda descubierta"
                 className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
               />
+              {formErrors.style_notes && <p className="text-red-500 text-xs mt-1">{formErrors.style_notes}</p>}
             </div>
+            {formErrors.general && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 rounded-lg">
+                <p className="text-red-600 dark:text-red-400 text-sm">{formErrors.general}</p>
+              </div>
+            )}
             <div className="flex justify-end gap-4 pt-4">
               <button
                 type="button"
@@ -612,15 +694,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
           <CloseIcon className="w-8 h-8" />
         </button>
       </div>
-      <style>{`
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-        @keyframes modal-in {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-modal-in { animation: modal-in 0.3s ease-out forwards; }
-      `}</style>
+
     </div>
   );
 };

@@ -30,8 +30,8 @@ export interface FaqComponentItem {
  * - error: Mensaje de error si existe
  * - fetchFaqs: Función para cargar las preguntas desde el servicio
  */
-export const useFaqs = () => {
-  const [faqs, setFaqs] = useState<FaqItem[]>([]);
+export const useFaqs = (initialItems: FaqItem[] = []) => {
+  const [faqs, setFaqs] = useState<FaqItem[]>(initialItems);
   const [faqsForComponent, setFaqsForComponent] = useState<FaqComponentItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

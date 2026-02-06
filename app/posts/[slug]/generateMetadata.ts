@@ -3,9 +3,12 @@ import { PUBLIC_URL } from "@/lib/seo";
 
 const DEFAULT_IMAGE_URL = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    // Await params to comply with Next.js 15+ async routing
+    const { slug } = await params;
+
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/posts?limit=100`);
-    
+
     if (!res.ok) {
         return {
             title: "Post no encontrado | Vestidos de Fiesta",
@@ -15,12 +18,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     }
 
     const data = await res.json();
-    
+
     // IMPORTANTE: Accedemos al array dentro de la propiedad 'posts'
     const postsArray = data.posts || [];
-    
+
     // Ahora sí podemos usar .find() sobre el array
-    const post = postsArray.find((p: any) => p.slug === params.slug);
+    const post = postsArray.find((p: any) => p.slug === slug);
 
     if (!post) {
         return {

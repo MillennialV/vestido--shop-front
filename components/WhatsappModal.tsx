@@ -9,11 +9,28 @@ interface WhatsappModalProps {
 }
 
 const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   const [whatsappNumber, setWhatsappNumber] = useState<string>(() => {
-    const saved = localStorage.getItem("whatsappNumber");
-    const fullNumber = saved || "51956382746";
-    // Si el número guardado empieza con 51, extraer solo la parte local
-    return fullNumber.startsWith("51") ? fullNumber.substring(2) : fullNumber;
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("whatsappNumber");
+      const fullNumber = saved || "51956382746";
+      // Si el número guardado empieza con 51, extraer solo la parte local
+      return fullNumber.startsWith("51") ? fullNumber.substring(2) : fullNumber;
+    }
+    return "956382746"; // Default local number without prefix
   });
 
   useEffect(() => {
@@ -23,7 +40,7 @@ const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isRendered) return null;
 
   const handleWhatsappNumberChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -42,14 +59,14 @@ const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in"
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="whatsapp-modal-title"
     >
       <div
-        className="relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-sm animate-modal-in"
+        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-sm transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8">

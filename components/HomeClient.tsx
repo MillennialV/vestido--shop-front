@@ -1,6 +1,7 @@
 "use client";
-
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+import { slugify } from "@/lib/slugify";
 import type { Garment } from "@/types/Garment";
 import type { FaqItem } from "@/types/FaqItem";
 import type { Post } from "@/types/post";
@@ -10,17 +11,19 @@ import { useFaqs } from "@/hooks/useFaqs";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import VideoModal from "@/components/product/VideoModal";
-import AdminFormModal from "@/components/modals/AdminFormModal";
-import AccessCodeModal from "@/components/AccessCodeModal";
-import BulkUploadModal from "@/components/BulkUploadModal";
+
+const AdminFormModal = dynamic(() => import("@/components/modals/AdminFormModal"), { ssr: false });
+const AccessCodeModal = dynamic(() => import("@/components/AccessCodeModal"), { ssr: false });
+const BulkUploadModal = dynamic(() => import("@/components/BulkUploadModal"), { ssr: false });
+const FaqModal = dynamic(() => import("@/components/FaqModal"), { ssr: false });
+const PostFormModal = dynamic(() => import("@/components/PostFormModal"), { ssr: false });
+const WhatsappModal = dynamic(() => import("@/components/WhatsappModal"), { ssr: false });
+
 import Pagination from "@/components/Pagination";
 import FaqAccordion from "@/components/FaqAccordion";
-import FaqModal from "@/components/FaqModal";
-import PostFormModal from "@/components/PostFormModal";
 import CatalogToolbar from "@/components/CatalogToolbar";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import Blog from "@/components/Blog";
-import WhatsappModal from "@/components/WhatsappModal";
 import VideoCard from "@/components/VideoCard";
 import { faqData } from "@/lib/faqData";
 import { PlusIcon } from "@/components/Icons";
@@ -36,6 +39,7 @@ export default function HomeClient({
   initialPosts: Post[];
   initialFaqs: FaqItem[];
 }) {
+  const processedSlugRef = useRef<string | null>(null);
   const [garments, setGarments] = useState<Garment[]>(initialGarments);
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [faqsLocal, setFaqsLocal] = useState<FaqItem[]>(initialFaqs);
@@ -62,14 +66,68 @@ export default function HomeClient({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set<number>());
   const [selectedGarment, setSelectedGarment] = useState<Garment | null>(null);
+  const [isProductLoading, setIsProductLoading] = useState(false);
+  const [isProductDeleteModalOpen, setIsProductDeleteModalOpen] = useState(false);
+  const [garmentToDelete, setGarmentToDelete] = useState<Garment | null>(null);
+  const [isBulkDeleteConfirmation, setIsBulkDeleteConfirmation] = useState(false);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const { authenticated, onLogout, onLogin } = useAuth();
-  const { fetchProducts, fetchProductById } = useProducts();
+  const { fetchProducts, fetchProductById, deleteProduct } = useProducts();
   const { fetchPosts } = usePosts();
   const { deletePost } = usePosts();
-  const { fetchFaqs, faqs: allFaqs } = useFaqs();
+  const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
   const ITEMS_PER_PAGE = 10;
   const POSTS_PER_PAGE = 6;
   const FAQ_LIMIT = Number(process.env.NEXT_PUBLIC_FAQ_LIMIT) || 5;
+
+  const handleSelectGarment = useCallback((garment: Garment) => {
+    setSelectedGarment(garment);
+    setGarments((prev) => {
+      const currentGarments = Array.isArray(prev) ? prev : [];
+      const exists = currentGarments.some((g) => g.id === garment.id);
+      if (exists) {
+        return currentGarments.map((g) => (g.id === garment.id ? garment : g));
+      }
+      return currentGarments;
+    });
+    if (garment.slug) {
+      const newPath = `/${garment.slug}`;
+      window.history.pushState(null, "", `#${newPath}`);
+    }
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedGarment(null);
+    if (window.location.hash.startsWith("#/")) {
+      window.history.pushState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
+
+  const handleSelectGarmentWrapper = useCallback(async (garment: Garment) => {
+    // If we're already loading a product, or a modal is open, do nothing.
+    if (isProductLoading || (selectedGarment && selectedGarment.id === garment.id)) return;
+
+    setIsProductLoading(true);
+    try {
+      // Use the logic that was previously in VideoCard
+      const fullGarment = await fetchProductById(garment.id);
+
+      const garmentWithSlug = {
+        ...(fullGarment || garment),
+        videoUrl: fullGarment?.videoUrl || garment.videoUrl,
+        slug: fullGarment?.slug || garment.slug,
+      };
+
+      handleSelectGarment(garmentWithSlug);
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      // Fallback: open with what we have
+      handleSelectGarment(garment);
+    } finally {
+      setIsProductLoading(false);
+    }
+  }, [isProductLoading, selectedGarment, fetchProductById, handleSelectGarment]);
+
   const sortByCreatedAt = <T extends { created_at: string }>(items: T[]): T[] => {
     return [...items].sort((a, b) => {
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -95,10 +153,14 @@ export default function HomeClient({
   }, [garments, searchQuery, filters]);
   const totalPages = 1;
   const uniqueFilters = useMemo(() => {
-    const brands = [...new Set(garments.map((g) => g.brand))].sort();
-    const sizes = [...new Set(garments.map((g) => g.size))].sort();
-    const colors = [...new Set(garments.map((g) => g.color))].sort();
-    return { brands, sizes, colors };
+    const getUnique = (arr: (string | undefined | null)[]) =>
+      [...new Set(arr.filter(v => v != null).map(v => String(v).trim()))].filter(Boolean).sort();
+
+    return {
+      brands: getUnique(garments.map((g) => g.brand)),
+      sizes: getUnique(garments.map((g) => g.size)),
+      colors: getUnique(garments.map((g) => g.color)),
+    };
   }, [garments]);
   const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string; color?: string }) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -153,25 +215,54 @@ export default function HomeClient({
       setIsLoginLoading(false);
     }
   };
-  const handleSelectGarment = (garment: Garment) => {
-    setSelectedGarment(garment);
-    setGarments((prev) => {
-      const currentGarments = Array.isArray(prev) ? prev : [];
-      const exists = currentGarments.some((g) => g.id === garment.id);
-      if (exists) {
-        return currentGarments.map((g) => (g.id === garment.id ? garment : g));
+
+
+  useEffect(() => {
+    const handleHashChange = async () => {
+      const hash = window.location.hash;
+      if (!hash || !hash.startsWith("#/")) {
+        processedSlugRef.current = null;
+        return;
       }
-      return currentGarments;
-    });
-    if (garment.slug) {
-      const newPath = `/${garment.slug}`;
-      window.history.pushState(null, "", `#${newPath}`);
-    }
-  };
-  const handleCloseModal = () => {
-    setSelectedGarment(null);
-    window.location.hash = "/";
-  };
+
+      const slug = hash.replace("#/", "");
+      if (!slug || slug === "/" || slug === "blog" || slug.startsWith("blog/")) {
+        processedSlugRef.current = null;
+        return;
+      }
+
+      // Prevent duplicate processing
+      if (processedSlugRef.current === slug) return;
+      processedSlugRef.current = slug;
+
+      console.log("[HomeClient] Processing deep link for slug:", slug);
+
+      // 1. Try to find in current list
+      const foundInList = garments.find(g => g.slug === slug || slugify(g.title, g.id) === slug);
+      if (foundInList) {
+        handleSelectGarmentWrapper(foundInList);
+        return;
+      }
+
+      // 2. Extract ID from slug (it ends with -ID)
+      const idMatch = slug.match(/-(\d+)$/);
+      if (idMatch) {
+        const id = idMatch[1];
+        try {
+          const product = await fetchProductById(id);
+          if (product) {
+            handleSelectGarment(product);
+          }
+        } catch (e) {
+          console.error("[HomeClient] Error opening from deep link:", e);
+        }
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [handleSelectGarmentWrapper, fetchProductById]);
   const handleOpenForm = (garment: Garment | null = null) => {
     setEditingGarment(garment);
     setIsFormModalOpen(true);
@@ -202,8 +293,17 @@ export default function HomeClient({
     }
   };
   const handleBulkSaveComplete = (newGarments: Garment[]) => {
+    // Primero actualizamos localmente para feedback instantáneo
     setGarments((prev) => sortByCreatedAt([...newGarments, ...prev]));
     setIsBulkUploadModalOpen(false);
+
+    // Luego refrescamos del servidor para asegurar que IDs, slugs y fechas estén sincronizados
+    fetchProducts({ page: 1, limit: ITEMS_PER_PAGE }).then((freshGarments) => {
+      if (Array.isArray(freshGarments)) {
+        setGarments(freshGarments);
+        setCurrentPage(1);
+      }
+    });
   };
   const handleToggleSelectionMode = () => {
     if (!authenticated) return;
@@ -221,21 +321,44 @@ export default function HomeClient({
       return newSet;
     });
   };
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedIds.size === 0) return;
-    const garmentsToDelete = garments.filter((g) => selectedIds.has(g.id));
-    if (
-      window.confirm(
-        `¿Estás seguro de que quieres eliminar ${selectedIds.size} prendas seleccionadas?`,
-      )
-    ) {
-      try {
+    setIsBulkDeleteConfirmation(true);
+    setIsProductDeleteModalOpen(true);
+  };
+
+  const handleDeleteProduct = (garment: Garment) => {
+    setGarmentToDelete(garment);
+    setIsProductDeleteModalOpen(true);
+  };
+
+  const confirmDeleteProduct = async () => {
+    setIsDeletingProduct(true);
+    try {
+      if (isBulkDeleteConfirmation) {
+        // Borrado masivo
+        const idsArray = Array.from(selectedIds);
+        // El API actualmente solo soporta uno por uno, así que iteramos
+        for (const id of idsArray) {
+          await deleteProduct(id);
+        }
         setGarments((prev) => prev.filter((g) => !selectedIds.has(g.id)));
         setSelectedIds(new Set());
         setIsSelectionMode(false);
-      } catch (err: any) {
-        console.error("Failed to bulk delete garments:", err);
+      } else if (garmentToDelete) {
+        // Borrado individual
+        await deleteProduct(garmentToDelete.id);
+        setGarments((prev) => prev.filter((g) => g.id !== garmentToDelete.id));
       }
+
+      setIsProductDeleteModalOpen(false);
+      setGarmentToDelete(null);
+      setIsBulkDeleteConfirmation(false);
+    } catch (err: any) {
+      console.error("Failed to delete product(s):", err);
+      alert("Hubo un error al eliminar. Por favor intenta de nuevo.");
+    } finally {
+      setIsDeletingProduct(false);
     }
   };
   const handleOpenPostModal = (post: Post | null = null) => {
@@ -249,7 +372,7 @@ export default function HomeClient({
       const exists = currentPosts.some((p) => Number(p.id) === Number(post.id));
       console.log("Saving post:", post, "Exists:", exists);
       if (exists) {
-        return currentPosts.map((p) => 
+        return currentPosts.map((p) =>
           Number(p.id) === Number(post.id) ? post : p
         );
       }
@@ -257,7 +380,7 @@ export default function HomeClient({
       return [post, ...currentPosts];
     });
 
-    
+
     setIsPostModalOpen(false);
     setEditingPost(null);
   };
@@ -270,7 +393,7 @@ export default function HomeClient({
     setIsDeleting(true);
     try {
       await deletePost(postToDelete.id);
-      
+
       setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
 
       setIsDeleteModalOpen(false);
@@ -353,17 +476,14 @@ export default function HomeClient({
                   <VideoCard
                     key={garment.id}
                     garment={garment}
-                    onSelect={handleSelectGarment}
+                    onSelect={handleSelectGarmentWrapper}
                     isAdmin={authenticated}
                     onEdit={handleOpenForm}
-                    onDelete={() => {
-                      setGarments((prev) =>
-                        prev.filter((g) => g.id !== garment.id),
-                      );
-                    }}
+                    onDelete={handleDeleteProduct}
                     isSelectionMode={isSelectionMode}
                     isSelected={selectedIds.has(garment.id)}
                     onToggleSelection={handleToggleSelection}
+                    isDisabled={isProductLoading || !!selectedGarment}
                   />
                 ))}
               </div>
@@ -388,10 +508,13 @@ export default function HomeClient({
               />
             </section>
             <section className="mt-24 max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-3xl md:text-4xl font-semibold text-stone-800 dark:text-stone-100">
+              <header className="flex flex-col items-center text-center mb-12 gap-4">
+                <h1 className="text-5xl md:text-6xl font-semibold text-stone-900 dark:text-stone-100 tracking-wider">
                   Preguntas Frecuentes
-                </h2>
+                </h1>
+                <p className="mt-4 text-lg text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">
+                  Estamos aquí para ayudarte. Encuentra las respuestas a las preguntas más comunes de nuestra comunidad y compra con total confianza.
+                </p>
                 {authenticated && (
                   <button
                     onClick={() => {
@@ -399,23 +522,15 @@ export default function HomeClient({
                       setEditingFaq(null);
                       setIsFaqModalOpen(true);
                     }}
-                    className="inline-flex items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
+                    className="inline-flex mt-8 items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
                   >
                     <PlusIcon className="w-4 h-4" />
                     <span>Agregar pregunta</span>
                   </button>
                 )}
-              </div>
+              </header>
               <FaqAccordion
-                items={
-                  authenticated
-                    ? faqsLocal.length > 0
-                      ? faqsLocal
-                      : allFaqs
-                    : allFaqs.length > 0
-                      ? allFaqs
-                      : faqData
-                }
+                items={allFaqs.length > 0 ? allFaqs : faqData}
                 isAdmin={authenticated}
                 onEdit={(faq) => {
                   const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;
@@ -445,72 +560,64 @@ export default function HomeClient({
         onSearchChange={handleSearchChange}
         onClearAll={handleClearFilters}
       />
-      {selectedGarment && (
-        <VideoModal
-          garment={selectedGarment}
-          onClose={handleCloseModal}
-          garmentList={filteredGarments}
-          onChangeGarment={handleSelectGarment}
-        />
-      )}
-      {isAccessCodeModalOpen && (
-        <AccessCodeModal
-          onClose={() => {
-            if (!isLoginLoading) {
-              setIsAccessCodeModalOpen(false);
-              setAccessCodeError(null);
-            }
-          }}
-          onSubmit={handleAccessCodeSubmit}
-          error={accessCodeError}
-          isLoading={isLoginLoading}
-        />
-      )}
-      {isFormModalOpen && (
-        <AdminFormModal
-          garment={editingGarment}
-          onClose={() => setIsFormModalOpen(false)}
-          onSave={handleSaveGarment}
-        />
-      )}
-      {isBulkUploadModalOpen && (
-        <BulkUploadModal
-          onClose={() => setIsBulkUploadModalOpen(false)}
-          onBulkSaveComplete={handleBulkSaveComplete}
-        />
-      )}
-      {isWhatsappModalOpen && (
-        <WhatsappModal
-          isOpen={isWhatsappModalOpen}
-          onClose={() => setIsWhatsappModalOpen(false)}
-        />
-      )}
-      {isPostModalOpen && (
-        <PostFormModal
-          post={editingPost}
-          onClose={() => setIsPostModalOpen(false)}
-          onSave={handleSavePost}
-        />
-      )}
-      {isFaqModalOpen && (
-        <FaqModal
-          mode={faqModalMode}
-          faq={editingFaq}
-          onClose={() => {
-            setIsFaqModalOpen(false);
-            setEditingFaq(null);
-          }}
-          onSuccess={() => {
-            fetchFaqs(true, true, {
-              limit: FAQ_LIMIT,
-              estado: "activa",
-              order: "asc",
-            }).catch((err) => {
-              console.warn("Error al recargar preguntas frecuentes:", err);
-            });
-          }}
-        />
-      )}
+      <VideoModal
+        isOpen={!!selectedGarment}
+        garment={selectedGarment || undefined}
+        onClose={handleCloseModal}
+        garmentList={filteredGarments}
+        onChangeGarment={handleSelectGarment}
+      />
+      <AccessCodeModal
+        isOpen={isAccessCodeModalOpen}
+        onClose={() => {
+          if (!isLoginLoading) {
+            setIsAccessCodeModalOpen(false);
+            setAccessCodeError(null);
+          }
+        }}
+        onSubmit={handleAccessCodeSubmit}
+        error={accessCodeError}
+        isLoading={isLoginLoading}
+      />
+      <AdminFormModal
+        isOpen={isFormModalOpen}
+        garment={editingGarment}
+        onClose={() => setIsFormModalOpen(false)}
+        onSave={handleSaveGarment}
+      />
+      <BulkUploadModal
+        isOpen={isBulkUploadModalOpen}
+        onClose={() => setIsBulkUploadModalOpen(false)}
+        onBulkSaveComplete={handleBulkSaveComplete}
+      />
+      <WhatsappModal
+        isOpen={isWhatsappModalOpen}
+        onClose={() => setIsWhatsappModalOpen(false)}
+      />
+      <PostFormModal
+        isOpen={isPostModalOpen}
+        post={editingPost}
+        onClose={() => setIsPostModalOpen(false)}
+        onSave={handleSavePost}
+      />
+      <FaqModal
+        isOpen={isFaqModalOpen}
+        mode={faqModalMode}
+        faq={editingFaq}
+        onClose={() => {
+          setIsFaqModalOpen(false);
+          setEditingFaq(null);
+        }}
+        onSuccess={() => {
+          fetchFaqs(true, true, {
+            limit: FAQ_LIMIT,
+            estado: "activa",
+            order: "asc",
+          }).catch((err) => {
+            console.warn("Error al recargar preguntas frecuentes:", err);
+          });
+        }}
+      />
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
@@ -525,6 +632,32 @@ export default function HomeClient({
         confirmText="Eliminar"
         variant="danger"
         isProcessing={isDeleting}
+      />
+      <ConfirmationModal
+        isOpen={isProductDeleteModalOpen}
+        onClose={() => {
+          setIsProductDeleteModalOpen(false);
+          setGarmentToDelete(null);
+          setIsBulkDeleteConfirmation(false);
+        }}
+        onConfirm={confirmDeleteProduct}
+        title={isBulkDeleteConfirmation ? "Eliminar productos" : "Eliminar producto"}
+        message={
+          <div className="space-y-2">
+            <p>
+              {isBulkDeleteConfirmation
+                ? `¿Estás seguro de que quieres eliminar las ${selectedIds.size} prendas seleccionadas?`
+                : `¿Estás seguro de que quieres eliminar el producto "${garmentToDelete?.title}"?`}
+            </p>
+            <span className="text-sm text-red-500 font-medium block">
+              Esta acción no se puede deshacer
+            </span>
+          </div>
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        isProcessing={isDeletingProduct}
       />
     </div>
   );

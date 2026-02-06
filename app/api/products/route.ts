@@ -5,7 +5,6 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://l
 
 export async function GET(request: NextRequest) {
     try {
-        // Pasar parámetros de paginación, búsqueda, etc. si existen
         const { searchParams } = new URL(request.url);
         const page = searchParams.get('page') || '1';
         const limit = searchParams.get('limit') || '100';
@@ -24,18 +23,38 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
-        const res = await fetch(`${BACKEND_URL}/api/producto/crear-producto`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-        });
-        if (!res.ok) throw new Error('Failed to create product');
+        const contentType = request.headers.get('content-type') || '';
+        let res: Response;
+
+        if (contentType.includes('multipart/form-data')) {
+            const formData = await request.formData();
+
+            res = await fetch(`${BACKEND_URL}/api/producto/crear-producto`, {
+                method: 'POST',
+                body: formData,
+            });
+        } else {
+            const body = await request.json();
+            res = await fetch(`${BACKEND_URL}/api/producto/crear-producto`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+        }
+
         const data = await res.json();
-        return NextResponse.json(data?.data || {});
+
+        if (!res.ok) {
+            console.error('Backend Error:', data);
+            return NextResponse.json(data, { status: res.status });
+        }
+
+        return NextResponse.json(data?.data || data);
     } catch (error) {
-        console.error('Error creating product:', error);
-        return NextResponse.json({ error: 'Error creating product' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Error creating product',
+            message: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
 

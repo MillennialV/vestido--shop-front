@@ -4,7 +4,7 @@ import { defaultGarments } from './defaultGarments';
 import { slugify } from './slugify';
 
 // URL del backend API desde variables de entorno (para upload de videos y otros servicios)
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3005';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3005';
 
 // Garment Functions
 /**
@@ -53,16 +53,17 @@ export async function uploadVideoFile(videoFile: File, onProgress: (percentage: 
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({
-                message: response.statusText,
-                error: `HTTP ${response.status}`
-            }));
-
-            console.error('[uploadVideoFile] Error en respuesta:', {
-                status: response.status,
-                statusText: response.statusText,
-                error: errorData
-            });
+            let errorData;
+            const responseText = await response.text();
+            try {
+                errorData = JSON.parse(responseText);
+            } catch (e) {
+                errorData = {
+                    message: responseText || response.statusText,
+                    statusText: response.statusText,
+                    status: response.status
+                };
+            }
 
             throw new Error(errorData.message || errorData.error || `Error al subir el video: ${response.status}`);
         }
