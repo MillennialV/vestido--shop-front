@@ -135,34 +135,14 @@ const VideoModal: React.FC<VideoModalProps> = ({
     const shareUrl = `${PUBLIC_URL}/#/${currentSlug}`;
     const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
 
-    setToastMessage("Preparando video para compartir...");
-    
     try {
-      const filesArray: File[] = [];
-
-      // 2. Intentamos obtener el video si existe
-      if (garment.videoUrl) {
-        const response = await fetch(garment.videoUrl);
-        const blob = await response.blob();
-        const fileName = `vestido-${garment.id}.mp4`;
-        const file = new File([blob], fileName, { type: "video/mp4" });
-        filesArray.push(file);
-      }
-
       const shareItem = {
         title: garment.title,
         text: shareText,
         url: shareUrl,
-        files: filesArray,
       };
 
-      // 3. Validamos si el navegador soporta compartir archivos
-      if (navigator.canShare && navigator.canShare({ files: filesArray })) {
-        await navigator.share(shareItem);
-        console.log("Contenido con video compartido exitosamente");
-      } 
-      // 4. Si no soporta archivos pero sí el compartir básico (solo texto/url)
-      else if (navigator.share) {
+      if (navigator.share) {
         await navigator.share({
           title: shareItem.title,
           text: shareItem.text,
@@ -170,14 +150,14 @@ const VideoModal: React.FC<VideoModalProps> = ({
         });
         console.log("Contenido (solo texto) compartido exitosamente");
       } else {
-        throw new Error("Compartir no disponible");
+        throw new Error("Funcion no disponible en este navegador");
       }
 
     } catch (error) {
       console.error("Error al compartir:", error);
       // Fallback: Copiar al portapapeles si todo falla
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      setToastMessage("¡Enlace copiado al portapapeles!");
+      setToastMessage("¡Enlace copiado al portapapeles para compartir!");
     } finally {
       setTimeout(() => setToastMessage(null), 3000);
     }
