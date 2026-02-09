@@ -92,4 +92,96 @@
     .dark ::-webkit-scrollbar-thumb:hover {
         background: #78716c;
     }
+
+}
+
+/* React Quill Dark Mode Overrides - Global Scope for Specificity */
+
+/* Toolbar Background & Border using Tailwind Stone Colors */
+.dark .ql-toolbar.ql-snow {
+    background-color: #44403c !important;
+    /* stone-700 */
+    border-color: #57534e !important;
+    /* stone-600 */
+}
+
+/* Editor Container */
+.dark .ql-container.ql-snow {
+    background-color: #292524 !important;
+    /* stone-800 */
+    border-color: #57534e !important;
+    /* stone-600 */
+    color: #e7e5e4 !important;
+    /* stone-200 */
+}
+
+/* 
+ * Toolbar Icons - Targeting SVG elements 
+ * Quill uses stroke for some icons and fill for others 
+ */
+
+/* STROKE-based icons (e.g. bold, italic, underline) */
+.dark .ql-snow.ql-toolbar button .ql-stroke,
+.dark .ql-snow .ql-toolbar button .ql-stroke,
+.dark .ql-snow.ql-toolbar .ql-picker-label .ql-stroke,
+.dark .ql-snow .ql-picker-label .ql-stroke {
+    stroke: #d6d3d1 !important;
+    /* stone-300 */
+}
+
+/* FILL-based icons (e.g. color picker, align) */
+.dark .ql-snow.ql-toolbar button .ql-fill,
+.dark .ql-snow .ql-toolbar button .ql-fill,
+.dark .ql-snow.ql-toolbar .ql-picker-label .ql-fill,
+.dark .ql-snow .ql-picker-label .ql-fill {
+    fill: #d6d3d1 !important;
+    /* stone-300 */
+}
+
+/* Active/Hover states - Make them bright white */
+.dark .ql-snow.ql-toolbar button:hover .ql-stroke,
+.dark .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.dark .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
+.dark .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke,
+.dark .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke {
+    stroke: #ffffff !important;
+}
+
+.dark .ql-snow.ql-toolbar button:hover .ql-fill,
+.dark .ql-snow.ql-toolbar button.ql-active .ql-fill,
+.dark .ql-snow.ql-toolbar .ql-picker-label:hover .ql-fill,
+.dark .ql-snow.ql-toolbar .ql-picker-item:hover .ql-fill,
+.dark .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill {
+    fill: #ffffff !important;
+}
+
+/* Dropdowns (Pickers) */
+.dark .ql-snow.ql-toolbar .ql-picker-label {
+    color: #d6d3d1 !important;
+    border-color: #d6d3d1 !important;
+}
+
+.dark .ql-snow .ql-picker-options {
+    background-color: #292524 !important;
+    /* stone-800 */
+    border-color: #57534e !important;
+    /* stone-600 */
+}
+
+.dark .ql-snow .ql-picker-item {
+    color: #d6d3d1 !important;
+}
+
+.dark .ql-snow .ql-picker-item:hover,
+.dark .ql-snow .ql-picker-item.ql-selected {
+    color: #ffffff !important;
+    background-color: #44403c !important;
+    /* stone-700 */
+}
+
+/* Placeholder text */
+.dark .ql-editor.ql-blank::before {
+    color: #78716c !important;
+    /* stone-500 */
+    font-style: italic;
 }
