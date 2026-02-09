@@ -4,7 +4,6 @@ const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'http://local
 
 const getAuthHeaders = (req: NextRequest) => {
     const token = req.cookies.get('authToken')?.value;
-    console.log('Token from cookies:', token ? 'FOUND' : 'MISSING', token || '');
     return {
         'Content-Type': 'application/json',
         ...(token ? {
@@ -28,7 +27,6 @@ export async function GET(req: NextRequest) {
         });
 
         const headers = getAuthHeaders(req);
-        console.log('GET /api/posts Headers:', headers);
 
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts?${queryParams}`, {
             method: 'GET',
