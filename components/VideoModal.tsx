@@ -144,51 +144,99 @@ const VideoModal: React.FC<VideoModalProps> = ({
       });
   };
 
+
+  const isMobileDevice = () => {
+    if (typeof navigator === "undefined") return false;
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  };
+
+  const shareFileToApps = async (fileUrl: string) => {
+    try {
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+
+      const file = new File([blob], "compartir.mp4", {
+        type: blob.type,
+      });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "Compartir en Instagram",
+          text: "Mira este contenido",
+        });
+      } else {
+        throw new Error("Share with files not supported");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Tu navegador no soporta compartir archivos directamente.");
+    }
+  };
+
   const handleSocialShare = async (platform: "TikTok" | "Instagram") => {
-    if (!garment) return;
+   if (!garment) return;
 
     const currentSlug = garment.slug || slugify(garment.title, garment.id);
     const shareUrl = `${PUBLIC_URL}/#/${currentSlug}`;
-    const shareText = `${garment.title} - Colección Womanity Boutique. #${garment.brand.replace(/\s+/g, "")}`;
-    const fullContent = `${shareText} ${shareUrl}`;
+    const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
 
-    try {
-      await navigator.clipboard.writeText(fullContent);
+    const isMobile = isMobileDevice();
 
-      const deepLinks = {
-        Instagram: {
-          app: "instagram://camera",
-          web: "https://www.instagram.com/"
-        },
-        TikTok: {
-          app: "snssdk1128://feed", 
-          web: "https://www.tiktok.com/"
+    // ----------- COMPARTIR NATIVO (Android/iOS) -----------
+    if (isMobile && navigator.share) {
+      try {
+        await navigator.share({
+          title: garment.title,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          console.error("Error en navigator.share:", err);
         }
-      };
+      }
+    }
 
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    // ----------- INSTAGRAM -----------
+    if (platform === "Instagram") {
 
       if (isMobile) {
-        setToastMessage(`¡Enlace copiado! Abriendo ${platform}...`);
-        
-        window.location.href = deepLinks[platform].app;
 
-        setTimeout(() => {
-          if (!document.hidden) {
-            window.open(deepLinks[platform].web, "_blank");
+        if (garment.videoUrl) {
+          try {
+            await shareFileToApps(garment.videoUrl);
+            return;
+          } catch (err) {
+            console.warn("No se pudo compartir archivo, usamos fallback");
           }
-        }, 2000);
-      } else {
-        setToastMessage(`¡Enlace copiado para ${platform}!`);
+        }
+
+        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+
+        setToastMessage(
+          "Elige Instagram en el menú para compartir, o pega el enlace copiado."
+        );
+
+        return;
       }
 
-      setTimeout(() => setToastMessage(null), 3000);
-    } catch (error: any) {
-      console.error(`Error al compartir en ${platform}:`, error);
-      setToastMessage("No se pudo abrir la aplicación.");
-      setTimeout(() => setToastMessage(null), 3000);
+       // Desktop
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      setToastMessage("Comparte este enlace desde tu celular para Instagram.");
     }
-   
+
+    if (platform === "TikTok") {
+      try {
+        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+        setToastMessage("Enlace copiado. ¡Pégalo en TikTok!");
+        window.open("https://www.tiktok.com/messages", "_blank");
+      } catch (err) {
+        console.error("Error copiando enlace TikTok:", err);
+        setToastMessage("No se pudo copiar el enlace.");
+      }
+    }
   };
 
   const phoneNumber = "51956382746";
