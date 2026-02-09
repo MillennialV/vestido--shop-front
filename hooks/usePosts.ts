@@ -1,6 +1,4 @@
 import { useState, useCallback, useEffect } from 'react';
-// import eliminado: postService
-import { Pagination } from '@/types/pagination';
 import { Post, BlogPagination } from '@/types/post';
 
 export const usePosts = () => {
@@ -20,7 +18,13 @@ export const usePosts = () => {
         try {
             const page = params.page || 1;
             const limit = params.limit || 10;
-            const res = await fetch(`/api/posts?page=${page}&limit=${limit}`);
+            const res = await fetch(`/api/posts?page=${page}&limit=${limit}`, {
+                cache: 'no-store',
+                headers: {
+                    'Pragma': 'no-cache',
+                    'Cache-Control': 'no-cache'
+                }
+            });
             if (!res.ok) throw new Error('Error al obtener posts');
             const data = await res.json();
             const postsArr = Array.isArray(data) ? data : data.posts || [];
@@ -56,7 +60,7 @@ export const usePosts = () => {
     }, []);
 
     const createPost = async (
-        postData: Post
+        postData: any,
     ): Promise<Post | null> => {
         setIsLoading(true);
         setError(null);
@@ -67,16 +71,12 @@ export const usePosts = () => {
                 body: JSON.stringify(postData),
             });
 
-            const data = await res.json();
+            const response = await res.json();
 
             if (!res.ok) {
-                throw new Error(data.error || 'Error al crear el post');
+                throw new Error(response.error || 'Error al crear el post');
             }
-            
-            const newPost = data.data || data; 
-            setPosts((prev: Post[]) => [newPost, ...prev]);
-
-            return data;
+            return response;
         } catch (error: any) {
             setError(error.message);
             throw error;
@@ -87,7 +87,7 @@ export const usePosts = () => {
 
     const updatePost = async (
         id: number | string,
-        postData: Partial<Post>
+        postData: any,
     ): Promise<Post | null> => {
         setIsLoading(true);
         setError(null);
@@ -97,10 +97,12 @@ export const usePosts = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(postData),
             });
-            if (!res.ok) throw new Error('Error al actualizar el post');
-            const updatedPost = await res.json();
-            setPosts((prev: Post[]) => prev.map(p => (p.id === updatedPost.id ? updatedPost : p)));
-            return updatedPost;
+            const response = await res.json();
+
+            if (!res.ok) {
+                throw new Error(response.error || 'Error al crear el post');
+            }
+            return response;
         } catch (err: any) {
             setError(err.message || 'Error al actualizar el producto');
             throw error;

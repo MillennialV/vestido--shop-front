@@ -3,11 +3,11 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Post } from "../types/post";
 import { EditIcon, DeleteIcon } from "./Icons";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PostCardProps {
   post: Post;
   navigate?: (path: string) => void;
-  isAdmin?: boolean;
   onEdit?: (post: Post) => void;
   onDelete?: (post: Post) => void;
 }
@@ -15,10 +15,12 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({
   post,
   navigate,
-  isAdmin,
   onEdit,
   onDelete,
 }) => {
+
+  const { authenticated } = useAuth();
+
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'Aún no publicado';
     const date = new Date(dateString);
@@ -64,7 +66,7 @@ const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {/* Admin Controls */}
-        {isAdmin && (
+        {authenticated && (
           <div className="absolute top-4 right-4 flex gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             {onEdit && (
               <button
