@@ -18,6 +18,8 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "./Icons";
+import { title } from "process";
+import { text } from "stream/consumers";
 
 interface VideoModalProps {
   isOpen: boolean;
@@ -127,21 +129,59 @@ const VideoModal: React.FC<VideoModalProps> = ({
     setVideoError(null);
   }, [garment?.videoUrl]);
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!garment) return;
     const currentSlug = garment.slug || slugify(garment.title, garment.id);
     const shareUrl = `${PUBLIC_URL}/#/${currentSlug}`;
-    navigator.clipboard
-      .writeText(shareUrl)
-      .then(() => {
-        setToastMessage("¡Enlace copiado!");
-        setTimeout(() => setToastMessage(null), 3000);
-      })
-      .catch((err) => {
-        console.error("Failed to copy link: ", err);
-        setToastMessage("Error al copiar el enlace.");
-        setTimeout(() => setToastMessage(null), 3000);
-      });
+    const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
+
+    setToastMessage("Preparando video para compartir...");
+    
+    try {
+      const filesArray: File[] = [];
+
+      // 2. Intentamos obtener el video si existe
+      if (garment.videoUrl) {
+        const response = await fetch(garment.videoUrl);
+        const blob = await response.blob();
+        const fileName = `vestido-${garment.id}.mp4`;
+        const file = new File([blob], fileName, { type: "video/mp4" });
+        filesArray.push(file);
+      }
+
+      const shareItem = {
+        title: garment.title,
+        text: shareText,
+        url: shareUrl,
+        files: filesArray,
+      };
+
+      // 3. Validamos si el navegador soporta compartir archivos
+      if (navigator.canShare && navigator.canShare({ files: filesArray })) {
+        await navigator.share(shareItem);
+        console.log("Contenido con video compartido exitosamente");
+      } 
+      // 4. Si no soporta archivos pero sí el compartir básico (solo texto/url)
+      else if (navigator.share) {
+        await navigator.share({
+          title: shareItem.title,
+          text: shareItem.text,
+          url: shareItem.url,
+        });
+        console.log("Contenido (solo texto) compartido exitosamente");
+      } else {
+        throw new Error("Compartir no disponible");
+      }
+
+    } catch (error) {
+      console.error("Error al compartir:", error);
+      // Fallback: Copiar al portapapeles si todo falla
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      setToastMessage("¡Enlace copiado al portapapeles!");
+    } finally {
+      setTimeout(() => setToastMessage(null), 3000);
+    }
+   
   };
 
 
@@ -150,20 +190,20 @@ const VideoModal: React.FC<VideoModalProps> = ({
     return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   };
 
-  const shareFileToApps = async (fileUrl: string) => {
+  const shareFileToApps = async (fileUrl: string, garment: Garment) => {
     try {
       const response = await fetch(fileUrl);
       const blob = await response.blob();
 
-      const file = new File([blob], "compartir.mp4", {
+      const file = new File([blob], "vestidos.mp4", {
         type: blob.type,
       });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: "Compartir en Instagram",
-          text: "Mira este contenido",
+          title: `${garment.title}`,
+          text: `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`,
         });
       } else {
         throw new Error("Share with files not supported");
@@ -206,7 +246,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
         if (garment.videoUrl) {
           try {
-            await shareFileToApps(garment.videoUrl);
+            await shareFileToApps(garment.videoUrl,garment);
             return;
           } catch (err) {
             console.warn("No se pudo compartir archivo, usamos fallback");
