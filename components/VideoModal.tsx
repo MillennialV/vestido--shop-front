@@ -145,58 +145,50 @@ const VideoModal: React.FC<VideoModalProps> = ({
   };
 
   const handleSocialShare = async (platform: "TikTok" | "Instagram") => {
-    if (!garment?.videoUrl || !garment?.title || !garment?.brand) return;
+    if (!garment) return;
 
-    const fileName = `vestidos-de-fiesta-${garment.title.toLowerCase().replace(/\s+/g, "-")}.mp4`;
-    const shareDetails = {
-      title: `${garment.title} - Colección Vestidos de Fiesta`,
-      text: `Descubre este vestido de la nueva colección de Vestidos de Fiesta por Womanity Boutique. #VestidosDeFiesta #WomanityBoutique #ModaDeLujo #${garment.brand.replace(/\s+/g, "")}`,
-    };
+    const currentSlug = garment.slug || slugify(garment.title, garment.id);
+    const shareUrl = `${PUBLIC_URL}/#/${currentSlug}`;
+    const shareText = `${garment.title} - Colección Womanity Boutique. #${garment.brand.replace(/\s+/g, "")}`;
+    const fullContent = `${shareText} ${shareUrl}`;
 
     try {
-      const response = await fetch(garment.videoUrl);
-      if (!response.ok) {
-        throw new Error(
-          `La respuesta de la red no fue correcta, estado: ${response.status}`,
-        );
-      }
-      const blob = await response.blob();
-      const file = new File([blob], fileName, { type: "video/mp4" });
+      await navigator.clipboard.writeText(fullContent);
 
-      if (
-        navigator.share &&
-        navigator.canShare &&
-        navigator.canShare({ files: [file] })
-      ) {
-        await navigator.share({ ...shareDetails, files: [file] });
+      const deepLinks = {
+        Instagram: {
+          app: "instagram://camera",
+          web: "https://www.instagram.com/"
+        },
+        TikTok: {
+          app: "snssdk1128://feed", 
+          web: "https://www.tiktok.com/"
+        }
+      };
+
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        setToastMessage(`¡Enlace copiado! Abriendo ${platform}...`);
+        
+        window.location.href = deepLinks[platform].app;
+
+        setTimeout(() => {
+          if (!document.hidden) {
+            window.open(deepLinks[platform].web, "_blank");
+          }
+        }, 2000);
       } else {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = fileName;
-
-        document.body.appendChild(a);
-        a.click();
-
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-
-        setToastMessage(
-          `¡Video descargado! Súbelo a ${platform} para publicarlo.`,
-        );
-        setTimeout(() => setToastMessage(null), 4000);
+        setToastMessage(`¡Enlace copiado para ${platform}!`);
       }
+
+      setTimeout(() => setToastMessage(null), 3000);
     } catch (error: any) {
-      if (error.name !== "AbortError") {
-        console.error(
-          `Error al compartir/descargar el video para ${platform}:`,
-          error,
-        );
-        setToastMessage("No se pudo compartir o descargar.");
-        setTimeout(() => setToastMessage(null), 4000);
-      }
+      console.error(`Error al compartir en ${platform}:`, error);
+      setToastMessage("No se pudo abrir la aplicación.");
+      setTimeout(() => setToastMessage(null), 3000);
     }
+   
   };
 
   const phoneNumber = "51956382746";
