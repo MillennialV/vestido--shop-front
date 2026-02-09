@@ -41,7 +41,6 @@ export default function HomeClient({
 }) {
   const processedSlugRef = useRef<string | null>(null);
   const [garments, setGarments] = useState<Garment[]>(initialGarments);
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [faqsLocal, setFaqsLocal] = useState<FaqItem[]>(initialFaqs);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,8 +72,7 @@ export default function HomeClient({
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const { authenticated, onLogout, onLogin } = useAuth();
   const { fetchProducts, fetchProductById, deleteProduct } = useProducts();
-  const { fetchPosts } = usePosts();
-  const { deletePost } = usePosts();
+  const { fetchPosts, deletePost, posts, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts();
   const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
   const ITEMS_PER_PAGE = 10;
   const POSTS_PER_PAGE = 6;
@@ -263,6 +261,16 @@ export default function HomeClient({
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, [handleSelectGarmentWrapper, fetchProductById]);
+
+  useEffect(() => {
+    const getPosts = async () => {
+      await fetchPosts()
+    }
+    getPosts()
+  }, [authenticated, fetchPosts]);
+
+
+
   const handleOpenForm = (garment: Garment | null = null) => {
     setEditingGarment(garment);
     setIsFormModalOpen(true);
@@ -365,25 +373,22 @@ export default function HomeClient({
     setEditingPost(post);
     setIsPostModalOpen(true);
   };
-  const handleSavePost = (post: Post) => {
-    setPosts((prev) => {
-      const currentPosts = Array.isArray(prev) ? prev : [];
-      console.log("Current posts:", currentPosts);
-      const exists = currentPosts.some((p) => Number(p.id) === Number(post.id));
-      console.log("Saving post:", post, "Exists:", exists);
-      if (exists) {
-        return currentPosts.map((p) =>
-          Number(p.id) === Number(post.id) ? post : p
-        );
+
+  const handleSavePost = async (id: number, post: any) => {
+    try {
+      if (id) {
+        await updatePost(id, post);
+      } else {
+        await createPost(post);
       }
-      console.log("Adding new post:", post);
-      return [post, ...currentPosts];
-    });
+      await fetchPosts();
 
-
-    setIsPostModalOpen(false);
-    setEditingPost(null);
+      setIsPostModalOpen(false);
+    } catch (err: any) {
+      console.error("Failed to update post:", err);
+    }
   };
+
   const handleDeletePost = (post: Post) => {
     setPostToDelete(post);
     setIsDeleteModalOpen(true);
@@ -393,9 +398,6 @@ export default function HomeClient({
     setIsDeleting(true);
     try {
       await deletePost(postToDelete.id);
-
-      setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
-
       setIsDeleteModalOpen(false);
       setPostToDelete(null);
     } catch (error) {
@@ -501,10 +503,10 @@ export default function HomeClient({
               <Blog
                 posts={posts}
                 navigate={() => window.location.href = "/"}
-                isAdmin={authenticated}
                 onAddPost={() => handleOpenPostModal(null)}
                 onEditPost={handleOpenPostModal}
                 onDeletePost={handleDeletePost}
+                isLoading={isPostLoading}
               />
             </section>
             <section className="mt-24 max-w-4xl mx-auto">
@@ -598,7 +600,7 @@ export default function HomeClient({
         isOpen={isPostModalOpen}
         post={editingPost}
         onClose={() => setIsPostModalOpen(false)}
-        onSave={handleSavePost}
+        onSubmit={handleSavePost}
       />
       <FaqModal
         isOpen={isFaqModalOpen}

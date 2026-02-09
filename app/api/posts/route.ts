@@ -4,9 +4,13 @@ const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'http://local
 
 const getAuthHeaders = (req: NextRequest) => {
     const token = req.cookies.get('authToken')?.value;
+    console.log('Token from cookies:', token ? 'FOUND' : 'MISSING', token || '');
     return {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(token ? {
+            Authorization: `Bearer ${token}`,
+            Cookie: `authToken=${token}`
+        } : {}),
     };
 };
 
@@ -23,9 +27,13 @@ export async function GET(req: NextRequest) {
             order: searchParams.get('order') || 'desc',
         });
 
+        const headers = getAuthHeaders(req);
+        console.log('GET /api/posts Headers:', headers);
+
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts?${queryParams}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
+            cache: 'no-store',
         });
 
         if (!res.ok) throw new Error('Error al obtener los posts desde el servidor');
@@ -36,7 +44,7 @@ export async function GET(req: NextRequest) {
         const paginationContent = result.data?.pagination || null;
 
         return NextResponse.json({
-            posts: postsContent|| [],
+            posts: postsContent || [],
             pagination: paginationContent || null
         });
     } catch (error) {
@@ -50,8 +58,8 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        const { slug,seo_keywords,categoryId, ...bodyWithoutSlug } = body;
-        
+        const { slug, seo_keywords, categoryId, ...bodyWithoutSlug } = body;
+
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts`, {
             method: 'POST',
             headers: getAuthHeaders(req),
@@ -79,8 +87,8 @@ export async function PUT(req: NextRequest) {
         if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
 
         const body = await req.json();
-        
-        const { slug,seo_keywords,categoryId, ...bodyWithoutSlug } = body;
+
+        const { slug, seo_keywords, categoryId, ...bodyWithoutSlug } = body;
 
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts/${id}`, {
             method: 'PUT',

@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
             {
                 protocol: 'https',
                 hostname: '**.iaimpacto.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'vestidosmillev.blob.core.windows.net',
             }
         ],
     },

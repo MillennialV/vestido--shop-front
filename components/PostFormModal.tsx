@@ -4,10 +4,9 @@ import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
 import type { Post } from "@/types/post";
-import { usePosts } from "@/hooks/usePosts";
+import { useCategories } from "@/hooks/useCategories";
 import { azureStorageService } from "@/services/azureStorageService";
 import { CloseIcon, SpinnerIcon, UploadIcon } from "@/components/Icons";
-import { Category } from "@/types/category";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), {
   ssr: false,
@@ -18,7 +17,7 @@ interface PostFormModalProps {
   isOpen: boolean;
   post?: Post | null;
   onClose: () => void;
-  onSave?: (post: Post) => void;
+  onSubmit: (id: number, post: unknown) => void;
 }
 
 const modules = {
@@ -33,7 +32,7 @@ const modules = {
 
 const formats = ["header", "bold", "italic", "underline", "strike", "blockquote", "list", "link"];
 
-const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, onSave }) => {
+const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, onSubmit }) => {
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -61,46 +60,28 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const { createPost, updatePost } = usePosts();
+  const { categories, fetchCategories } = useCategories();
   const firstInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. Cargar Categorías
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("/api/posts/categories");
-        if (!res.ok) throw new Error("Error al cargar categorías");
-        const data = await res.json();
-        const categoriesArray = Array.isArray(data) ? data : (data.categories || []);
-        setCategories(categoriesArray);
-      } catch (error) {
-        console.error("Failed to load categories", error);
-      }
-    };
     fetchCategories();
-  }, []);
+  }, [fetchCategories]);
 
-  // 2. Inicializar formulario cuando hay un post o cargan las categorías
   useEffect(() => {
-    if (post) {
-      const initialCategoryId = post.categories?.[0]?.id || (categories.length > 0 ? categories[0].id : 0);
-      setFormData({
-        title: post.title || "",
-        slug: post.slug || "",
-        content: post.content || "",
-        featured_image_url: post.featured_image_url || "",
-        reading_time: post.reading_time ? String(post.reading_time) : "",
-        seo_description: post.seo_description || "",
-        is_published: post.is_published || false,
-        categoryId: initialCategoryId,
-      });
-    } else if (categories.length > 0 && formData.categoryId === 0) {
-      setFormData(prev => ({ ...prev, categoryId: categories[0].id }));
-    }
+    const initialCategoryId = post?.categories?.[0]?.id || (categories.length > 0 ? categories[0].id : 0);
+    setFormData({
+      title: post?.title || "",
+      slug: post?.slug || "",
+      content: post?.content || "",
+      featured_image_url: post?.featured_image_url || "",
+      reading_time: post?.reading_time ? String(post?.reading_time) : "",
+      seo_description: post?.seo_description || "",
+      is_published: post?.is_published || false,
+      categoryId: initialCategoryId,
+    });
   }, [post, categories]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -145,30 +126,26 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
 
     try {
       let finalImageUrl = formData.featured_image_url;
+
       if (imageFile) {
+        if (post?.featured_image_url && post.featured_image_url.includes('blob.core.windows.net')) {
+          await azureStorageService.deleteImage(post.featured_image_url);
+        }
+
         finalImageUrl = await azureStorageService.uploadImage(imageFile);
       }
 
       const postData = {
-        ...formData,
+        title: formData.title,
+        content: formData.content,
         featured_image_url: finalImageUrl,
         reading_time: parseInt(formData.reading_time) || 1,
+        seo_description: formData.seo_description,
+        is_published: formData.is_published,
         category_ids: [Number(formData.categoryId)],
       };
 
-      let result;
-      if (post?.id) {
-        result = await updatePost(post.id, postData as any);
-      } else {
-        result = await createPost(postData as any);
-      }
-
-
-      if (onSave && result && result.success) {
-        onSave(result.data);
-        onClose();
-      }
-
+      onSubmit(post?.id || 0, postData);
     } catch (err: any) {
       console.error("Error capturado:", err.message);
       setSubmitError(err.message || "Error al guardar");

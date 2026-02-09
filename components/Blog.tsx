@@ -2,17 +2,21 @@ import React from 'react';
 import PostCard from './PostCard';
 import type { Post } from '../types/post';
 import { PlusIcon } from './Icons';
+import { useAuth } from '@/hooks/useAuth';
 
 interface BlogProps {
     posts: Post[];
     navigate: (path: string) => void;
-    isAdmin?: boolean;
     onAddPost?: () => void;
     onEditPost?: (post: Post) => void;
     onDeletePost?: (post: Post) => void;
+    isLoading?: boolean;
 }
 
-const Blog: React.FC<BlogProps> = ({ posts, navigate, isAdmin, onAddPost, onEditPost, onDeletePost }) => {
+const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onEditPost, onDeletePost, isLoading }) => {
+
+    const { authenticated } = useAuth();
+
     return (
         <div className="animate-fade-in-down">
             <header className="text-center mb-12">
@@ -20,7 +24,7 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, isAdmin, onAddPost, onEdit
                 <p className="mt-4 text-lg text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">
                     Inspiración, estilo y las historias detrás de cada diseño. Sumérgete en el universo de Womanity Boutique.
                 </p>
-                {isAdmin && onAddPost && (
+                {authenticated && (
                     <div className="mt-8 flex justify-center">
                         <button
                             onClick={onAddPost}
@@ -33,14 +37,17 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, isAdmin, onAddPost, onEdit
                 )}
             </header>
 
-            {posts && posts.length > 0 ? (
+            {isLoading ? (
+                <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
+                    Cargando artículos...
+                </p>
+            ) : posts && posts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                     {posts.map(post => (
                         <PostCard
                             key={post.id}
                             post={post}
                             navigate={navigate}
-                            isAdmin={isAdmin}
                             onEdit={onEditPost}
                             onDelete={onDeletePost}
                         />
