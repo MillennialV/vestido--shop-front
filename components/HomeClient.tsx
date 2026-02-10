@@ -18,6 +18,7 @@ const BulkUploadModal = dynamic(() => import("@/components/BulkUploadModal"), { 
 const FaqModal = dynamic(() => import("@/components/FaqModal"), { ssr: false });
 const PostFormModal = dynamic(() => import("@/components/PostFormModal"), { ssr: false });
 const WhatsappModal = dynamic(() => import("@/components/WhatsappModal"), { ssr: false });
+const QrBatchConfigModal = dynamic(() => import("@/components/QrBatchConfigModal"), { ssr: false });
 
 import Pagination from "@/components/Pagination";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -51,6 +52,7 @@ export default function HomeClient({
   const [editingGarment, setEditingGarment] = useState<Garment | null>(null);
   const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
   const [isWhatsappModalOpen, setIsWhatsappModalOpen] = useState(false);
+  const [isQrBatchModalOpen, setIsQrBatchModalOpen] = useState(false);
   const [isFaqModalOpen, setIsFaqModalOpen] = useState(false);
   const [faqModalMode, setFaqModalMode] = useState<"create" | "edit" | "delete">("create");
   const [editingFaq, setEditingFaq] = useState<FaqItem | null>(null);
@@ -470,6 +472,7 @@ export default function HomeClient({
                 selectedCount={selectedIds.size}
                 onBulkDelete={handleBulkDelete}
                 onWhatsapp={() => setIsWhatsappModalOpen(true)}
+                onGenerateQr={() => setIsQrBatchModalOpen(true)}
               />
             )}
             {filteredGarments.length > 0 ? (
@@ -595,6 +598,11 @@ export default function HomeClient({
       <WhatsappModal
         isOpen={isWhatsappModalOpen}
         onClose={() => setIsWhatsappModalOpen(false)}
+      />
+      <QrBatchConfigModal
+        isOpen={isQrBatchModalOpen}
+        onClose={() => setIsQrBatchModalOpen(false)}
+        garments={garments.filter((g) => selectedIds.has(g.id))}
       />
       <PostFormModal
         isOpen={isPostModalOpen}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlusIcon, UploadIcon, CheckCircleIcon, DeleteIcon, WhatsappIcon } from './Icons';
+import { PlusIcon, UploadIcon, CheckCircleIcon, DeleteIcon, WhatsappIcon, QrCodeIcon } from './Icons';
 
 interface CatalogToolbarProps {
     onAddGarment: () => void;
@@ -9,6 +9,7 @@ interface CatalogToolbarProps {
     selectedCount: number;
     onBulkDelete: () => void;
     onWhatsapp: () => void;
+    onGenerateQr: () => void;
 }
 
 const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
@@ -18,7 +19,8 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
     isSelectionMode,
     selectedCount,
     onBulkDelete,
-    onWhatsapp
+    onWhatsapp,
+    onGenerateQr
 }) => {
     return (
         <section className="mt-8 mb-8 bg-white/90 dark:bg-stone-900/90 backdrop-blur-sm border border-stone-200 dark:border-stone-700 rounded-xl shadow-sm overflow-hidden">
@@ -60,17 +62,24 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                             <span>{isSelectionMode ? 'Cancelar Selección' : 'Seleccionar Múltiples'}</span>
                         </button>
                         {isSelectionMode && selectedCount > 0 && (
-                            <button
-                                onClick={onBulkDelete}
-                                className="inline-flex items-center gap-2 bg-red-600 dark:bg-red-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 active:bg-red-800 dark:active:bg-red-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
-                                aria-label={`Eliminar ${selectedCount} ${selectedCount === 1 ? 'prenda seleccionada' : 'prendas seleccionadas'}`}
-                            >
-                                <DeleteIcon className="w-4 h-4" />
-                                <span>Eliminar</span>
-                                <span className="ml-1 bg-red-700/50 px-2 py-0.5 rounded-full text-xs font-semibold">
-                                    {selectedCount}
-                                </span>
-                            </button>
+                            <>
+                                <button
+                                    onClick={onGenerateQr}
+                                    className="inline-flex items-center gap-2 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-white font-semibold py-2.5 px-5 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600 transition-all duration-200 text-sm shadow-sm hover:shadow-md"
+                                    aria-label={`Generar QR para ${selectedCount} prendas`}
+                                >
+                                    <QrCodeIcon className="w-4 h-4" />
+                                    <span>Generar QR ({selectedCount})</span>
+                                </button>
+                                <button
+                                    onClick={onBulkDelete}
+                                    className="inline-flex items-center gap-2 bg-red-600 dark:bg-red-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 active:bg-red-800 dark:active:bg-red-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
+                                    aria-label={`Eliminar ${selectedCount} ${selectedCount === 1 ? 'prenda seleccionada' : 'prendas seleccionadas'}`}
+                                >
+                                    <DeleteIcon className="w-4 h-4" />
+                                    <span>Eliminar</span>
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>
