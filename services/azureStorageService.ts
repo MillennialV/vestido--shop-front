@@ -1,5 +1,5 @@
 import { BlockBlobClient } from '@azure/storage-blob';
-import { BLOG_BASE_API } from "@/core/apiConfig";
+
 
 class AzureStorageService {
     private getToken() {
@@ -11,7 +11,7 @@ class AzureStorageService {
 
     async uploadImage(file: File): Promise<string> {
         const token = this.getToken();
-        
+
         if (!token) {
             throw new Error("No hay sesión activa. Por favor, inicia sesión de nuevo.");
         }
@@ -19,7 +19,7 @@ class AzureStorageService {
         const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const fileName = `${new Date().getTime()}-${sanitizedFileName}`;
 
-        const urlFetch = `${BLOG_BASE_API}/api/generate-sas-token`;
+        const urlFetch = `/api/storage/sas-token`;
         const response = await fetch(urlFetch, {
             method: 'POST',
             body: JSON.stringify({ fileName }),
@@ -46,7 +46,7 @@ class AzureStorageService {
     async deleteImage(imageUrl: string): Promise<void> {
 
         const token = this.getToken();
-        
+
         if (!token) {
             throw new Error("No hay sesión activa. Por favor, inicia sesión de nuevo.");
         }
@@ -54,7 +54,7 @@ class AzureStorageService {
         if (!imageUrl) return;
 
         try {
-            const urlFetch = `${BLOG_BASE_API}/api/delete-image`;
+            const urlFetch = `/api/storage/delete-image`;
             const response = await fetch(urlFetch, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
