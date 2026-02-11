@@ -34,6 +34,24 @@
     .animate-fade-in-down {
         animation: fade-in-down 0.3s ease-out forwards;
     }
+
+    .animate-scan {
+        animation: scan 2s ease-in-out infinite;
+    }
+
+    @keyframes scan {
+        0%, 100% {
+            top: 0%;
+            opacity: 0;
+        }
+        5%, 95% {
+            opacity: 1;
+        }
+        50% {
+            top: 100%;
+            opacity: 1;
+        }
+    }
 }
 
 @keyframes fade-in-down {

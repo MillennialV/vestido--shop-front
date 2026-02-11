@@ -1,7 +1,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3005';
+
+function getAuthHeaders(request: NextRequest): Record<string, string> {
+    const token = request.cookies.get('authToken')?.value;
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
 
 export async function GET(request: NextRequest) {
     try {
@@ -11,7 +16,14 @@ export async function GET(request: NextRequest) {
         const sort = searchParams.get('sort') || 'title';
         const order = searchParams.get('order') || 'desc';
         const url = `${BACKEND_URL}/api/producto/obtener-listado-productos?page=${page}&limit=${limit}&sort=${sort}&order=${order}`;
-        const res = await fetch(url, { method: 'GET' });
+
+        // El listado público no suele requerir token, pero lo pasamos por si acaso
+        const headers = getAuthHeaders(request);
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: headers
+        });
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
         return NextResponse.json(data?.data?.products || []);
@@ -24,6 +36,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const contentType = request.headers.get('content-type') || '';
+        const authHeaders = getAuthHeaders(request);
         let res: Response;
 
         if (contentType.includes('multipart/form-data')) {
@@ -31,13 +44,17 @@ export async function POST(request: NextRequest) {
 
             res = await fetch(`${BACKEND_URL}/api/producto/crear-producto`, {
                 method: 'POST',
+                headers: authHeaders,
                 body: formData,
             });
         } else {
             const body = await request.json();
             res = await fetch(`${BACKEND_URL}/api/producto/crear-producto`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    ...authHeaders,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(body),
             });
         }
@@ -61,6 +78,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         const contentType = request.headers.get('content-type') || '';
+        const authHeaders = getAuthHeaders(request);
         let res: Response;
         let productId: string | null = null;
 
@@ -70,6 +88,7 @@ export async function PUT(request: NextRequest) {
 
             res = await fetch(`${BACKEND_URL}/api/producto/actualizar-producto/${productId}`, {
                 method: 'PUT',
+                headers: authHeaders,
                 body: formData,
             });
         } else {
@@ -79,7 +98,10 @@ export async function PUT(request: NextRequest) {
 
             res = await fetch(`${BACKEND_URL}/api/producto/actualizar-producto/${productId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    ...authHeaders,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(updateData),
             });
         }
@@ -102,8 +124,11 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
     try {
         const { id } = await request.json();
+        const authHeaders = getAuthHeaders(request);
+
         const res = await fetch(`${BACKEND_URL}/api/producto/eliminar-producto/${id}`, {
             method: 'DELETE',
+            headers: authHeaders
         });
         if (!res.ok) throw new Error('Failed to delete product');
         return NextResponse.json({ success: true });

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import type { Garment } from "@/types/Garment";
-import { uploadVideoFile, saveBulkGarments } from "../lib/db";
+import { saveBulkGarments } from "../lib/db";
 // import { iaService } from "../services/iaService";
 import { getFriendlySupabaseError } from "../lib/errorUtils";
 import {
@@ -188,18 +188,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
     for (const file of pendingFiles) {
       try {
-        // 1. Upload video (si no tiene ya una URL)
-        let currentVideoUrl = file.videoUrl;
-        if (!currentVideoUrl) {
-          updateFileState(file.id, { status: "uploading", errorMessage: undefined });
-          currentVideoUrl = await uploadVideoFile(file.file, (progress) => {
-            updateFileState(file.id, { progress });
-          });
-          updateFileState(file.id, { videoUrl: currentVideoUrl, progress: 100 });
-        }
-
-        // 2. Analyze with AI
-        updateFileState(file.id, { status: "processing" });
+        // Analizar con IA (No necesitamos subir el video primero, usamos el elemento local)
+        updateFileState(file.id, { status: "processing", errorMessage: undefined });
 
         const videoElement = file.videoRef.current;
         if (!videoElement) {
@@ -253,15 +243,20 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 priceString = String(newPrice);
               }
 
-              // Protect manual entry: Only update if the field is empty
-              if (!updatedData.title) updatedData.title = result.title || "";
-              if (!updatedData.brand) updatedData.brand = result.brand || "";
-              if (!updatedData.description) updatedData.description = result.description || "";
-              if (!updatedData.color) updatedData.color = result.color || "";
-              if (!updatedData.price && priceString) updatedData.price = priceString || "";
-              if (!updatedData.material) updatedData.material = result.material || "";
-              if (!updatedData.occasion) updatedData.occasion = result.occasion || "";
-              if (!updatedData.style_notes) updatedData.style_notes = result.style_notes || "";
+              // Update fields if they are empty or if the title is still the default (filename)
+              const isDefaultTitle = updatedData.title === file.file.name.replace(/\.[^/.]+$/, "");
+
+              if ((!updatedData.title || isDefaultTitle) && result.title) {
+                updatedData.title = result.title;
+              }
+              if (!updatedData.brand && result.brand) updatedData.brand = result.brand;
+              if (!updatedData.description && result.description) updatedData.description = result.description;
+              if (!updatedData.color && result.color) updatedData.color = result.color;
+              if (!updatedData.price && priceString) updatedData.price = priceString;
+              if (!updatedData.material && result.material) updatedData.material = result.material;
+              if (!updatedData.occasion && result.occasion) updatedData.occasion = result.occasion;
+              if (!updatedData.style_notes && result.style_notes) updatedData.style_notes = result.style_notes;
+              if (!updatedData.size && result.size) updatedData.size = result.size;
 
               return { ...f, garmentData: updatedData, status: "completed" as UploadStatus };
             }
@@ -451,10 +446,24 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                       src={file.previewUrl}
                       muted
                       playsInline
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover transition-all duration-500 ${file.status === "completed" ? "opacity-60 grayscale-[0.3]" : ""}`}
                       crossOrigin="anonymous"
                     />
-                    <div className="absolute top-2 right-2">
+
+                    {/* overlays premium */}
+                    <ScanningOverlay status={file.status} />
+
+                    {file.status === "completed" && (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center animate-fade-in-down pointer-events-none">
+                        <div className="bg-emerald-500/10 backdrop-blur-[2px] w-full h-full flex items-center justify-center">
+                          <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-xl">
+                            <CheckCircleIcon className="w-6 h-6 text-emerald-400" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="absolute top-2 right-2 z-20">
                       <StatusIndicator status={file.status} />
                     </div>
                   </div>
@@ -694,27 +703,52 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
 const StatusIndicator: React.FC<{ status: UploadStatus }> = ({ status }) => {
   const statusMap = {
-    pending: { text: "Pendiente", icon: null },
+    pending: { icon: null, color: "" },
     uploading: {
-      text: "Subiendo...",
-      icon: <SpinnerIcon className="w-4 h-4 text-white animate-spin" />,
+      icon: <SpinnerIcon className="w-4 h-4 animate-spin" />,
+      color: "bg-blue-500/80",
     },
     processing: {
-      text: "Analizando...",
-      icon: <SpinnerIcon className="w-4 h-4 text-white animate-spin" />,
+      icon: <SparklesIcon className="w-4 h-4 animate-pulse" />,
+      color: "bg-sky-500/80 shadow-[0_0_10px_rgba(56,189,248,0.5)]",
     },
     completed: {
-      text: "Completo",
-      icon: <CheckCircleIcon className="w-5 h-5 text-green-400" />,
+      icon: <CheckCircleIcon className="w-4 h-4" />,
+      color: "bg-emerald-500/80",
     },
     error: {
-      text: "Error",
-      icon: <ExclamationTriangleIcon className="w-5 h-5 text-red-400" />,
+      icon: <ExclamationTriangleIcon className="w-4 h-4" />,
+      color: "bg-red-500/80",
     },
   };
-  const { icon } = statusMap[status];
-  if (!icon) return null;
-  return <div className="p-1.5 bg-black/50 rounded-full">{icon}</div>;
+
+  const current = statusMap[status];
+  if (!current.icon) return null;
+
+  return (
+    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-white text-[10px] font-bold backdrop-blur-md ${current.color} border border-white/20 transition-all duration-300 animate-fade-in-down`}>
+      {current.icon}
+      <span className="uppercase tracking-tight">
+        {status === "processing" ? "Análisis IA" : status === "completed" ? "Listo" : status === "uploading" ? "Subiendo" : status === "error" ? "Error" : ""}
+      </span>
+    </div>
+  );
+};
+
+const ScanningOverlay: React.FC<{ status: UploadStatus }> = ({ status }) => {
+  if (status !== "processing") return null;
+  return (
+    <div className="absolute inset-0 pointer-events-none z-10">
+      {/* Glass overlay */}
+      <div className="absolute inset-0 bg-sky-500/5 backdrop-blur-[1px]" />
+
+      {/* Scanning bar */}
+      <div className="absolute left-0 right-0 h-0.5 bg-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.8)] animate-scan" />
+
+      {/* Radial gradient glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
+    </div>
+  );
 };
 
 const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => (

@@ -4,10 +4,14 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || '';
-    const model = 'Salesforce/blip-image-captioning-base';
+    const model = 'gemini-2.5-flash';
 
     let imageBase64 = '';
     let maxLength: string | undefined = undefined;
+
+    // Obtener el token de las cookies para pasarlo al microservicio si es necesario
+    const token = req.cookies.get('authToken')?.value;
+
     // Permitir tanto JSON como form-data
     if (contentType.includes('application/json')) {
       const body = await req.json();
@@ -26,19 +30,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Falta imageBase64' }, { status: 400 });
     }
 
-    // Lógica: llamar al microservicio de IA (igual que iaService.analyzeGarmentFromBase64)
-    const url = process.env.NEXT_PUBLIC_IA_URL || 'https://ia.iaimpacto.com';
-    const prompt = `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "marca de la lista o 'Sin marca'",\n  "color": "color/patrón principal",\n  "description": "descripción breve (2-3 frases)",\n  "price": número,\n  "material": "tejidos identificables o 'No identificable'",\n  "occasion": "ocasión ideal (Boda, Gala, Cóctel, etc)",\n  "style_notes": "detalles de diseño (corte, escote, mangas, etc)"\n}\n\nMarcas: Marchesa Notte, Badgley Mischka, Tadashi Shoji, Adrianna Papell, Vera Wang, Carolina Herrera, Oscar de la Renta, Pronovias, Rosa Clará, Michael Kors, Ralph Lauren, Elie Saab, Zuhair Murad, Jenny Packham, Monique Lhuillier.\n\nObserva: estilo, detalles decorativos, tipo de tela, color, silueta, diseño.`;
+    // Limpiar el base64 si incluye el prefijo data:image/...;base64,
+    const cleanBase64 = imageBase64.includes('base64,')
+      ? imageBase64.split('base64,')[1]
+      : imageBase64;
+
+    const url = process.env.NEXT_PUBLIC_IA_URL || 'http://localhost:3004';
+    const prompt = `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "Sin marca",\n  "color": "color principal",\n  "size": "M",\n  "description": "breve descripción",\n  "price": 0,\n  "material": "No identificable",\n  "occasion": "Boda",\n  "style_notes": "detalles"\n}`;
+
     const body = {
-      imageBase64,
+      imageBase64: cleanBase64,
       model: model,
       maxLength: maxLength ? Number(maxLength) : 200,
-      prompt
+      prompt: prompt
     };
-    console.log("Body:", body);
+
+    console.log(`[AnalyzeGarment] Calling IA Microservice at: ${url}/api/ai/image-to-text`);
+
     const iaRes = await fetch(`${url}/api/ai/image-to-text`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify(body)
     });
 
@@ -53,9 +67,15 @@ export async function POST(req: NextRequest) {
     }
 
     const iaData = await iaRes.json();
-    console.log("[IA API] Success response:", iaData);
+    console.log("[IA API] Success response received from microservice");
 
-    const generatedText = iaData.data?.generatedText || iaData.data?.generated_text || '';
+    const generatedText = iaData.data?.generated_text || iaData.data?.generatedText || iaData.generated_text || '';
+
+    if (!generatedText) {
+      console.error("[IA API] No generated text in response:", iaData);
+      return NextResponse.json({ message: 'La IA no devolvió ningún texto generado' }, { status: 500 });
+    }
+
     // Parsear el JSON generado
     let parsed;
     try {
@@ -68,11 +88,12 @@ export async function POST(req: NextRequest) {
       console.error("[IA API] Error parsing generated text:", generatedText);
       return NextResponse.json({ message: 'Error al parsear respuesta IA', raw: generatedText }, { status: 500 });
     }
+
     return NextResponse.json(parsed);
   } catch (error: any) {
-    console.error("[IA API] Fetch failed:", error);
+    console.error("[IA API] General error:", error);
     return NextResponse.json({
-      message: 'No se pudo conectar con el servicio de IA. Verifica que el microservicio esté activo.',
+      message: 'No se pudo conectar con el servicio de IA o ocurrió un error interno.',
       error: error.message
     }, { status: 500 });
   }
