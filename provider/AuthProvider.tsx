@@ -20,6 +20,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const data = await res.json();
           setAuthenticated(true);
           setUser(data.user || null);
+          if (data.token) {
+            localStorage.setItem('authToken', data.token);
+          }
         } else {
           setAuthenticated(false);
           setUser(null);
@@ -45,12 +48,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const data = await res.json();
     setAuthenticated(true);
     setUser(data.user || null);
+    if (data.token) {
+      localStorage.setItem('authToken', data.token);
+    }
   };
 
   const onLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setAuthenticated(false);
     setUser(null);
+    localStorage.removeItem('authToken');
   };
 
   const getUser = (): User | null => {

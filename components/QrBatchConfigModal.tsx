@@ -134,7 +134,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                     }
 
                     // Combine Size and Color nicely
-                    let details = [];
+                    let details: string[] = [];
                     if (selectedFields.size) details.push(`Talla: ${garment.size}`);
                     if (selectedFields.color) details.push(`Color: ${garment.color}`);
 

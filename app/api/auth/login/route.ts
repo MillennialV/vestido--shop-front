@@ -23,15 +23,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: (data as any).error || 'Credenciales inválidas' }, { status: 401 });
     }
 
-    const response = NextResponse.json({ success: true, user: (data as any).data?.user });
-    response.cookies.set('authToken',  (data as any).data?.token, {
+    const response = NextResponse.json({
+      success: true,
+      user: (data as any).data?.user,
+      token: (data as any).data?.token
+    });
+    response.cookies.set('authToken', (data as any).data?.token, {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
     });
-    
+
     return response;
 
   } catch (err) {
