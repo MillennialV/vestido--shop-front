@@ -17,7 +17,7 @@ interface PostFormModalProps {
   isOpen: boolean;
   post?: Post | null;
   onClose: () => void;
-  onSubmit: (id: number, post: unknown) => void;
+  onSubmit: (id: number, post: unknown) => Promise<void> | void;
 }
 
 const modules = {
@@ -145,7 +145,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
         category_ids: [Number(formData.categoryId)],
       };
 
-      onSubmit(post?.id || 0, postData);
+      await onSubmit(post?.id || 0, postData);
     } catch (err: any) {
       console.error("Error capturado:", err.message);
       setSubmitError(err.message || "Error al guardar");
@@ -200,6 +200,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
                 >
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
+                {errors.categoryId && <span className="text-red-500 text-xs">{errors.categoryId}</span>}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Lectura (min)</label>
@@ -230,6 +231,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
                   <input type="file" className="hidden" onChange={handleFileChange} />
                 </label>
               </div>
+              {errors.featured_image_url && <span className="text-red-500 text-xs">{errors.featured_image_url}</span>}
             </div>
 
             <div>
@@ -243,6 +245,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
                   className="h-64 mb-12"
                 />
               </div>
+              {errors.content && <span className="text-red-500 text-xs">{errors.content}</span>}
             </div>
 
             <div>

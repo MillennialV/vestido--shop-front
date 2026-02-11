@@ -388,6 +388,7 @@ export default function HomeClient({
       setIsPostModalOpen(false);
     } catch (err: any) {
       console.error("Failed to update post:", err);
+      throw err;
     }
   };
 
