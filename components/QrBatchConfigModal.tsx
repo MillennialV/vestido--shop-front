@@ -40,6 +40,14 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
         setSelectedFields((prev) => ({ ...prev, [field]: !prev[field] }));
     };
 
+    const handlePrintLabels = () => {
+        // Guardar datos en session storage para la pagina de impresion
+        sessionStorage.setItem('print-labels-data', JSON.stringify(garments));
+        // Abrir ventana de impresion
+        window.open('/print-labels', '_blank');
+        onClose();
+    };
+
     const generatePDF = async () => {
         setIsGenerating(true);
         try {
@@ -276,6 +284,12 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                         disabled={isGenerating}
                     >
                         Cancelar
+                    </button>
+                    <button
+                        onClick={handlePrintLabels}
+                        className="px-4 py-2 bg-stone-200 text-stone-700 dark:bg-stone-700 dark:text-stone-200 rounded-lg font-medium hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors flex items-center gap-2"
+                    >
+                        <span>🖨️</span> Imprimir Tickets
                     </button>
                     <button
                         onClick={generatePDF}
