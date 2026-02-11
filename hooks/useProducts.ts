@@ -98,16 +98,36 @@ export const useProducts = () => {
 
   const updateProduct = async (
     id: number | string,
-    productData: Partial<Garment>
+    productData: Partial<Garment>,
+    videoFile: File | null = null
   ): Promise<Garment> => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/products`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, ...productData }),
-      });
+      let res: Response;
+
+      if (videoFile) {
+        const formData = new FormData();
+        formData.append('id', String(id));
+        Object.entries(productData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+        });
+        formData.append('video', videoFile);
+
+        res = await fetch('/api/products', {
+          method: 'PUT',
+          body: formData,
+        });
+      } else {
+        res = await fetch(`/api/products`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, ...productData }),
+        });
+      }
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw errorData;

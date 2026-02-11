@@ -60,19 +60,42 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
     try {
-        const body = await request.json();
-        const { id, ...updateData } = body;
-        const res = await fetch(`${BACKEND_URL}/api/producto/actualizar-producto/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updateData),
-        });
-        if (!res.ok) throw new Error('Failed to update product');
+        const contentType = request.headers.get('content-type') || '';
+        let res: Response;
+        let productId: string | null = null;
+
+        if (contentType.includes('multipart/form-data')) {
+            const formData = await request.formData();
+            productId = formData.get('id') as string;
+
+            res = await fetch(`${BACKEND_URL}/api/producto/actualizar-producto/${productId}`, {
+                method: 'PUT',
+                body: formData,
+            });
+        } else {
+            const body = await request.json();
+            const { id, ...updateData } = body;
+            productId = id;
+
+            res = await fetch(`${BACKEND_URL}/api/producto/actualizar-producto/${productId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData),
+            });
+        }
+
         const data = await res.json();
-        return NextResponse.json(data?.data || {});
+
+        if (!res.ok) {
+            return NextResponse.json(data, { status: res.status });
+        }
+
+        return NextResponse.json(data?.data || data);
     } catch (error) {
-        console.error('Error updating product:', error);
-        return NextResponse.json({ error: 'Error updating product' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Error updating product',
+            message: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
 
@@ -85,7 +108,6 @@ export async function DELETE(request: NextRequest) {
         if (!res.ok) throw new Error('Failed to delete product');
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error deleting product:', error);
         return NextResponse.json({ error: 'Error deleting product' }, { status: 500 });
     }
 }

@@ -44,6 +44,7 @@ interface UploadableFile {
     material: string;
     occasion: string;
     style_notes: string;
+    cantidad: string;
   };
   videoUrl?: string;
   videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -106,6 +107,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           material: "",
           occasion: "",
           style_notes: "",
+          cantidad: "1",
         },
         videoRef: React.createRef<HTMLVideoElement>(),
       }));
@@ -268,7 +270,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         );
 
       } catch (error: any) {
-        console.error(`[BulkUpload] Error en ${file.file.name}:`, error);
         updateFileState(file.id, {
           status: "error",
           errorMessage: error instanceof Error ? error.message : String(error)
@@ -288,7 +289,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     );
 
     if (filesToProcess.length === 0) {
-      console.log("No hay prendas con título y marca para guardar.");
       return;
     }
 
@@ -309,6 +309,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               body: JSON.stringify({
                 ...f.garmentData,
                 price: f.garmentData.price ? parseFloat(f.garmentData.price) : undefined,
+                cantidad: f.garmentData.cantidad ? parseInt(f.garmentData.cantidad, 10) : 0,
                 videoUrl: f.videoUrl,
               }),
             });
@@ -326,6 +327,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             formData.append("material", f.garmentData.material);
             formData.append("occasion", f.garmentData.occasion);
             formData.append("style_notes", f.garmentData.style_notes);
+            formData.append("cantidad", f.garmentData.cantidad || "0");
 
             response = await fetch("/api/products", {
               method: "POST",
@@ -359,7 +361,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           // Marcamos como completado en la UI
           updateFileState(f.id, { status: "completed", errorMessage: undefined, validationErrors: undefined });
         } catch (individualError: any) {
-          console.error(`Error procesando prenda ${f.garmentData.title}:`, individualError);
           updateFileState(f.id, {
             status: "error",
             errorMessage: individualError.message || "Error inesperado al guardar"
@@ -543,6 +544,24 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                       {file.validationErrors?.price && (
                         <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
                           {file.validationErrors.price}
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <input
+                        type="number"
+                        placeholder="Stock / Cantidad"
+                        value={file.garmentData.cantidad}
+                        min="0"
+                        step="1"
+                        onChange={(e) =>
+                          handleInputChange(file.id, "cantidad", e.target.value)
+                        }
+                        className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.cantidad ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                      />
+                      {file.validationErrors?.cantidad && (
+                        <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
+                          {file.validationErrors.cantidad}
                         </span>
                       )}
                     </div>

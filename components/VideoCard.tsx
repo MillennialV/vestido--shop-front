@@ -293,6 +293,11 @@ const VideoCard: React.FC<VideoCardProps> = ({
           <p className="text-sm uppercase tracking-widest text-stone-200">
             {garment.brand || "Sin marca"} &middot; Talla:{" "}
             {garment.size || "N/A"} {garment.color && `· ${garment.color}`}
+            {isAdmin && garment.cantidad !== undefined && (
+              <span className={`block mt-1 font-bold ${garment.cantidad > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                Stock: {garment.cantidad}
+              </span>
+            )}
           </p>
         </div>
       </div>

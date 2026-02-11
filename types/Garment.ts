@@ -12,4 +12,5 @@ export interface Garment {
     material?: string;
     occasion?: string;
     style_notes?: string;
+    cantidad?: number;
 }

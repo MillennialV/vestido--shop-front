@@ -44,6 +44,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     occasion: "",
     style_notes: "",
     videoUrl: "", // URL manual de video como alternativa
+    cantidad: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -72,6 +73,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         occasion: garment.occasion || "",
         style_notes: garment.style_notes || "",
         videoUrl: garment.videoUrl || "",
+        cantidad: garment.cantidad !== undefined && garment.cantidad !== null ? String(garment.cantidad) : "0",
       });
       setPreviewUrl(garment.videoUrl);
 
@@ -91,6 +93,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         occasion: "",
         style_notes: "",
         videoUrl: "",
+        cantidad: "1",
       });
       setPreviewUrl(null);
       setVideoFile(null);
@@ -148,7 +151,16 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!previewUrl && !videoFile && !formData.videoUrl) {
+
+    const errors: Record<string, string> = {};
+    if (!formData.title) errors.title = "El título es requerido";
+    if (!formData.brand) errors.brand = "La marca es requerida";
+    if (!formData.size) errors.size = "La talla es requerida";
+    if (!formData.color) errors.color = "El color es requerido";
+    if (!formData.description) errors.description = "La descripción es requerida";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
@@ -156,6 +168,16 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       ? parseFloat(formData.price)
       : undefined;
     if (formData.price && isNaN(priceAsNumber!)) {
+      setFormErrors(prev => ({ ...prev, price: "Precio inválido" }));
+      return;
+    }
+
+    const cantidadAsNumber = formData.cantidad
+      ? parseInt(formData.cantidad, 10)
+      : 0;
+
+    if (isNaN(cantidadAsNumber) || cantidadAsNumber < 0) {
+      setFormErrors(prev => ({ ...prev, cantidad: "El stock no puede ser negativo" }));
       return;
     }
 
@@ -166,6 +188,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       color: formData.color,
       description: formData.description,
       price: priceAsNumber,
+      cantidad: cantidadAsNumber,
       material: formData.material,
       occasion: formData.occasion,
       style_notes: formData.style_notes,
@@ -177,7 +200,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     // Determinar si es crear o actualizar
     const savePromise =
       garment && garment.id
-        ? updateProduct(garment.id, dataToSave)
+        ? updateProduct(garment.id, dataToSave, videoFile)
         : createProduct(dataToSave, videoFile);
 
     savePromise
@@ -305,7 +328,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-
       // Mensajes más específicos según el tipo de error
       if (errorMessage.includes("conexión") || errorMessage.includes("fetch")) {
         console.log(
@@ -370,7 +392,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 id="title"
                 value={formData.title}
                 onChange={handleChange}
-                required
                 className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
               />
               {formErrors.title && <p className="text-red-500 text-xs mt-1">{formErrors.title}</p>}
@@ -388,7 +409,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 id="brand"
                 value={formData.brand}
                 onChange={handleChange}
-                required
                 className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
               />
               {formErrors.brand && <p className="text-red-500 text-xs mt-1">{formErrors.brand}</p>}
@@ -407,7 +427,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   id="size"
                   value={formData.size}
                   onChange={handleChange}
-                  required
                   className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
                 />
                 {formErrors.size && <p className="text-red-500 text-xs mt-1">{formErrors.size}</p>}
@@ -425,7 +444,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   id="color"
                   value={formData.color}
                   onChange={handleChange}
-                  required
                   className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
                 />
                 {formErrors.color && <p className="text-red-500 text-xs mt-1">{formErrors.color}</p>}
@@ -457,6 +475,24 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 />
               </div>
               {formErrors.price && <p className="text-red-500 text-xs mt-1">{formErrors.price}</p>}
+            </div>
+            <div>
+              <label
+                htmlFor="cantidad"
+                className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1"
+              >
+                Stock (Cantidad)
+              </label>
+              <input
+                type="number"
+                name="cantidad"
+                id="cantidad"
+                value={formData.cantidad}
+                onChange={handleChange}
+                placeholder="10"
+                className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+              />
+              {formErrors.cantidad && <p className="text-red-500 text-xs mt-1">{formErrors.cantidad}</p>}
             </div>
             <div>
               <label
@@ -596,7 +632,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 id="description"
                 value={formData.description}
                 onChange={handleChange}
-                required
                 rows={3}
                 className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
               />

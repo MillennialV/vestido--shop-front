@@ -154,14 +154,12 @@ const VideoModal: React.FC<VideoModalProps> = ({
       }
 
     } catch (error) {
-      console.error("Error al compartir:", error);
-      // Fallback: Copiar al portapapeles si todo falla
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
       setToastMessage("¡Enlace copiado al portapapeles para compartir!");
     } finally {
       setTimeout(() => setToastMessage(null), 3000);
     }
-   
+
   };
 
 
@@ -195,7 +193,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   };
 
   const handleSocialShare = async (platform: "TikTok" | "Instagram") => {
-   if (!garment) return;
+    if (!garment) return;
 
     const currentSlug = garment.slug || slugify(garment.title, garment.id);
     const shareUrl = `${PUBLIC_URL}/#/${currentSlug}`;
@@ -226,7 +224,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
         if (garment.videoUrl) {
           try {
-            await shareFileToApps(garment.videoUrl,garment);
+            await shareFileToApps(garment.videoUrl, garment);
             return;
           } catch (err) {
             console.warn("No se pudo compartir archivo, usamos fallback");
@@ -242,7 +240,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
         return;
       }
 
-       // Desktop
+      // Desktop
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
       setToastMessage("Comparte este enlace desde tu celular para Instagram.");
     }
@@ -490,6 +488,19 @@ const VideoModal: React.FC<VideoModalProps> = ({
                   <li>
                     <strong>Tallas Disponibles:</strong> {garment.size}
                   </li>
+                  {garment.cantidad !== undefined && (
+                    <li>
+                      <strong>Disponibilidad:</strong> {garment.cantidad > 0 ? (
+                        <span className="text-green-600 dark:text-green-400 font-semibold">
+                          En Stock ({garment.cantidad} unidades)
+                        </span>
+                      ) : (
+                        <span className="text-red-600 dark:text-red-400 font-semibold">
+                          Agotado
+                        </span>
+                      )}
+                    </li>
+                  )}
                 </ul>
               </AccordionItem>
               <AccordionItem
