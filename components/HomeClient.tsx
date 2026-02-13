@@ -83,7 +83,7 @@ export default function HomeClient({
   const [isBulkDeleteConfirmation, setIsBulkDeleteConfirmation] = useState(false);
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const { authenticated, onLogout, onLogin } = useAuth();
-  const { fetchPosts, deletePost, posts, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts();
+  const { fetchPosts, deletePost, posts, pagination: blogPagination, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts();
   const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
   const ITEMS_PER_PAGE = 12;
   const POSTS_PER_PAGE = 6;
@@ -427,6 +427,19 @@ export default function HomeClient({
     setIsDeleting(true);
     try {
       await deletePost(postToDelete.id);
+
+      // Calcular a qué página ir tras eliminar
+      const isLastItemOnPage = posts.length === 1;
+      const currentPage = blogPagination.page;
+
+      let nextPage = currentPage;
+      if (isLastItemOnPage && currentPage > 1) {
+        nextPage = currentPage - 1;
+      }
+
+      // Recargar posts para corregir huecos y paginación
+      await fetchPosts({ page: nextPage, limit: POSTS_PER_PAGE });
+
       setIsDeleteModalOpen(false);
       setPostToDelete(null);
     } catch (error) {
@@ -436,6 +449,11 @@ export default function HomeClient({
       setIsDeleting(false);
     }
   };
+
+  const handleBlogPageChange = (page: number) => {
+    fetchPosts({ page, limit: POSTS_PER_PAGE });
+  };
+
   const handleReorderFaqs = useCallback(
     async (newOrder: FaqItem[]) => {
       setFaqsLocal(newOrder);
@@ -537,6 +555,11 @@ export default function HomeClient({
                 onEditPost={handleOpenPostModal}
                 onDeletePost={handleDeletePost}
                 isLoading={isPostLoading}
+                pagination={{
+                  page: blogPagination.page,
+                  hasNextPage: blogPagination.hasNextPage,
+                  onPageChange: handleBlogPageChange
+                }}
               />
             </section>
             <section className="mt-24 max-w-4xl mx-auto">

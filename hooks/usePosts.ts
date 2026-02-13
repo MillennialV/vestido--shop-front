@@ -17,7 +17,7 @@ export const usePosts = () => {
         setError(null);
         try {
             const page = params.page || 1;
-            const limit = params.limit || 10;
+            const limit = params.limit || 6;
             const res = await fetch(`/api/posts?page=${page}&limit=${limit}`, {
                 cache: 'no-store',
                 headers: {

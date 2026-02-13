@@ -3,22 +3,29 @@ import PostCard from './PostCard';
 import type { Post } from '../types/post';
 import { PlusIcon } from './Icons';
 import { useAuth } from '@/hooks/useAuth';
+import SimplePagination from './SimplePagination';
 
 interface BlogProps {
     posts: Post[];
     navigate: (path: string) => void;
     onAddPost?: () => void;
+    onAddPostClick?: () => void;
     onEditPost?: (post: Post) => void;
     onDeletePost?: (post: Post) => void;
     isLoading?: boolean;
+    pagination?: {
+        page: number;
+        hasNextPage: boolean;
+        onPageChange: (page: number) => void;
+    };
 }
 
-const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onEditPost, onDeletePost, isLoading }) => {
+const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onEditPost, onDeletePost, isLoading, pagination }) => {
 
     const { authenticated } = useAuth();
 
     return (
-        <div className="animate-fade-in-down">
+        <div className="animate-fade-in-down mb-24">
             <header className="text-center mb-12">
                 <h1 className="text-5xl md:text-6xl font-semibold text-stone-900 dark:text-stone-100 tracking-wider">Nuestro Blog</h1>
                 <p className="mt-4 text-lg text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">
@@ -38,25 +45,38 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onEditPost, onD
             </header>
 
             {isLoading ? (
-                <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
-                    Cargando artículos...
-                </p>
-            ) : posts && posts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-                    {posts.map(post => (
-                        <PostCard
-                            key={post.id}
-                            post={post}
-                            navigate={navigate}
-                            onEdit={onEditPost}
-                            onDelete={onDeletePost}
-                        />
-                    ))}
+                <div className="flex flex-col items-center justify-center py-16">
+                    <div className="w-8 h-8 border-4 border-stone-200 border-t-stone-800 rounded-full animate-spin mb-4"></div>
+                    <p className="text-stone-500 dark:text-stone-400">Cargando artículos...</p>
                 </div>
+            ) : posts && posts.length > 0 ? (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+                        {posts.map(post => (
+                            <PostCard
+                                key={post.id}
+                                post={post}
+                                navigate={navigate}
+                                onEdit={onEditPost}
+                                onDelete={onDeletePost}
+                            />
+                        ))}
+                    </div>
+
+                    {pagination && (
+                        <SimplePagination
+                            currentPage={pagination.page}
+                            hasNextPage={pagination.hasNextPage}
+                            onPageChange={pagination.onPageChange}
+                        />
+                    )}
+                </>
             ) : (
-                <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
-                    Aún no hemos publicado ningún artículo. ¡Vuelve pronto!
-                </p>
+                <div className="text-center py-16 bg-stone-50 dark:bg-stone-900 rounded-lg">
+                    <p className="text-lg text-stone-500 dark:text-stone-400">
+                        Aún no hemos publicado ningún artículo. ¡Vuelve pronto!
+                    </p>
+                </div>
             )}
         </div>
     );

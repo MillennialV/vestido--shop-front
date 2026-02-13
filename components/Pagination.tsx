@@ -75,11 +75,10 @@ const PaginationComponent: React.FC<PaginationProps> = ({
             <button
               key={page}
               onClick={() => onPageChange(page as number)}
-              className={`min-w-[40px] h-10 px-3 text-sm font-medium rounded-lg border transition-all duration-200 flex items-center justify-center ${
-                currentPage === page
+              className={`min-w-[40px] h-10 px-3 text-sm font-medium rounded-lg border transition-all duration-200 flex items-center justify-center ${currentPage === page
                   ? "bg-stone-800 dark:bg-stone-700 text-white border-stone-800 dark:border-stone-700 shadow-sm cursor-default"
                   : "bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-200 border-stone-300 dark:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700 hover:border-stone-400 dark:hover:border-stone-500"
-              }`}
+                }`}
               aria-current={currentPage === page ? "page" : undefined}
             >
               {page}

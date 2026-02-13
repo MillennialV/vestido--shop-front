@@ -49,7 +49,6 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
 
   const [formData, setFormData] = useState({
     title: "",
-    slug: "",
     content: "",
     featured_image_url: "",
     reading_time: "",
@@ -71,18 +70,34 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
   }, [fetchCategories]);
 
   useEffect(() => {
-    const initialCategoryId = post?.categories?.[0]?.id || (categories.length > 0 ? categories[0].id : 0);
-    setFormData({
-      title: post?.title || "",
-      slug: post?.slug || "",
-      content: post?.content || "",
-      featured_image_url: post?.featured_image_url || "",
-      reading_time: post?.reading_time ? String(post?.reading_time) : "",
-      seo_description: post?.seo_description || "",
-      is_published: post?.is_published || false,
-      categoryId: initialCategoryId,
-    });
-  }, [post, categories]);
+    if (post) {
+      // Modo Edición: Cargar datos del post
+      setFormData({
+        title: post.title || "",
+        content: post.content || "",
+        featured_image_url: post.featured_image_url || "",
+        reading_time: post.reading_time ? String(post.reading_time) : "",
+        seo_description: post.seo_description || "",
+        is_published: post.is_published || false,
+        categoryId: post.categories?.[0]?.id || (categories.length > 0 ? categories[0].id : 0),
+      });
+      setImageFile(null);
+    } else if (isOpen) {
+      // Modo Creación: Limpiar formulario
+      setFormData({
+        title: "",
+        content: "",
+        featured_image_url: "",
+        reading_time: "",
+        seo_description: "",
+        is_published: false,
+        categoryId: categories.length > 0 ? categories[0].id : 0,
+      });
+      setImageFile(null);
+      setErrors({});
+      setSubmitError(null);
+    }
+  }, [post, categories, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -92,9 +107,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
-    // Generar slug automático solo si es un post nuevo
-    const slug = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-    setFormData(prev => ({ ...prev, title, slug: post ? prev.slug : slug }));
+    setFormData(prev => ({ ...prev, title }));
     if (errors.title) setErrors(prev => ({ ...prev, title: "" }));
   };
 
@@ -116,6 +129,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
     if (!formData.title.trim()) newErrors.title = "Título obligatorio";
     if (!formData.categoryId) newErrors.categoryId = "Selecciona categoría";
     if (formData.content.length < 50) newErrors.content = "Contenido muy corto";
+    if (parseInt(formData.reading_time) < 1) newErrors.reading_time = "Mínimo 1 minuto de lectura";
     if (!imageFile && !formData.featured_image_url) newErrors.featured_image_url = "Imagen obligatoria";
 
     if (Object.keys(newErrors).length > 0) {
@@ -206,11 +220,13 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
                 <label className="block text-sm font-medium mb-1">Lectura (min)</label>
                 <input
                   type="number"
+                  min="1"
                   name="reading_time"
                   value={formData.reading_time}
                   onChange={handleChange}
                   className="w-full p-2 border rounded dark:bg-stone-700"
                 />
+                {errors.reading_time && <span className="text-red-500 text-xs">{errors.reading_time}</span>}
               </div>
             </div>
 
