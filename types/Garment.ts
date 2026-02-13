@@ -13,4 +13,5 @@ export interface Garment {
     occasion?: string;
     style_notes?: string;
     cantidad?: number;
+    imagen_principal?: string;
 }

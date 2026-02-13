@@ -9,7 +9,17 @@ import {
   ErrorIcon,
   CircleIcon,
   CheckCircleIcon,
+  PlayIcon,
 } from "./Icons";
+
+const isExternalVideo = (url: string) => {
+  if (!url) return false;
+  return (
+    url.includes("youtube.com") ||
+    url.includes("youtu.be") ||
+    url.includes("vimeo.com")
+  );
+};
 
 interface VideoCardProps {
   garment: Garment;
@@ -199,29 +209,37 @@ const VideoCard: React.FC<VideoCardProps> = ({
         </div>
       )}
 
-      {isVisible && !garment.videoUrl && (
+      {isVisible && !garment.videoUrl && !garment.imagen_principal && (
         <div
           className="absolute inset-0 bg-gradient-to-br from-stone-200 to-stone-300 dark:from-stone-700 dark:to-stone-800 z-10"
           aria-hidden="true"
         ></div>
       )}
 
-      {garment.videoUrl && (
+      {garment.videoUrl && !isExternalVideo(garment.videoUrl) ? (
         <video
           ref={videoRef}
           key={garment.videoUrl}
           src={garment.videoUrl}
+          poster={garment.imagen_principal}
           loop
           muted
           playsInline
-          preload="auto"
+          preload="none"
           onCanPlay={handleCanPlay}
           onError={handleError}
           className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} brightness-90 ${!isSelectionMode ? "group-hover:brightness-100" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
           title={`Vista previa en video de ${garment.title}`}
-        >
-        </video>
-      )}
+        />
+      ) : garment.imagen_principal ? (
+        <img
+          src={garment.imagen_principal}
+          alt={garment.title}
+          className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} brightness-90 ${!isSelectionMode ? "group-hover:brightness-100" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
+          onLoad={() => setIsMediaLoading(false)}
+          onError={handleError}
+        />
+      ) : null}
       <div
         className={`absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent transition-opacity duration-300 ${showContent ? "opacity-100" : "opacity-0"}`}
       ></div>

@@ -19,7 +19,24 @@ import {
   ChevronUpIcon,
 } from "./Icons";
 import { title } from "process";
-import { text } from "stream/consumers";
+
+const getEmbedUrl = (url: string) => {
+  if (!url) return null;
+  if (url.includes("youtube.com") || url.includes("youtu.be")) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2] && match[2].length === 11
+      ? `https://www.youtube.com/embed/${match[2]}?autoplay=1&mute=1`
+      : null;
+  }
+  if (url.includes("vimeo.com")) {
+    const regExp =
+      /vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|video\/|)(\d+)(?:$|\/|\?)/;
+    const match = url.match(regExp);
+    return match ? `https://player.vimeo.com/video/${match[3]}` : null;
+  }
+  return null;
+};
 
 interface VideoModalProps {
   isOpen: boolean;
@@ -333,26 +350,48 @@ const VideoModal: React.FC<VideoModalProps> = ({
               </div>
             )}
             {garment.videoUrl ? (
-              <video
-                ref={videoRef}
-                key={garment.videoUrl}
-                src={garment.videoUrl}
-                autoPlay
-                loop
-                muted
-                controls
-                playsInline
-                preload="auto"
-                onCanPlay={handleVideoCanPlay}
-                onError={handleVideoError}
-                onLoadStart={handleVideoLoadStart}
-                title={`Video de demostración para ${garment.title} por ${garment.brand}`}
+              getEmbedUrl(garment.videoUrl) ? (
+                <iframe
+                  src={getEmbedUrl(garment.videoUrl)!}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={`Video de ${garment.title}`}
+                  onLoad={() => setIsVideoLoading(false)}
+                />
+              ) : (
+                <video
+                  ref={videoRef}
+                  key={garment.videoUrl}
+                  src={garment.videoUrl}
+                  autoPlay
+                  loop
+                  muted
+                  controls
+                  playsInline
+                  preload="auto"
+                  onCanPlay={handleVideoCanPlay}
+                  onError={handleVideoError}
+                  onLoadStart={handleVideoLoadStart}
+                  title={`Video de demostración para ${garment.title} por ${garment.brand}`}
+                  className="w-full h-full object-contain"
+                />
+              )
+            ) : garment.imagen_principal ? (
+              <img
+                src={garment.imagen_principal}
+                alt={garment.title}
                 className="w-full h-full object-contain"
-              >
-              </video>
+                onLoad={() => setIsVideoLoading(false)}
+                onError={() => {
+                  setIsVideoLoading(false);
+                  setVideoError("No se pudo cargar la imagen");
+                }}
+              />
             ) : (
               <div className="text-white text-center">
-                <p>No hay video disponible para este producto</p>
+                <SpinnerIcon className="w-10 h-10 text-white animate-spin mb-4 mx-auto" />
+                <p>Cargando medios...</p>
               </div>
             )}
             <div className="absolute bottom-4 right-4 z-10 flex flex-col items-center gap-3">
@@ -366,36 +405,6 @@ const VideoModal: React.FC<VideoModalProps> = ({
                 </span>
                 <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">
                   QR
-                </span>
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSocialShare("TikTok");
-                }}
-                className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group"
-                aria-label="Publicar en TikTok"
-              >
-                <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
-                  <TikTokIcon className="w-6 h-6 text-white" />
-                </span>
-                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">
-                  TikTok
-                </span>
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSocialShare("Instagram");
-                }}
-                className="flex flex-col items-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full p-1 group"
-                aria-label="Publicar en Instagram"
-              >
-                <span className="bg-black opacity-50 backdrop-blur-2xl rounded-full p-3 shadow-lg">
-                  <InstagramIcon className="w-6 h-6 text-white" />
-                </span>
-                <span className="text-xs font-semibold text-white drop-shadow-lg mt-1.5">
-                  Instagram
                 </span>
               </button>
               <button

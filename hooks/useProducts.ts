@@ -63,7 +63,8 @@ export const useProducts = () => {
 
   const createProduct = async (
     productData: Record<string, any>,
-    videoFile: File | null
+    videoFile: File | null,
+    imagePrincipalFile: File | null = null
   ): Promise<Garment> => {
     setIsLoading(true);
     setError(null);
@@ -76,6 +77,9 @@ export const useProducts = () => {
       });
       if (videoFile) {
         formData.append('video', videoFile);
+      }
+      if (imagePrincipalFile) {
+        formData.append('image_principal', imagePrincipalFile);
       }
       const res = await fetch('/api/products', {
         method: 'POST',
@@ -99,14 +103,15 @@ export const useProducts = () => {
   const updateProduct = async (
     id: number | string,
     productData: Partial<Garment>,
-    videoFile: File | null = null
+    videoFile: File | null = null,
+    imagePrincipalFile: File | null = null
   ): Promise<Garment> => {
     setIsLoading(true);
     setError(null);
     try {
       let res: Response;
 
-      if (videoFile) {
+      if (videoFile || imagePrincipalFile) {
         const formData = new FormData();
         formData.append('id', String(id));
         Object.entries(productData).forEach(([key, value]) => {
@@ -114,7 +119,8 @@ export const useProducts = () => {
             formData.append(key, String(value));
           }
         });
-        formData.append('video', videoFile);
+        if (videoFile) formData.append('video', videoFile);
+        if (imagePrincipalFile) formData.append('image_principal', imagePrincipalFile);
 
         res = await fetch('/api/products', {
           method: 'PUT',

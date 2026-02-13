@@ -6,6 +6,33 @@ import type { Garment } from "@/types/Garment";
 import { useProducts } from "../hooks/useProducts";
 import { CloseIcon, SparklesIcon, SpinnerIcon } from "./Icons";
 
+const isExternalVideo = (url: string) => {
+  if (!url) return false;
+  return (
+    url.includes("youtube.com") ||
+    url.includes("youtu.be") ||
+    url.includes("vimeo.com")
+  );
+};
+
+const getEmbedUrl = (url: string) => {
+  if (!url) return null;
+  if (url.includes("youtube.com") || url.includes("youtu.be")) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2] && match[2].length === 11
+      ? `https://www.youtube.com/embed/${match[2]}?autoplay=1&mute=1`
+      : null;
+  }
+  if (url.includes("vimeo.com")) {
+    const regExp =
+      /vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|video\/|)(\d+)(?:$|\/|\?)/;
+    const match = url.match(regExp);
+    return match ? `https://player.vimeo.com/video/${match[3]}` : null;
+  }
+  return null;
+};
+
 interface AdminFormModalProps {
   isOpen: boolean;
   garment: Garment | null;
@@ -44,10 +71,12 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     occasion: "",
     style_notes: "",
     videoUrl: "", // URL manual de video como alternativa
+    imagen_principal: "", // URL manual de imagen principal
     cantidad: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [imagePrincipalFile, setImagePrincipalFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const {
@@ -73,9 +102,10 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         occasion: garment.occasion || "",
         style_notes: garment.style_notes || "",
         videoUrl: garment.videoUrl || "",
+        imagen_principal: garment.imagen_principal || "",
         cantidad: garment.cantidad !== undefined && garment.cantidad !== null ? String(garment.cantidad) : "0",
       });
-      setPreviewUrl(garment.videoUrl);
+      setPreviewUrl(garment.videoUrl || garment.imagen_principal || null);
 
       // Delay focus to allow entry animation
       const timer = setTimeout(() => firstInputRef.current?.focus(), 100);
@@ -93,10 +123,12 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         occasion: "",
         style_notes: "",
         videoUrl: "",
+        imagen_principal: "",
         cantidad: "1",
       });
       setPreviewUrl(null);
       setVideoFile(null);
+      setImagePrincipalFile(null);
       setFormErrors({});
     }
   }, [isOpen, garment]);
@@ -133,20 +165,58 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     setFormData((prev) => ({ ...prev, videoUrl: url }));
     if (url) {
       setPreviewUrl(url);
-      // Limpiar archivo cuando se ingresa URL manual
       setVideoFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    } else if (!videoFile && !imagePrincipalFile && !formData.imagen_principal) {
+      setPreviewUrl(null);
+    }
+  };
+
+  const handleImagePrincipalUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setFormData((prev) => ({ ...prev, imagen_principal: url }));
+    if (url) {
+      // Solo mostrar preview de imagen si no hay video activo
+      if (!videoFile && !formData.videoUrl) {
+        setPreviewUrl(url);
+      }
+      setImagePrincipalFile(null);
+    } else if (!videoFile && !formData.videoUrl && !imagePrincipalFile) {
+      setPreviewUrl(null);
+    }
+  };
+
+  const handleImagePrincipalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImagePrincipalFile(file);
+      const newPreviewUrl = URL.createObjectURL(file);
+      // Si no hay video, usar la imagen como preview
+      if (!videoFile && !formData.videoUrl) {
+        setPreviewUrl(newPreviewUrl);
+      }
+      setFormData((prev) => ({ ...prev, imagen_principal: "" }));
     }
   };
 
   const handleRemoveVideo = () => {
     setVideoFile(null);
-    setPreviewUrl(null);
+    if (!imagePrincipalFile && !formData.imagen_principal) {
+      setPreviewUrl(null);
+    } else {
+      setPreviewUrl(formData.imagen_principal || (imagePrincipalFile ? URL.createObjectURL(imagePrincipalFile) : null));
+    }
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    // Si ya había un video en el garment original, restaurarlo o no?
-    // El usuario pide quitar el video seleccionado, así que asumo que quiere dejarlo vacío.
+  };
+
+  const handleRemoveImagePrincipal = () => {
+    setImagePrincipalFile(null);
+    setFormData(prev => ({ ...prev, imagen_principal: "" }));
+    if (!videoFile && !formData.videoUrl) {
+      setPreviewUrl(null);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -200,8 +270,8 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     // Determinar si es crear o actualizar
     const savePromise =
       garment && garment.id
-        ? updateProduct(garment.id, dataToSave, videoFile)
-        : createProduct(dataToSave, videoFile);
+        ? updateProduct(garment.id, dataToSave, videoFile, imagePrincipalFile)
+        : createProduct(dataToSave, videoFile, imagePrincipalFile);
 
     savePromise
       .then((product) => {
@@ -268,37 +338,74 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
   };
 
   const handleAiAutocomplete = async () => {
-    if (!videoPreviewRef.current || !previewUrl) {
+    if (!previewUrl && !videoFile && !imagePrincipalFile && !formData.videoUrl && !formData.imagen_principal) {
       return;
     }
 
     setIsAiLoading(true);
 
     try {
-      // Verificar que el video esté cargado
-      if (videoPreviewRef.current.readyState < 2) {
-        await new Promise((resolve, reject) => {
-          videoPreviewRef.current!.addEventListener("loadeddata", resolve, {
-            once: true,
-          });
-          videoPreviewRef.current!.addEventListener(
-            "error",
-            () => reject(new Error("Error al cargar los datos del video.")),
-            { once: true },
-          );
+      let base64Image = "";
+      let imageUrlToSend = "";
+
+      // 1. Imagen Local
+      if (imagePrincipalFile) {
+        base64Image = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string).split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(imagePrincipalFile);
         });
       }
+      // 2. Video Local
+      else if (videoFile && videoPreviewRef.current) {
+        if (videoPreviewRef.current.readyState < 2) {
+          await new Promise((resolve, reject) => {
+            videoPreviewRef.current!.addEventListener("loadeddata", resolve, { once: true });
+            videoPreviewRef.current!.addEventListener("error", () => reject(new Error("Error al cargar video")), { once: true });
+          });
+        }
+        base64Image = await captureFrame(videoPreviewRef.current);
+      }
+      // 3. YouTube (Automático por Thumbnail)
+      else if (formData.videoUrl && (formData.videoUrl.includes("youtube.com") || formData.videoUrl.includes("youtu.be"))) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+        const match = formData.videoUrl.match(regExp);
+        const videoId = match && match[2] && match[2].length === 11 ? match[2] : null;
 
-      // Capturar un frame del video
-      const base64Image = await captureFrame(videoPreviewRef.current);
+        if (videoId) {
+          imageUrlToSend = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        } else {
+          throw new Error("No se pudo identificar el video de YouTube.");
+        }
+      }
+      // 4. URL de Imagen
+      else if (formData.imagen_principal) {
+        imageUrlToSend = formData.imagen_principal;
+      }
+      // 5. Video Externo Genérico
+      else if (formData.videoUrl) {
+        if (isExternalVideo(formData.videoUrl)) {
+          throw new Error("La IA no puede analizar este tipo de video directamente. Por favor sube una imagen de portada.");
+        }
+        if (videoPreviewRef.current) {
+          base64Image = await captureFrame(videoPreviewRef.current);
+        }
+      }
 
+      if (!base64Image && !imageUrlToSend) {
+        throw new Error("No hay una fuente visual válida para que la IA analice la prenda.");
+      }
 
       // Llamar al API route de Next.js para análisis de prenda
       const response = await fetch("/api/ia/analyze-garment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: base64Image }),
+        body: JSON.stringify({
+          ...(base64Image ? { imageBase64: base64Image } : { imageUrl: imageUrlToSend })
+        }),
       });
+
       if (!response.ok) {
         throw new Error("Error al analizar la prenda con IA");
       }
@@ -340,9 +447,11 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         console.log(
           "El modelo de IA está iniciando. Por favor, espera unos segundos e intenta de nuevo.",
         );
+      } else if (errorMessage.includes("YouTube") || errorMessage.includes("Vimeo") || errorMessage.includes("portada")) {
+        console.log(`Aviso: ${errorMessage}`);
       } else if (errorMessage.includes("video")) {
         console.log(
-          "Error: No se pudo procesar el video. Asegúrate de que el video esté cargado correctamente.",
+          `Error al procesar video: ${errorMessage}. Asegúrate de que el video esté cargado correctamente.`,
         );
       } else {
         console.log(
@@ -378,6 +487,149 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
             {garment ? "Editar Prenda" : "Añadir Nueva Prenda"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="bg-stone-100 dark:bg-stone-700/30 p-4 rounded-lg border border-stone-200 dark:border-stone-700 space-y-4">
+              <label className="block text-sm font-semibold text-stone-700 dark:text-stone-200 mb-2">
+                Medios y Contenido Visual
+              </label>
+
+              <div className="space-y-4">
+                {(!formData.videoUrl && !imagePrincipalFile && !formData.imagen_principal) && (
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Video local</span>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="video/*"
+                      onChange={handleFileChange}
+                      className="block w-full text-sm text-stone-600 dark:text-stone-300
+                                    file:mr-4 file:py-1.5 file:px-3
+                                    file:rounded-md file:border-0
+                                    file:text-xs file:font-semibold
+                                    file:bg-stone-200 dark:file:bg-stone-700 file:text-stone-700 dark:file:text-stone-200
+                                    hover:file:bg-stone-300 dark:hover:file:bg-stone-600 transition-colors cursor-pointer"
+                    />
+                    {videoFile && (
+                      <div className="flex items-center justify-between p-2 bg-white dark:bg-stone-800 rounded border border-stone-200 dark:border-stone-700">
+                        <p className="text-xs text-stone-600 dark:text-stone-400 truncate pr-4">Video: {videoFile.name}</p>
+                        <button type="button" onClick={handleRemoveVideo} className="text-red-500 hover:text-red-700"><CloseIcon className="w-4 h-4" /></button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {(!videoFile && !imagePrincipalFile && !formData.imagen_principal) && (
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Enlace de Video (YouTube/Vimeo)</span>
+                    <input
+                      type="url"
+                      name="videoUrl"
+                      value={formData.videoUrl}
+                      onChange={handleVideoUrlChange}
+                      placeholder="https://..."
+                      className="w-full p-2 text-sm border border-stone-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                    />
+                  </div>
+                )}
+                {(!videoFile && !formData.videoUrl) && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Imagen de Portada</span>
+                      {(imagePrincipalFile || formData.imagen_principal) && (
+                        <button type="button" onClick={handleRemoveImagePrincipal} className="text-xs text-red-500 hover:underline">Quitar Imagen</button>
+                      )}
+                    </div>
+                    {!formData.imagen_principal && (
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImagePrincipalFileChange}
+                        className="block w-full text-sm text-stone-600 dark:text-stone-300
+                                    file:mr-4 file:py-1.5 file:px-3
+                                    file:rounded-md file:border-0
+                                    file:text-xs file:font-semibold
+                                    file:bg-stone-200 dark:file:bg-stone-700 file:text-stone-700 dark:file:text-stone-200
+                                    hover:file:bg-stone-300 dark:hover:file:bg-stone-600 transition-colors cursor-pointer"
+                      />
+                    )}
+                    {imagePrincipalFile && (
+                      <div className="flex items-center justify-between p-2 bg-white dark:bg-stone-800 rounded border border-stone-200 dark:border-stone-700">
+                        <p className="text-xs text-stone-600 dark:text-stone-400 truncate pr-4">Imagen: {imagePrincipalFile.name}</p>
+                      </div>
+                    )}
+                    {!imagePrincipalFile && (
+                      <div className="items-center ">
+                        <span className="w-full text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Enlace de imagen</span>
+                        <input
+                          type="url"
+                          name="imagen_principal"
+                          value={formData.imagen_principal}
+                          onChange={handleImagePrincipalUrlChange}
+                          placeholder="https://..."
+                          className="w-full p-2 text-sm border border-stone-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {previewUrl && (
+                <div className="mt-4 pt-4 border-t border-stone-200 dark:border-stone-700">
+                  <span className="text-xs font-medium text-stone-500 dark:text-stone-400 block mb-2 uppercase">Vista Previa Actual</span>
+                  <div className="relative rounded-lg overflow-hidden bg-black aspect-video max-h-[200px] flex items-center justify-center">
+                    {(videoFile || formData.videoUrl) ? (
+                      getEmbedUrl(formData.videoUrl) ? (
+                        <iframe
+                          src={getEmbedUrl(formData.videoUrl)!}
+                          className="w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video
+                          ref={videoPreviewRef}
+                          src={previewUrl}
+                          controls
+                          crossOrigin="anonymous"
+                          className="w-full h-full object-contain"
+                        />
+                      )
+                    ) : (
+                      <img
+                        src={previewUrl}
+                        crossOrigin="anonymous"
+                        className="w-full h-full object-contain"
+                        alt="Preview"
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={handleAiAutocomplete}
+                disabled={isAiDisabled}
+                title={
+                  isAiDisabled && !isAiLoading
+                    ? "Sube un video para activar la IA."
+                    : "Autocompletar datos con IA"
+                }
+                className="w-full flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-lg border border-stone-500 dark:border-stone-400 text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isAiLoading ? (
+                  <>
+                    <SpinnerIcon className="w-4 h-4 animate-spin" />
+                    Analizando...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="w-4 h-4" />
+                    Autocompletar con IA
+                  </>
+                )}
+              </button>
+            </div>
             <div>
               <label
                 htmlFor="title"
@@ -494,132 +746,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
               />
               {formErrors.cantidad && <p className="text-red-500 text-xs mt-1">{formErrors.cantidad}</p>}
             </div>
-            <div>
-              <label
-                htmlFor="videoFile"
-                className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1"
-              >
-                Video
-              </label>
-              <div className="w-full space-y-3">
-                <div>
-                  <label
-                    htmlFor="videoFile"
-                    className="block text-xs text-stone-500 dark:text-stone-400 mb-1"
-                  >
-                    Subir archivo de video
-                  </label>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    name="videoFile"
-                    id="videoFile"
-                    accept="video/*"
-                    onChange={handleFileChange}
-                    className="block w-full text-sm text-stone-600 dark:text-stone-300
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-lg file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-stone-200 dark:file:bg-stone-700 file:text-stone-700 dark:file:text-stone-200
-                                hover:file:bg-stone-300 dark:hover:file:bg-stone-600 transition-colors cursor-pointer"
-                  />
-                  {videoFile && (
-                    <div className="flex items-center justify-between mt-2 p-2 bg-stone-100 dark:bg-stone-700/50 rounded-md">
-                      <p className="text-xs text-stone-500 dark:text-stone-400 truncate pr-4">
-                        Archivo seleccionado: {videoFile.name}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={handleRemoveVideo}
-                        className="text-stone-400 hover:text-red-500 transition-colors"
-                        title="Quitar video"
-                      >
-                        <CloseIcon className="w-5 h-5" />
-                      </button>
-                    </div>
-                  )}
-                  {!videoFile && garment && (
-                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">
-                      Sube un nuevo video para reemplazar el actual.
-                    </p>
-                  )}
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-stone-300 dark:border-stone-600"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs">
-                    <span className="px-2 bg-stone-50 dark:bg-stone-800 text-stone-500 dark:text-stone-400">
-                      O
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="videoUrl"
-                    className="block text-xs text-stone-500 dark:text-stone-400 mb-1"
-                  >
-                    URL de video (YouTube, Vimeo, etc.)
-                  </label>
-                  <input
-                    type="url"
-                    name="videoUrl"
-                    id="videoUrl"
-                    value={formData.videoUrl}
-                    onChange={handleVideoUrlChange}
-                    placeholder="https://youtube.com/watch?v=..."
-                    className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 text-sm"
-                  />
-                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
-                    Si el upload de archivo falla, puedes usar una URL externa
-                  </p>
-                </div>
-              </div>
-              {(formErrors.video || formErrors.image_principal) && (
-                <p className="text-red-500 text-xs mt-2">{formErrors.video || formErrors.image_principal}</p>
-              )}
 
-              {previewUrl && (
-                <div className="mt-4">
-                  <video
-                    ref={videoPreviewRef}
-                    key={previewUrl}
-                    src={previewUrl}
-                    controls
-                    playsInline
-                    crossOrigin="anonymous"
-                    className="w-full rounded-lg bg-black"
-                    style={{ maxHeight: "300px" }}
-                    aria-label="Vista previa del video de la prenda"
-                  />
-                </div>
-              )}
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={handleAiAutocomplete}
-                disabled={isAiDisabled}
-                title={
-                  isAiDisabled && !isAiLoading
-                    ? "Sube un video para activar la IA."
-                    : "Autocompletar datos con IA"
-                }
-                className="w-full flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-lg border border-stone-500 dark:border-stone-400 text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAiLoading ? (
-                  <>
-                    <SpinnerIcon className="w-4 h-4 animate-spin" />
-                    Analizando...
-                  </>
-                ) : (
-                  <>
-                    <SparklesIcon className="w-4 h-4" />
-                    Autocompletar con IA
-                  </>
-                )}
-              </button>
-            </div>
             <div>
               <label
                 htmlFor="description"

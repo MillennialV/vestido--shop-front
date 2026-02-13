@@ -34,36 +34,60 @@ interface ImageToTextOptions {
   maxLength?: number;
 }
 
+interface Usage {
+  promptTokens: number;
+  candidatesTokens: number;
+  totalTokens: number;
+}
+
 interface ApiResponse<T = any> {
+  success: boolean;
   data: T;
   message?: string;
+  error?: string;
+}
+
+interface ImageToImageResult {
+  success: boolean;
+  generated_text: string;
+  generated_images: Array<{
+    mimeType: string;
+    base64: string;
+  }>;
+  imageBase64: string | null;
+  usage?: Usage;
+  model: string;
 }
 
 interface SentimentAnalysisResult {
-  label: string;
+  sentiment: string;
   score: number;
+  usage?: Usage;
 }
 
 interface QuestionAnsweringResult {
   answer: string;
   score?: number;
+  usage?: Usage;
 }
 
 interface EmbeddingResult {
-  embedding: number[];
+  embeddings: number[];
+  dimensions: number;
+  usage?: Usage;
 }
 
 interface NERResult {
-  entities: Array<{
-    word: string;
-    entity: string;
-    score: number;
-  }>;
+  entities: any;
+  usage?: Usage;
+  warning?: string;
 }
 
 interface ModelStatus {
-  loaded: boolean;
-  model?: string;
+  success: boolean;
+  status: string;
+  model: string;
+  provider?: string;
 }
 
 export interface GarmentAnalysisResult {
@@ -180,7 +204,7 @@ class IAServiceClient {
    * @param options - Opciones adicionales
    */
   async generateText(prompt: string, options: GenerateTextOptions = {}): Promise<string> {
-    const result = await this._request<{ generated_text: string }>('/api/ai/text-generation', {
+    const result = await this._request<{ generated_text?: string, generatedText?: string }>('/api/ai/text-generation', {
       body: {
         prompt,
         maxLength: options.maxLength || 512,
@@ -191,7 +215,7 @@ class IAServiceClient {
         returnFullText: options.returnFullText
       }
     });
-    return result.data.generated_text;
+    return result.data.generated_text || result.data.generatedText || '';
   }
 
   /**
@@ -215,7 +239,7 @@ class IAServiceClient {
    * @param options - Opciones
    */
   async summarize(text: string, options: SummarizeOptions = {}): Promise<string> {
-    const result = await this._request<{ summary_text: string }>('/api/ai/summarization', {
+    const result = await this._request<{ summary_text?: string; summary?: string }>('/api/ai/summarization', {
       body: {
         text,
         maxLength: options.maxLength || 130,
@@ -223,7 +247,7 @@ class IAServiceClient {
         model: options.model
       }
     });
-    return result.data.summary_text;
+    return result.data.summary_text || result.data.summary || '';
   }
 
   /**
@@ -233,14 +257,14 @@ class IAServiceClient {
    * @param sourceLanguage - Idioma origen (opcional)
    */
   async translate(text: string, targetLanguage: string = 'es', sourceLanguage: string = 'en'): Promise<string> {
-    const result = await this._request<{ translation_text: string }>('/api/ai/translation', {
+    const result = await this._request<{ translation_text?: string; translatedText?: string }>('/api/ai/translation', {
       body: {
         text,
         targetLanguage,
         sourceLanguage
       }
     });
-    return result.data.translation_text;
+    return result.data.translation_text || result.data.translatedText || '';
   }
 
   /**
@@ -352,11 +376,12 @@ class IAServiceClient {
     const formData = new FormData();
     formData.append('image', imageFile);
 
-    if (prompt || options.prompt) {
-      formData.append('prompt', prompt || options.prompt || '');
+    const finalPrompt = prompt || options.prompt;
+    if (finalPrompt) {
+      formData.append('prompt', finalPrompt);
     }
 
-    formData.append('model', options.model || 'Qwen/Qwen3-VL-8B-Instruct');
+    formData.append('model', options.model || 'gemini-1.5-flash');
 
     if (options.maxLength) {
       formData.append('maxLength', options.maxLength.toString());
@@ -365,8 +390,35 @@ class IAServiceClient {
     const result = await this._request<{ generatedText?: string; generated_text?: string }>('/api/ai/image-to-text', {
       formData
     });
-    // La API puede devolver generatedText o generated_text
     return result.data.generatedText || result.data.generated_text || '';
+  }
+
+  /**
+   * Generar imagen desde imagen (Image-to-Image / Fondo)
+   * @param image - Archivo, URL o Base64
+   * @param prompt - Instrucciones para la modificación
+   * @param options - Opciones adicionales
+   */
+  async imageToImage(image: File | Blob | string, prompt: string, options: ImageToTextOptions = {}): Promise<ImageToImageResult> {
+    let result;
+    const model = options.model || 'gemini-1.5-flash';
+
+    if (typeof image === 'string') {
+      const body: any = {
+        model,
+        prompt,
+        ...(image.startsWith('http') ? { imageUrl: image } : { imageBase64: image })
+      };
+      result = await this._request<ImageToImageResult>('/api/ai/image-to-text-image', { body });
+    } else {
+      const formData = new FormData();
+      formData.append('image', image);
+      formData.append('prompt', prompt);
+      formData.append('model', model);
+      result = await this._request<ImageToImageResult>('/api/ai/image-to-text-image', { formData });
+    }
+
+    return result.data;
   }
 
   /**

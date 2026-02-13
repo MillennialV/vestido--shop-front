@@ -31,15 +31,20 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
     <button
       ref={ref}
       onClick={() => onSelect(garment)}
-      className={`group relative w-20 h-[142px] flex-shrink-0 rounded-md overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white ${
-        isActive
-          ? "ring-2 ring-white scale-105 shadow-lg"
-          : "ring-2 ring-transparent hover:scale-105 hover:ring-white/75"
-      }`}
+      className={`group relative w-20 h-[142px] flex-shrink-0 rounded-md overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white ${isActive
+        ? "ring-2 ring-white scale-105 shadow-lg"
+        : "ring-2 ring-transparent hover:scale-105 hover:ring-white/75"
+        }`}
       aria-label={`Ver ${garment.title}`}
       aria-current={isActive ? "true" : "false"}
     >
-      {garment.videoUrl ? (
+      {garment.imagen_principal ? (
+        <img
+          src={garment.imagen_principal}
+          alt={garment.title}
+          className="w-full h-full object-cover"
+        />
+      ) : garment.videoUrl ? (
         <video
           src={garment.videoUrl}
           muted

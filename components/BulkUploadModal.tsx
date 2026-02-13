@@ -90,7 +90,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     const selectedFiles = e.target.files;
     if (!selectedFiles) return;
     const newFiles: UploadableFile[] = Array.from(selectedFiles)
-      .filter((file) => file.type.startsWith("video/"))
+      .filter((file) => file.type.startsWith("video/") || file.type.startsWith("image/"))
       .map((file) => ({
         id: crypto.randomUUID(),
         file,
@@ -191,32 +191,42 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         // Analizar con IA (No necesitamos subir el video primero, usamos el elemento local)
         updateFileState(file.id, { status: "processing", errorMessage: undefined });
 
-        const videoElement = file.videoRef.current;
-        if (!videoElement) {
-          throw new Error("El elemento de video no está disponible para captura.");
-        }
+        let base64Image = "";
 
-        // Asegurar que el video intente cargar si no lo ha hecho
-        if (videoElement.readyState < 2) {
-          videoElement.load();
-          await new Promise((resolve, reject) => {
-            const handleLoaded = () => {
-              videoElement.removeEventListener("loadeddata", handleLoaded);
-              resolve(true);
-            };
-            const handleError = () => {
-              videoElement.removeEventListener("error", handleError);
-              reject(new Error("Error al cargar los datos del video para análisis."));
-            };
-            videoElement.addEventListener("loadeddata", handleLoaded);
-            videoElement.addEventListener("error", handleError);
-            // Timeout de 15 segundos para carga de video local (debería ser instantáneo)
-            setTimeout(() => reject(new Error("Timeout cargando video local.")), 15000);
+        // Si es imagen, leer directamente a base64
+        if (file.file.type.startsWith("image/")) {
+          base64Image = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve((reader.result as string).split(",")[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file.file);
           });
         }
+        // Si es video, capturar un frame
+        else {
+          const videoElement = file.videoRef.current;
+          if (!videoElement) {
+            throw new Error("El elemento de video no está disponible para captura.");
+          }
 
-        // Capturar un frame del video
-        const base64Image = await captureFrame(videoElement);
+          if (videoElement.readyState < 2) {
+            videoElement.load();
+            await new Promise((resolve, reject) => {
+              const handleLoaded = () => {
+                videoElement.removeEventListener("loadeddata", handleLoaded);
+                resolve(true);
+              };
+              const handleError = () => {
+                videoElement.removeEventListener("error", handleError);
+                reject(new Error("Error al cargar los datos del video para análisis."));
+              };
+              videoElement.addEventListener("loadeddata", handleLoaded);
+              videoElement.addEventListener("error", handleError);
+              setTimeout(() => reject(new Error("Timeout cargando video local.")), 15000);
+            });
+          }
+          base64Image = await captureFrame(videoElement);
+        }
 
         // Llamar al API route de Next.js para análisis de prenda
         const response = await fetch("/api/ia/analyze-garment", {
@@ -258,7 +268,12 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               if (!updatedData.style_notes && result.style_notes) updatedData.style_notes = result.style_notes;
               if (!updatedData.size && result.size) updatedData.size = result.size;
 
-              return { ...f, garmentData: updatedData, status: "completed" as UploadStatus };
+              return {
+                ...f,
+                garmentData: updatedData,
+                status: "completed" as UploadStatus,
+                imagen_principal_base64: base64Image // Guardar el frame capturado
+              };
             }
             return f;
           }),
@@ -311,8 +326,29 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           }
           // Si no tenemos URL, enviamos Multipart (Archivo + Datos) en una sola petición
           else {
+            const isImage = f.file.type.startsWith("image/");
             const formData = new FormData();
-            formData.append("video", f.file);
+
+            if (isImage) {
+              // Si es una imagen, la enviamos directamente como imagen_principal
+              formData.append("image_principal", f.file);
+            } else {
+              // Si es un video, enviamos el archivo de video
+              formData.append("video", f.file);
+
+              // Y si la IA capturó un frame, lo enviamos como imagen_principal
+              if ((f as any).imagen_principal_base64) {
+                const byteString = atob((f as any).imagen_principal_base64);
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                  ia[i] = byteString.charCodeAt(i);
+                }
+                const blob = new Blob([ab], { type: 'image/jpeg' });
+                formData.append("image_principal", blob, "principal.jpg");
+              }
+            }
+
             formData.append("title", f.garmentData.title);
             formData.append("brand", f.garmentData.brand);
             formData.append("description", f.garmentData.description);
@@ -399,7 +435,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             id="bulk-upload-title"
             className="text-2xl font-semibold text-stone-900 dark:text-stone-100"
           >
-            Carga Masiva de Videos
+            Carga Masiva de Multimedia
           </h2>
           <button
             onClick={onClose}
@@ -424,7 +460,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               }}
             >
               <UploadIcon className="w-12 h-12 mb-4 opacity-50" />
-              <p className="font-semibold text-stone-700 dark:text-stone-300">Arrastra y suelta tus videos aquí</p>
+              <p className="font-semibold text-stone-700 dark:text-stone-300">Arrastra y suelta tus videos e imágenes aquí</p>
               <p className="text-sm">o</p>
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -441,27 +477,26 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                   className="bg-white dark:bg-stone-800 p-4 rounded-lg shadow-sm border border-stone-200 dark:border-stone-700 grid grid-cols-1 md:grid-cols-3 gap-4"
                 >
                   <div className="w-full aspect-[9/16] bg-black rounded-md overflow-hidden relative shadow-inner">
-                    <video
-                      ref={file.videoRef}
-                      src={file.previewUrl}
-                      muted
-                      playsInline
-                      className={`w-full h-full object-cover transition-all duration-500 ${file.status === "completed" ? "opacity-60 grayscale-[0.3]" : ""}`}
-                      crossOrigin="anonymous"
-                    />
+                    {file.file.type.startsWith("image/") ? (
+                      <img
+                        src={file.previewUrl}
+                        alt={file.file.name}
+                        className="w-full h-full object-cover transition-all duration-500"
+                      />
+                    ) : (
+                      <video
+                        ref={file.videoRef}
+                        src={file.previewUrl}
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover transition-all duration-500"
+                        crossOrigin="anonymous"
+                      />
+                    )}
 
                     {/* overlays premium */}
                     <ScanningOverlay status={file.status} />
 
-                    {file.status === "completed" && (
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center animate-fade-in-down pointer-events-none">
-                        <div className="bg-emerald-500/10 backdrop-blur-[2px] w-full h-full flex items-center justify-center">
-                          <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-xl">
-                            <CheckCircleIcon className="w-6 h-6 text-emerald-400" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
                     <div className="absolute top-2 right-2 z-20">
                       <StatusIndicator status={file.status} />
@@ -655,7 +690,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             ref={fileInputRef}
             type="file"
             multiple
-            accept="video/*"
+            accept="video/*,image/*"
             onChange={(e) => handleFileSelect(e)}
             className="hidden"
           />

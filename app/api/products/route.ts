@@ -86,6 +86,10 @@ export async function PUT(request: NextRequest) {
             const formData = await request.formData();
             productId = formData.get('id') as string;
 
+            if (formData.has('id')) {
+                formData.delete('id');
+            }
+
             res = await fetch(`${BACKEND_URL}/api/producto/actualizar-producto/${productId}`, {
                 method: 'PUT',
                 headers: authHeaders,

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || '';
-    const model = 'gemini-2.5-flash';
+    const model = 'gemini-2.5-flash-image';
 
     let imageBase64 = '';
     let maxLength: string | undefined = undefined;
@@ -16,7 +16,13 @@ export async function POST(req: NextRequest) {
     if (contentType.includes('application/json')) {
       const body = await req.json();
       imageBase64 = body.imageBase64;
+      const imageUrlInput = body.imageUrl;
       maxLength = body.maxLength;
+
+      // Si se proporciona imageUrl, la usamos directamente
+      if (imageUrlInput && !imageBase64) {
+        return handleExternalImage(imageUrlInput, model, maxLength, token);
+      }
     } else if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       imageBase64 = formData.get('imageBase64') as string;
@@ -38,7 +44,7 @@ export async function POST(req: NextRequest) {
     const url = process.env.NEXT_PUBLIC_IA_URL || 'http://localhost:3004';
     const prompt = `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "Sin marca",\n  "color": "color principal",\n  "size": "M",\n  "description": "breve descripción",\n  "price": 0,\n  "material": "No identificable",\n  "occasion": "Boda",\n  "style_notes": "detalles"\n}`;
 
-    const body = {
+    const body: any = {
       imageBase64: cleanBase64,
       model: model,
       maxLength: maxLength ? Number(maxLength) : 200,
@@ -69,7 +75,14 @@ export async function POST(req: NextRequest) {
     const iaData = await iaRes.json();
     console.log("[IA API] Success response received from microservice");
 
-    const generatedText = iaData.data?.generated_text || iaData.data?.generatedText || iaData.generated_text || '';
+    const result = iaData.data || {};
+    const generatedText = result.generated_text || result.generatedText || iaData.generated_text || '';
+    const usage = result.usage || null;
+    const modelUsed = result.model || '';
+
+    if (usage) {
+      console.log(`[IA API] Token Usage: Prompt=${usage.promptTokens}, Candidates=${usage.candidatesTokens}, Total=${usage.totalTokens}`);
+    }
 
     if (!generatedText) {
       console.error("[IA API] No generated text in response:", iaData);
@@ -96,5 +109,43 @@ export async function POST(req: NextRequest) {
       message: 'No se pudo conectar con el servicio de IA o ocurrió un error interno.',
       error: error.message
     }, { status: 500 });
+  }
+}
+async function handleExternalImage(imageUrl: string, model: string, maxLength: any, token?: string) {
+  const url = process.env.NEXT_PUBLIC_IA_URL || 'http://localhost:3004';
+  const prompt = `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "Sin marca",\n  "color": "color principal",\n  "size": "M",\n  "description": "breve descripción",\n  "price": 0,\n  "material": "No identificable",\n  "occasion": "Boda",\n  "style_notes": "detalles"\n}`;
+
+  const body: any = {
+    imageUrl: imageUrl,
+    model: model,
+    maxLength: maxLength ? Number(maxLength) : 200,
+    prompt: prompt
+  };
+
+  const iaRes = await fetch(`${url}/api/ai/image-to-text`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!iaRes.ok) {
+    const errorText = await iaRes.text();
+    return NextResponse.json({ message: 'Error en servicio IA', error: errorText }, { status: iaRes.status });
+  }
+
+  const iaData = await iaRes.json();
+  const generatedText = iaData.data?.generated_text || iaData.generated_text || '';
+
+  try {
+    let cleaned = generatedText.trim();
+    cleaned = cleaned.replace(/```json/g, '').replace(/```/g, '').trim();
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (jsonMatch) cleaned = jsonMatch[0];
+    return NextResponse.json(JSON.parse(cleaned));
+  } catch (e) {
+    return NextResponse.json({ message: 'Error parseando IA', raw: generatedText }, { status: 500 });
   }
 }
