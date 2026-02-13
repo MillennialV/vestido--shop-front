@@ -2,16 +2,16 @@ import { useState, useCallback, useEffect } from 'react';
 
 import type { Garment } from '@/types/Garment';
 
-export const useProducts = () => {
-  const [products, setProducts] = useState<Garment[]>([]);
+export const useProducts = (initialData: Garment[] = [], initialPagination: any = null) => {
+  const [products, setProducts] = useState<Garment[]>(initialData);
   const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
+    page: initialPagination?.page || 1,
+    limit: initialPagination?.limit || 12,
+    total: initialPagination?.total || initialData.length,
+    totalPages: initialPagination?.totalPages || Math.ceil(initialData.length / 12) || 1
   });
   const [selectedProduct, setSelectedProduct] = useState<Garment | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async (params: { page?: number; limit?: number } = {}) => {
@@ -19,7 +19,7 @@ export const useProducts = () => {
     setError(null);
     try {
       const page = params.page || 1;
-      const limit = params.limit || 10;
+      const limit = params.limit || 12;
       const res = await fetch(`/api/products?page=${page}&limit=${limit}&sort=created_at&order=desc`);
       if (!res.ok) throw new Error('Error al cargar productos');
       const data = await res.json();

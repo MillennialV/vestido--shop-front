@@ -52,16 +52,24 @@ async function fetchInitialData() {
 
     return {
       garments: garmentsData?.data?.products || [],
+      pagination: garmentsData?.data?.pagination || null,
       posts: postsData?.data?.posts || [],
       faqs: faqsData?.data?.preguntas || []
     };
   } catch (error) {
     console.error("Error fetching initial data:", error);
-    return { garments: [], posts: [], faqs: [] };
+    return { garments: [], pagination: null, posts: [], faqs: [] };
   }
 }
 
 export default async function Home() {
-  const { garments, posts, faqs } = await fetchInitialData();
-  return <HomeClient initialGarments={garments} initialPosts={posts} initialFaqs={faqs} />;
+  const { garments, pagination, posts, faqs } = await fetchInitialData();
+  return (
+    <HomeClient
+      initialGarments={garments}
+      initialPagination={pagination}
+      initialPosts={posts}
+      initialFaqs={faqs}
+    />
+  );
 }

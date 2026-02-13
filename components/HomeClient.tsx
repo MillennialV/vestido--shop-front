@@ -33,17 +33,27 @@ import { useAuth } from "@/hooks/useAuth";
 // Recibe los datos iniciales como props
 export default function HomeClient({
   initialGarments,
+  initialPagination,
   initialPosts,
   initialFaqs
 }: {
   initialGarments: Garment[];
+  initialPagination?: any;
   initialPosts: Post[];
   initialFaqs: FaqItem[];
 }) {
   const processedSlugRef = useRef<string | null>(null);
-  const [garments, setGarments] = useState<Garment[]>(initialGarments);
   const [faqsLocal, setFaqsLocal] = useState<FaqItem[]>(initialFaqs);
   const [isLoading, setIsLoading] = useState(false);
+  const {
+    products: garments,
+    pagination,
+    fetchProducts,
+    fetchProductById,
+    deleteProduct,
+    setProducts,
+    isLoading: isProductsLoading
+  } = useProducts(initialGarments, initialPagination);
   const [error, setError] = useState<string | null>(null);
   const [isAccessCodeModalOpen, setIsAccessCodeModalOpen] = useState(false);
   const [accessCodeError, setAccessCodeError] = useState<string | null>(null);
@@ -73,16 +83,15 @@ export default function HomeClient({
   const [isBulkDeleteConfirmation, setIsBulkDeleteConfirmation] = useState(false);
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const { authenticated, onLogout, onLogin } = useAuth();
-  const { fetchProducts, fetchProductById, deleteProduct } = useProducts();
   const { fetchPosts, deletePost, posts, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts();
   const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 12;
   const POSTS_PER_PAGE = 6;
   const FAQ_LIMIT = Number(process.env.NEXT_PUBLIC_FAQ_LIMIT) || 5;
 
   const handleSelectGarment = useCallback((garment: Garment) => {
     setSelectedGarment(garment);
-    setGarments((prev) => {
+    setProducts((prev) => {
       const currentGarments = Array.isArray(prev) ? prev : [];
       const exists = currentGarments.some((g) => g.id === garment.id);
       if (exists) {
@@ -151,7 +160,7 @@ export default function HomeClient({
       return matchesSearch && matchesBrand && matchesSize && matchesColor;
     });
   }, [garments, searchQuery, filters]);
-  const totalPages = 1;
+  const totalPages = pagination.totalPages;
   const uniqueFilters = useMemo(() => {
     const getUnique = (arr: (string | undefined | null)[]) =>
       [...new Set(arr.filter(v => v != null).map(v => String(v).trim()))].filter(Boolean).sort();
@@ -178,9 +187,7 @@ export default function HomeClient({
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
-      fetchProducts({ page, limit: ITEMS_PER_PAGE }).then((newGarments) => {
-        if (Array.isArray(newGarments)) setGarments(newGarments);
-      });
+      fetchProducts({ page, limit: ITEMS_PER_PAGE });
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -286,16 +293,14 @@ export default function HomeClient({
   };
   const handleSaveGarment = async (product: Garment) => {
     try {
-      setGarments((prev) => {
+      setProducts((prev) => {
         const exists = prev.some((g) => g.id === product.id);
         const newGarments = exists
           ? prev.map((g) => (g.id === product.id ? product : g))
           : [product, ...prev];
         return sortByCreatedAt(newGarments);
       });
-      fetchProducts({ page: currentPage, limit: ITEMS_PER_PAGE }).then((newGarments) => {
-        if (Array.isArray(newGarments)) setGarments(newGarments);
-      });
+      fetchProducts({ page: currentPage, limit: ITEMS_PER_PAGE });
       setEditingGarment(null);
       setIsFormModalOpen(false);
     } catch (err: any) {
@@ -304,16 +309,12 @@ export default function HomeClient({
   };
   const handleBulkSaveComplete = (newGarments: Garment[]) => {
     // Primero actualizamos localmente para feedback instantáneo
-    setGarments((prev) => sortByCreatedAt([...newGarments, ...prev]));
+    setProducts((prev) => sortByCreatedAt([...newGarments, ...prev]));
     setIsBulkUploadModalOpen(false);
 
     // Luego refrescamos del servidor para asegurar que IDs, slugs y fechas estén sincronizados
-    fetchProducts({ page: 1, limit: ITEMS_PER_PAGE }).then((freshGarments) => {
-      if (Array.isArray(freshGarments)) {
-        setGarments(freshGarments);
-        setCurrentPage(1);
-      }
-    });
+    fetchProducts({ page: 1, limit: ITEMS_PER_PAGE });
+    setCurrentPage(1);
   };
   const handleToggleSelectionMode = () => {
     if (!authenticated) return;
@@ -352,13 +353,13 @@ export default function HomeClient({
         for (const id of idsArray) {
           await deleteProduct(id);
         }
-        setGarments((prev) => prev.filter((g) => !selectedIds.has(g.id)));
+        setProducts((prev) => prev.filter((g) => !selectedIds.has(g.id)));
         setSelectedIds(new Set());
         setIsSelectionMode(false);
       } else if (garmentToDelete) {
         // Borrado individual
         await deleteProduct(garmentToDelete.id);
-        setGarments((prev) => prev.filter((g) => g.id !== garmentToDelete.id));
+        setProducts((prev) => prev.filter((g) => g.id !== garmentToDelete.id));
       }
 
       setIsProductDeleteModalOpen(false);
