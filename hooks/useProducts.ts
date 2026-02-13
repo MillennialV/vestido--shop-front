@@ -187,7 +187,10 @@ export const useProducts = () => {
       if (!res.ok) throw new Error('Error al filtrar productos');
       const data = await res.json();
       const filteredProducts = Array.isArray(data) ? data : data.products || [];
+      const fetchedPagination = data.pagination || { page: 1, limit: filters.limit || 10, total: filteredProducts.length, totalPages: 1 };
+
       setProducts(filteredProducts);
+      setPagination(fetchedPagination);
       return filteredProducts;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al filtrar productos';

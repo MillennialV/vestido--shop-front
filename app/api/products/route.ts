@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
         });
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
-        return NextResponse.json(data?.data?.products || []);
+
+        // Devolvemos el objeto completo que contiene products y pagination
+        return NextResponse.json(data?.data || { products: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } });
     } catch (error) {
         console.error('Error fetching products:', error);
         return NextResponse.json({ error: 'Error fetching products' }, { status: 500 });

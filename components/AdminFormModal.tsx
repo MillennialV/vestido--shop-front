@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import type { Garment } from "@/types/Garment";
-// import { iaService } from "../services/iaService";
-import { useProducts } from "../hooks/useProducts";
-import { CloseIcon, SparklesIcon, SpinnerIcon } from "./Icons";
+import { useProducts } from "@/hooks/useProducts";
+import { CloseIcon, SparklesIcon, SpinnerIcon } from "@/components/Icons";
 
 const isExternalVideo = (url: string) => {
   if (!url) return false;
@@ -107,11 +106,12 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       });
       setPreviewUrl(garment.videoUrl || garment.imagen_principal || null);
 
-      // Delay focus to allow entry animation
+      setVideoFile(null);
+      setImagePrincipalFile(null);
+
       const timer = setTimeout(() => firstInputRef.current?.focus(), 100);
       return () => clearTimeout(timer);
     } else if (isOpen && !garment) {
-      // Reset form for "Add New" mode
       setFormData({
         title: "",
         brand: "",
@@ -574,8 +574,8 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
               {previewUrl && (
                 <div className="mt-4 pt-4 border-t border-stone-200 dark:border-stone-700">
-                  <span className="text-xs font-medium text-stone-500 dark:text-stone-400 block mb-2 uppercase">Vista Previa Actual</span>
-                  <div className="relative rounded-lg overflow-hidden bg-black aspect-video max-h-[200px] flex items-center justify-center">
+                  <span className="text-xs font-medium text-stone-500 dark:text-stone-400 block mb-2 uppercase">Vista Previa</span>
+                  <div className=" w-full relative rounded-lg overflow-hidden bg-black aspect-video max-h-[200px] flex items-center justify-center">
                     {(videoFile || formData.videoUrl) ? (
                       getEmbedUrl(formData.videoUrl) ? (
                         <iframe

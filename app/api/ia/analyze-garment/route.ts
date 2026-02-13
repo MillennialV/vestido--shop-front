@@ -6,6 +6,7 @@ export async function POST(req: NextRequest) {
     const contentType = req.headers.get('content-type') || '';
     const model = 'gemini-2.5-flash-image';
 
+    let promptFromClient = '';
     let imageBase64 = '';
     let maxLength: string | undefined = undefined;
 
@@ -16,16 +17,17 @@ export async function POST(req: NextRequest) {
     if (contentType.includes('application/json')) {
       const body = await req.json();
       imageBase64 = body.imageBase64;
+      promptFromClient = body.prompt;
       const imageUrlInput = body.imageUrl;
       maxLength = body.maxLength;
 
-      // Si se proporciona imageUrl, la usamos directamente
       if (imageUrlInput && !imageBase64) {
         return handleExternalImage(imageUrlInput, model, maxLength, token);
       }
     } else if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       imageBase64 = formData.get('imageBase64') as string;
+      promptFromClient = formData.get('prompt') as string;
       const maxLengthValue = formData.get('maxLength');
       maxLength = typeof maxLengthValue === 'string' ? maxLengthValue : undefined;
     } else {
@@ -36,19 +38,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Falta imageBase64' }, { status: 400 });
     }
 
-    // Limpiar el base64 si incluye el prefijo data:image/...;base64,
     const cleanBase64 = imageBase64.includes('base64,')
       ? imageBase64.split('base64,')[1]
       : imageBase64;
 
     const url = process.env.NEXT_PUBLIC_IA_URL || 'http://localhost:3004';
-    const prompt = `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "Sin marca",\n  "color": "color principal",\n  "size": "M",\n  "description": "breve descripción",\n  "price": 0,\n  "material": "No identificable",\n  "occasion": "Boda",\n  "style_notes": "detalles"\n}`;
+    const defaultPrompt = `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "Sin marca",\n  "color": "color principal",\n  "size": "M",\n  "description": "breve descripción",\n  "price": 0,\n  "material": "No identificable",\n  "occasion": "Boda",\n  "style_notes": "detalles"\n}`;
 
     const body: any = {
       imageBase64: cleanBase64,
       model: model,
       maxLength: maxLength ? Number(maxLength) : 200,
-      prompt: prompt
+      prompt: promptFromClient || defaultPrompt
     };
 
     console.log(`[AnalyzeGarment] Calling IA Microservice at: ${url}/api/ai/image-to-text`);
@@ -98,11 +99,18 @@ export async function POST(req: NextRequest) {
       if (jsonMatch) cleaned = jsonMatch[0];
       parsed = JSON.parse(cleaned);
     } catch (e) {
-      console.error("[IA API] Error parsing generated text:", generatedText);
-      return NextResponse.json({ message: 'Error al parsear respuesta IA', raw: generatedText }, { status: 500 });
+      console.error("[IA API] Error parsing generated text as JSON:", generatedText);
+      return NextResponse.json({
+        message: 'Error al parsear respuesta IA como JSON',
+        raw: generatedText,
+        usage: usage
+      }, { status: 500 });
     }
 
-    return NextResponse.json(parsed);
+    return NextResponse.json({
+      ...parsed,
+      usage: usage
+    });
   } catch (error: any) {
     console.error("[IA API] General error:", error);
     return NextResponse.json({

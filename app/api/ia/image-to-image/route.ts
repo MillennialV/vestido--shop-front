@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
         let imageBase64 = '';
         let prompt = '';
-        let model = 'gemini-1.5-flash';
+        let model = 'gemini-2.5-flash-image';
 
         const token = req.cookies.get('authToken')?.value;
 
@@ -16,12 +16,10 @@ export async function POST(req: NextRequest) {
             const body = await req.json();
             imageBase64 = body.imageBase64 || body.image;
             prompt = body.prompt;
-            model = body.model || model;
         } else if (contentType.includes('multipart/form-data')) {
             const formData = await req.formData();
             imageBase64 = formData.get('imageBase64') as string || formData.get('image') as string;
             prompt = formData.get('prompt') as string;
-            model = (formData.get('model') as string) || model;
         } else {
             return NextResponse.json({ message: 'Content-Type no soportado' }, { status: 400 });
         }
@@ -53,8 +51,6 @@ export async function POST(req: NextRequest) {
             headers: {
                 'Content-Type': 'application/json',
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                'X-AI-Prompt': prompt,
-                'X-AI-Model': model
             },
             body: JSON.stringify(body)
         });
