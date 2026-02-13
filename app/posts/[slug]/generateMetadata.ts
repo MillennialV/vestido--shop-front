@@ -7,7 +7,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     // Await params to comply with Next.js 15+ async routing
     const { slug } = await params;
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/posts?limit=100`);
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+        ? process.env.NEXT_PUBLIC_API_BASE_URL
+        : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
+    const res = await fetch(`${baseUrl}/api/posts?limit=100`);
 
     if (!res.ok) {
         return {
