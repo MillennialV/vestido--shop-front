@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3005';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
 
 function getAuthHeaders(request: NextRequest): Record<string, string> {
     const token = request.cookies.get('authToken')?.value;
@@ -11,23 +11,35 @@ function getAuthHeaders(request: NextRequest): Record<string, string> {
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
-        const page = searchParams.get('page') || '1';
-        const limit = searchParams.get('limit') || '100';
-        const sort = searchParams.get('sort') || 'title';
-        const order = searchParams.get('order') || 'desc';
-        const url = `${BACKEND_URL}/api/producto/obtener-listado-productos?page=${page}&limit=${limit}&sort=${sort}&order=${order}`;
 
-        // El listado público no suele requerir token, pero lo pasamos por si acaso
+        const isRealFilter = (key: string) => {
+            const value = searchParams.get(key);
+            return value && value !== 'all' && value.trim() !== '';
+        };
+
+        const hasActiveFilters = isRealFilter('brand') || isRealFilter('size') || isRealFilter('color') || isRealFilter('q');
+
+        let endpoint = hasActiveFilters ? '/api/producto/filtrar-busqueda' : '/api/producto/obtener-listado-productos';
+        const backendUrl = new URL(`${BACKEND_URL}${endpoint}`);
+
+        searchParams.forEach((value, key) => {
+            if (value === 'all' || !value) return;
+
+            if (key === 'q') {
+                backendUrl.searchParams.append('personalizado', value);
+            } else {
+                backendUrl.searchParams.append(key, value);
+            }
+        });
+
         const headers = getAuthHeaders(request);
-
-        const res = await fetch(url, {
+        const res = await fetch(backendUrl.toString(), {
             method: 'GET',
             headers: headers
         });
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
 
-        // Devolvemos el objeto completo que contiene products y pagination
         return NextResponse.json(data?.data || { products: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } });
     } catch (error) {
         console.error('Error fetching products:', error);

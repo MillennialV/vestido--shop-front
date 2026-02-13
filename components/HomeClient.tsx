@@ -172,22 +172,47 @@ export default function HomeClient({
     };
   }, [garments]);
   const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string; color?: string }) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
+    const updatedFilters = { ...filters, ...newFilters };
+    setFilters(updatedFilters);
     setCurrentPage(1);
-  }, []);
+    fetchProducts({
+      page: 1,
+      limit: ITEMS_PER_PAGE,
+      ...updatedFilters,
+      q: searchQuery
+    });
+  }, [filters, searchQuery, fetchProducts, ITEMS_PER_PAGE]);
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
+    fetchProducts({
+      page: 1,
+      limit: ITEMS_PER_PAGE,
+      ...filters,
+      q: query
+    });
   };
   const handleClearFilters = useCallback(() => {
-    setFilters({ brand: "all", size: "all", color: "all" });
+    const defaultFilters = { brand: "all", size: "all", color: "all" };
+    setFilters(defaultFilters);
     setSearchQuery("");
     setCurrentPage(1);
-  }, []);
+    fetchProducts({
+      page: 1,
+      limit: ITEMS_PER_PAGE,
+      ...defaultFilters,
+      q: ""
+    });
+  }, [fetchProducts, ITEMS_PER_PAGE]);
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
-      fetchProducts({ page, limit: ITEMS_PER_PAGE });
+      fetchProducts({
+        page,
+        limit: ITEMS_PER_PAGE,
+        ...filters,
+        q: searchQuery
+      });
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };

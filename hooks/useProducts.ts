@@ -4,27 +4,48 @@ import type { Garment } from '@/types/Garment';
 
 export const useProducts = (initialData: Garment[] = [], initialPagination: any = null) => {
   const [products, setProducts] = useState<Garment[]>(initialData);
-  const [pagination, setPagination] = useState({
-    page: initialPagination?.page || 1,
-    limit: initialPagination?.limit || 12,
-    total: initialPagination?.total || initialData.length,
-    totalPages: initialPagination?.totalPages || Math.ceil(initialData.length / 12) || 1
+  const [pagination, setPagination] = useState(() => {
+    const p = initialPagination?.pagination || initialPagination;
+    return {
+      page: p?.page || 1,
+      limit: p?.limit || 12,
+      total: p?.total || initialData.length,
+      totalPages: p?.totalPages || p?.pages || Math.ceil((p?.total || initialData.length) / (p?.limit || 12)) || 1
+    };
   });
   const [selectedProduct, setSelectedProduct] = useState<Garment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProducts = useCallback(async (params: { page?: number; limit?: number } = {}) => {
+  const fetchProducts = useCallback(async (params: { page?: number; limit?: number; brand?: string; size?: string; color?: string; q?: string } = {}) => {
     setIsLoading(true);
     setError(null);
     try {
       const page = params.page || 1;
       const limit = params.limit || 12;
-      const res = await fetch(`/api/products?page=${page}&limit=${limit}&sort=created_at&order=desc`);
+
+      const queryParams = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort: 'created_at',
+        order: 'desc'
+      });
+
+      if (params.brand && params.brand !== 'all') queryParams.append('brand', params.brand);
+      if (params.size && params.size !== 'all') queryParams.append('size', params.size);
+      if (params.color && params.color !== 'all') queryParams.append('color', params.color);
+      if (params.q) queryParams.append('q', params.q);
+
+      const res = await fetch(`/api/products?${queryParams.toString()}`);
       if (!res.ok) throw new Error('Error al cargar productos');
       const data = await res.json();
       const fetchedProducts = Array.isArray(data) ? data : data.products || [];
-      const fetchedPagination = data.pagination || { page, limit, total: fetchedProducts.length, totalPages: 1 };
+      const fetchedPagination = data.pagination || {
+        page: data.page || page,
+        limit: data.limit || limit,
+        total: data.total || fetchedProducts.length,
+        totalPages: data.totalPages || data.pages || Math.ceil((data.total || fetchedProducts.length) / limit) || 1
+      };
       setProducts(fetchedProducts);
       setPagination(fetchedPagination);
       return fetchedProducts;

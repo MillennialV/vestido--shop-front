@@ -52,7 +52,7 @@ async function fetchInitialData() {
 
     return {
       garments: garmentsData?.data?.products || [],
-      pagination: garmentsData?.data?.pagination || null,
+      pagination: garmentsData?.data || null,
       posts: postsData?.data?.posts || [],
       faqs: faqsData?.data?.preguntas || []
     };
