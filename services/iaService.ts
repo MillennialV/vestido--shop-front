@@ -40,6 +40,13 @@ interface Usage {
   totalTokens: number;
 }
 
+interface CountTokensResult extends Partial<Usage> {
+  totalTokens: number;
+  estimatedCostUsd: number;
+  isFreeMetadataCall: boolean;
+  unit: string;
+}
+
 interface ApiResponse<T = any> {
   success: boolean;
   data: T;
@@ -627,6 +634,29 @@ Observa: estilo, detalles decorativos, tipo de tela, color, silueta, diseño.`;
     });
     return result.data;
   }
+
+  /**
+   * Contar tokens de un prompt e imagen
+   * @param options - Objeto con prompt, imageUrl, imageBase64 y model
+   */
+  async countTokens(options: {
+    prompt?: string;
+    text?: string;
+    imageUrl?: string;
+    imageBase64?: string;
+    image?: string;
+    model?: string;
+  }): Promise<CountTokensResult> {
+    const result = await this._request<CountTokensResult>('/api/ai/count-tokens', {
+      body: {
+        prompt: options.prompt || options.text,
+        imageUrl: options.imageUrl,
+        imageBase64: options.imageBase64 || options.image,
+        model: options.model
+      }
+    });
+    return result.data;
+  }
 }
 
 // Exportar la clase
@@ -634,4 +664,3 @@ export default IAServiceClient;
 
 // También exportar una instancia por defecto usando la variable de entorno
 export const iaService = new IAServiceClient();
-

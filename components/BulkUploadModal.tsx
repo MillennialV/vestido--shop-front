@@ -79,11 +79,20 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   const [isRecommendingPrompt, setIsRecommendingPrompt] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const [tokenUsage, setTokenUsage] = useState({
+  const [imageUsage, setImageUsage] = useState({
     promptTokens: 0,
     candidatesTokens: 0,
-    totalTokens: 0
   });
+
+  const [textUsage, setTextUsage] = useState({
+    promptTokens: 0,
+    candidatesTokens: 0,
+  });
+
+  const [imageEditQuote, setImageEditQuote] = useState<{ inputTokens: number; outputTokens: number; estimatedCostUsd: number } | null>(null);
+  const [autocompletionQuote, setAutocompletionQuote] = useState<{ inputTokens: number; outputTokens: number; estimatedCostUsd: number } | null>(null);
+  const [isQuotingImageEdit, setIsQuotingImageEdit] = useState(false);
+  const [isQuotingAutocompletion, setIsQuotingAutocompletion] = useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -103,6 +112,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           files.forEach(f => URL.revokeObjectURL(f.previewUrl));
         }
         setFiles([]);
+        setImageEditQuote(null);
+        setAutocompletionQuote(null);
+        setImageUsage({ promptTokens: 0, candidatesTokens: 0 });
+        setTextUsage({ promptTokens: 0, candidatesTokens: 0 });
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -206,8 +219,136 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     });
   };
 
+  const handleQuoteImageEdit = async () => {
+    const imageFiles = files.filter(f => f.file.type.startsWith("image/") && f.status !== "completed");
+    if (imageFiles.length === 0) return;
+
+    setIsQuotingImageEdit(true);
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+    let totalCost = 0;
+
+    try {
+      // Tomamos una muestra o cotizamos todos dependiendo del volumen
+      // Para efectos de esta función, cotizamos todos los que se van a procesar
+      const results = await Promise.all(imageFiles.map(async (file) => {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string).split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file.file);
+        });
+
+        const response = await fetch("/api/ia/count-tokens", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageBase64: base64,
+            prompt: iaPrompt,
+            model: 'gemini-2.5-flash-image'
+          })
+        });
+
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result.data || result;
+      }));
+
+      results.forEach(res => {
+        if (res) {
+          const inputTokens = res.totalTokens || 0;
+          // Estimación de respuesta: doble de entrada + 25%
+          const estimatedResponseTokens = (inputTokens * 2) * 1.25;
+
+          totalInputTokens += inputTokens;
+          totalOutputTokens += estimatedResponseTokens;
+
+          // Cálculo manual: Input $0.30/1M, Output $30.00/1M (Imagen)
+          const inputCost = inputTokens * (0.30 / 1000000);
+          const outputCost = estimatedResponseTokens * (30.00 / 1000000);
+          totalCost += (inputCost + outputCost);
+        }
+      });
+
+      setImageEditQuote({ inputTokens: totalInputTokens, outputTokens: totalOutputTokens, estimatedCostUsd: totalCost });
+    } catch (error) {
+      console.error("Error quoting image edit:", error);
+    } finally {
+      setIsQuotingImageEdit(false);
+    }
+  };
+
+  const handleQuoteAutocompletion = async () => {
+    const pendingFiles = files.filter(f => f.status === "pending" || f.status === "error" || f.status === "edited");
+    if (pendingFiles.length === 0) return;
+
+    setIsQuotingAutocompletion(true);
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+    let totalCost = 0;
+
+    const analysisPrompt = `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "Identifica la marca",\n  "color": "color principal",\n  "size": "Identifica la talla",\n  "description": "breve descripción",\n  "price": 0,\n  "material": "No identificable",\n  "occasion": "Boda",\n  "style_notes": "detalles"\n}`;
+
+    try {
+      const results = await Promise.all(pendingFiles.map(async (file) => {
+        let base64Image = "";
+        if (file.file.type.startsWith("image/")) {
+          base64Image = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve((reader.result as string).split(",")[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file.file);
+          });
+        } else {
+          const videoElement = file.videoRef.current;
+          if (videoElement) {
+            base64Image = await captureFrame(videoElement);
+          }
+        }
+
+        if (!base64Image) return null;
+
+        const response = await fetch("/api/ia/count-tokens", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageBase64: base64Image,
+            prompt: analysisPrompt,
+            model: 'gemini-2.5-flash-image'
+          })
+        });
+
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result.data || result;
+      }));
+
+      results.forEach(res => {
+        if (res) {
+          const inputTokens = res.totalTokens || 0;
+          // Estimación de respuesta para Texto: 75% de la entrada (el JSON es más pequeño que la imagen)
+          const estimatedResponseTokens = inputTokens * 0.75;
+
+          totalInputTokens += inputTokens;
+          totalOutputTokens += estimatedResponseTokens;
+
+          // Cálculo manual: Input $0.30/1M, Output $2.50/1M (Texto)
+          const inputCost = inputTokens * (0.30 / 1000000);
+          const outputCost = estimatedResponseTokens * (2.50 / 1000000);
+          totalCost += (inputCost + outputCost);
+        }
+      });
+
+      setAutocompletionQuote({ inputTokens: totalInputTokens, outputTokens: totalOutputTokens, estimatedCostUsd: totalCost });
+    } catch (error) {
+      console.error("Error quoting autocompletion:", error);
+    } finally {
+      setIsQuotingAutocompletion(false);
+    }
+  };
+
   const handleMassiveImageEdit = async () => {
-    const imageFiles = files.filter(f => f.file.type.startsWith("image/"));
+    const imageFiles = files.filter(f => f.file.type.startsWith("image/") && f.status !== "completed");
     if (imageFiles.length === 0) return;
 
     setIsEditingMassively(true);
@@ -262,15 +403,14 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             updateFileState(file.id, {
               file: editedFile,
               previewUrl: newUrl,
-              status: file.status === "analyzed" ? "ready" : "edited"
+              status: "edited"
             });
 
-            // Actualizar uso de tokens (acumulativo para el lote)
+            // Actualizar uso de tokens de imagen
             if (result.usage) {
-              setTokenUsage(prev => ({
+              setImageUsage(prev => ({
                 promptTokens: prev.promptTokens + (result.usage.promptTokens || 0),
                 candidatesTokens: prev.candidatesTokens + (result.usage.candidatesTokens || 0),
-                totalTokens: prev.totalTokens + (result.usage.totalTokens || 0)
               }));
             }
           } else {
@@ -330,10 +470,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
       // Acumular tokens de la recomendación
       if (result.usage) {
-        setTokenUsage(prev => ({
+        setTextUsage(prev => ({
           promptTokens: prev.promptTokens + (result.usage.promptTokens || 0),
           candidatesTokens: prev.candidatesTokens + (result.usage.candidatesTokens || 0),
-          totalTokens: prev.totalTokens + (result.usage.totalTokens || 0)
         }));
       }
 
@@ -355,8 +494,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
-    // Obtenemos solo los que están pendientes o en error para reintentar
-    const pendingFiles = files.filter(f => f.status === "pending" || f.status === "error");
+    // Obtenemos solo los que están pendientes, en error o editados para procesar
+    const pendingFiles = files.filter(f => f.status === "pending" || f.status === "error" || f.status === "edited");
 
     for (const file of pendingFiles) {
       try {
@@ -417,12 +556,11 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
         const result = await response.json();
 
-        // Acumular tokens del autocompletado con IA
+        // Acumular tokens del autocompletado con IA (Texto)
         if (result.usage) {
-          setTokenUsage(prev => ({
+          setTextUsage(prev => ({
             promptTokens: prev.promptTokens + (result.usage.promptTokens || 0),
             candidatesTokens: prev.candidatesTokens + (result.usage.candidatesTokens || 0),
-            totalTokens: prev.totalTokens + (result.usage.totalTokens || 0)
           }));
         }
 
@@ -632,7 +770,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
   const imagesToEditCount = files.filter(f =>
     f.file.type.startsWith("image/") &&
-    (f.status === "pending" || f.status === "error" || f.status === "analyzed")
+    (f.status === "pending" || f.status === "error" || f.status === "analyzed" || f.status === "edited")
   ).length;
 
   return (
@@ -699,19 +837,30 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                     Edición Creativa Masiva (Solo Imágenes)
                   </h3>
                   <div className="flex items-center gap-4">
-                    {tokenUsage.totalTokens > 0 && (
+                    {(imageUsage.promptTokens > 0 || textUsage.promptTokens > 0) && (
                       <div className="flex items-center gap-2 px-2 py-1 bg-stone-200 dark:bg-stone-900 rounded-lg border border-stone-300 dark:border-stone-700 animate-in fade-in slide-in-from-right-2">
                         <div className="flex flex-col items-center px-2 border-r border-stone-300 dark:border-stone-700">
-                          <span className="text-[9px] text-stone-500 uppercase font-bold">Input</span>
-                          <span className="text-[10px] font-mono font-bold text-sky-600 dark:text-sky-400">{tokenUsage.promptTokens.toLocaleString()}</span>
+                          <span className="text-[9px] text-stone-500 uppercase font-bold text-center">INPUT</span>
+                          <span className="text-[10px] font-mono font-bold text-sky-600 dark:text-sky-400">
+                            {(imageUsage.promptTokens + textUsage.promptTokens).toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex flex-col items-center px-2 border-r border-stone-300 dark:border-stone-700">
-                          <span className="text-[9px] text-stone-500 uppercase font-bold">Output</span>
-                          <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400">{tokenUsage.candidatesTokens.toLocaleString()}</span>
+                          <span className="text-[9px] text-stone-500 uppercase font-bold text-center">OUTPUT</span>
+                          <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                            {(imageUsage.candidatesTokens + textUsage.candidatesTokens).toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex flex-col items-center px-2">
-                          <span className="text-[9px] text-stone-500 uppercase font-bold">Total Tokens</span>
-                          <span className="text-[10px] font-mono font-bold text-stone-900 dark:text-stone-100">{tokenUsage.totalTokens.toLocaleString()}</span>
+                          <span className="text-[9px] text-stone-500 uppercase font-bold text-center">COSTO TOTAL (USD)</span>
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                            ${(
+                              (imageUsage.promptTokens * (0.30 / 1000000)) +
+                              (imageUsage.candidatesTokens * (30.00 / 1000000)) +
+                              (textUsage.promptTokens * (0.30 / 1000000)) +
+                              (textUsage.candidatesTokens * (2.50 / 1000000))
+                            ).toFixed(5)}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -733,21 +882,44 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                   placeholder="Escribe aquí las instrucciones para la IA... (Ej: Pon el vestido en una modelo en la playa)"
                 />
 
-                <button
-                  onClick={handleMassiveImageEdit}
-                  disabled={isEditingMassively || imagesToEditCount === 0}
-                  className={`w-full py-3 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 text-sm shadow-sm active:scale-[0.98] ${isEditingMassively || imagesToEditCount === 0
-                    ? 'bg-stone-300 dark:bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-200 dark:border-stone-700'
-                    : 'bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 shadow-sky-500/20'
-                    }`}
-                >
-                  {isEditingMassively ? (
-                    <SpinnerIcon className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <SparklesIcon className="w-5 h-5" />
-                  )}
-                  {isEditingMassively ? 'Procesando Imágenes con IA...' : `Ejecutar Edición de imágenes IA (${imagesToEditCount})`}
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={handleMassiveImageEdit}
+                    disabled={isEditingMassively || imagesToEditCount === 0}
+                    className={`w-full py-3 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 text-sm shadow-sm active:scale-[0.98] ${isEditingMassively || imagesToEditCount === 0
+                      ? 'bg-stone-300 dark:bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-200 dark:border-stone-700'
+                      : 'bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 shadow-sky-500/20'
+                      }`}
+                  >
+                    {isEditingMassively ? (
+                      <SpinnerIcon className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <SparklesIcon className="w-5 h-5" />
+                    )}
+                    {isEditingMassively ? 'Procesando Imágenes con IA...' : `Ejecutar Edición de imágenes IA (${imagesToEditCount})`}
+                  </button>
+
+                  <div className="flex items-center justify-between px-1">
+                    <button
+                      onClick={handleQuoteImageEdit}
+                      disabled={isQuotingImageEdit || imagesToEditCount === 0 || isEditingMassively}
+                      className="text-[11px] text-stone-500 hover:text-stone-800 dark:hover:text-stone-300 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    >
+                      {isQuotingImageEdit ? <SpinnerIcon className="w-3 h-3 animate-spin" /> : <DownloadIcon className="w-3 h-3 rotate-180" />}
+                      {isQuotingImageEdit ? 'Cotizando...' : 'Cotizar costo estimado'}
+                    </button>
+
+                    {imageEditQuote && (
+                      <div className="flex flex-col items-end text-[10px] animate-in fade-in slide-in-from-bottom-1">
+                        <div className="flex gap-2">
+                          <span className="text-stone-500">Envío: <span className="font-mono font-bold text-sky-600">{imageEditQuote.inputTokens.toLocaleString()}</span></span>
+                          <span className="text-stone-500">Respuesta (est.): <span className="font-mono font-bold text-indigo-600">{imageEditQuote.outputTokens.toLocaleString()}</span></span>
+                        </div>
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400">Costo total est: ${imageEditQuote.estimatedCostUsd.toFixed(5)} USD</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {files.filter(f => f.file.type.startsWith("image/")).length === 0 && (
                   <p className="text-[10px] text-stone-500 text-center italic">
@@ -1002,24 +1174,45 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             </button>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-            <button
-              onClick={processQueue}
-              disabled={isProcessing || pendingAutocompleteCount === 0}
-              className="w-full sm:w-auto bg-stone-800 dark:bg-stone-100 text-white dark:text-stone-900 font-medium py-2 px-4 rounded-lg hover:bg-stone-700 dark:hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm inline-flex items-center justify-center gap-2 shadow-sm"
-            >
-              {isProcessing ? (
-                <SpinnerIcon className="w-4 h-4 animate-spin" />
-              ) : (
-                <SparklesIcon className="w-4 h-4" />
+            <div className="flex flex-col items-end">
+              {autocompletionQuote && (
+                <div className="text-[10px] mb-1 mr-1 animate-in fade-in slide-in-from-bottom-1 flex flex-col items-end">
+                  <div className="flex gap-2 font-mono">
+                    <span className="text-stone-500">Envío: <span className="text-sky-600 font-bold">{autocompletionQuote.inputTokens.toLocaleString()}</span></span>
+                    <span className="text-stone-500">Respuesta (est.): <span className="text-indigo-600 font-bold">{autocompletionQuote.outputTokens.toLocaleString()}</span></span>
+                  </div>
+                  <span className="font-bold text-emerald-600 underline">Costo Total: ${autocompletionQuote.estimatedCostUsd.toFixed(5)} USD</span>
+                </div>
               )}
-              {isProcessing
-                ? "Autocompletando..."
-                : `Autocompletar (${pendingAutocompleteCount}) con IA`}
-            </button>
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={handleQuoteAutocompletion}
+                  disabled={isQuotingAutocompletion || pendingAutocompleteCount === 0 || isProcessing}
+                  className="p-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50"
+                  title="Cotizar autocompletado"
+                >
+                  <DownloadIcon className="w-5 h-5 rotate-180" />
+                </button>
+                <button
+                  onClick={processQueue}
+                  disabled={isProcessing || pendingAutocompleteCount === 0}
+                  className="w-full sm:w-auto bg-stone-800 dark:bg-stone-100 text-white dark:text-stone-900 font-medium py-2 px-4 rounded-lg hover:bg-stone-700 dark:hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm inline-flex items-center justify-center gap-2 shadow-sm"
+                >
+                  {isProcessing ? (
+                    <SpinnerIcon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <SparklesIcon className="w-4 h-4" />
+                  )}
+                  {isProcessing
+                    ? "Autocompletando..."
+                    : `Autocompletar (${pendingAutocompleteCount}) con IA`}
+                </button>
+              </div>
+            </div>
             <button
               onClick={handleSaveAll}
               disabled={isSaving || isProcessing || isEditingMassively || readyToSaveCount === 0}
-              className="w-full sm:w-auto bg-sky-600 dark:bg-sky-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-sky-700 dark:hover:bg-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-sm"
+              className="w-full sm:w-auto bg-sky-600 dark:bg-sky-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-sky-700 dark:hover:bg-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-sm h-[38px]"
             >
               {isSaving
                 ? "Guardando..."
