@@ -516,252 +516,251 @@ export default function HomeClient({
   );
   return (
     <CartProvider>
-    <div className="bg-stone-50 dark:bg-stone-900 min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
-      <Header
-        isAdmin={authenticated}
-        onToggleAdmin={handleToggleAdmin}
-        navigate={() => window.location.href = "/"}
-      />
-      <FilterPanel
-        brands={uniqueFilters.brands}
-        sizes={uniqueFilters.sizes}
-        colors={uniqueFilters.colors}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        onClearAll={handleClearFilters}
-      />
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-80">
-        {isLoading && garments.length === 0 && (
-          <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
-            Cargando...
-          </p>
-        )}
-        {error && (
-          <p className="text-center text-lg text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-4 rounded-md whitespace-pre-wrap">
-            {error}
-          </p>
-        )}
-        {!isLoading && !error && (
-          <>
-            {authenticated && (
-              <CatalogToolbar
-                onAddGarment={() => handleOpenForm(null)}
-                onBulkUpload={() => setIsBulkUploadModalOpen(true)}
-                onToggleSelectionMode={handleToggleSelectionMode}
-                isSelectionMode={isSelectionMode}
-                selectedCount={selectedIds.size}
-                onBulkDelete={handleBulkDelete}
-                onWhatsapp={() => setIsWhatsappModalOpen(true)}
-                onGenerateQr={() => setIsQrBatchModalOpen(true)}
-              />
-            )}
+      <div className="bg-stone-50 dark:bg-stone-900 min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
+        <Header
+          isAdmin={authenticated}
+          onToggleAdmin={handleToggleAdmin}
+          navigate={() => window.location.href = "/"}
+        />
+        <FilterPanel
+          brands={uniqueFilters.brands}
+          sizes={uniqueFilters.sizes}
+          colors={uniqueFilters.colors}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          onClearAll={handleClearFilters}
+        />
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-80">
+          {isLoading && garments.length === 0 && (
+            <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
+              Cargando...
+            </p>
+          )}
+          {error && (
+            <p className="text-center text-lg text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-4 rounded-md whitespace-pre-wrap">
+              {error}
+            </p>
+          )}
+          {!isLoading && !error && (
+            <>
+              {authenticated && (
+                <CatalogToolbar
+                  onAddGarment={() => handleOpenForm(null)}
+                  onBulkUpload={() => setIsBulkUploadModalOpen(true)}
+                  onToggleSelectionMode={handleToggleSelectionMode}
+                  isSelectionMode={isSelectionMode}
+                  selectedCount={selectedIds.size}
+                  onBulkDelete={handleBulkDelete}
+                  onWhatsapp={() => setIsWhatsappModalOpen(true)}
+                  onGenerateQr={() => setIsQrBatchModalOpen(true)}
+                />
+              )}
 
-            {/* Controles de VisualizaciÃ³n - Visible en Tablet/Desktop */}
-            <div className="hidden md:flex justify-end mb-6 gap-3 items-center px-2">
-              <span className="text-sm font-medium text-stone-500 dark:text-stone-400">
-                VisualizaciÃ³n:
-              </span>
-              <div className="bg-white dark:bg-stone-800 rounded-lg p-1 shadow-sm border border-stone-200 dark:border-stone-700 flex gap-1">
-                {[2, 3, 4, 5].map((cols) => (
-                  <button
-                    key={cols}
-                    onClick={() => {
-                      setGridColumns(cols);
-                      const newLimit = cols === 5 ? 15 : 12;
-                      const currentLimit = gridColumns === 5 ? 15 : 12;
-                      if (newLimit !== currentLimit) {
-                        setCurrentPage(1);
-                        fetchProducts({
-                          page: 1,
-                          limit: newLimit,
-                          ...filters,
-                          q: searchQuery
-                        });
-                      }
-                    }}
-                    className={`w-8 h-8 items-center justify-center rounded-md transition-all text-sm font-medium ${cols === 4 ? "hidden lg:flex" : cols === 5 ? "hidden xl:flex" : "flex"
-                      } ${gridColumns === cols
-                        ? "bg-stone-800 text-stone-50 dark:bg-stone-100 dark:text-stone-900 shadow-sm font-bold"
-                        : "text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-700"
-                      }`}
-                    aria-label={`Ver ${cols} columnas`}
-                    title={`${cols} columnas`}
-                  >
-                    {cols}
-                  </button>
-                ))}
+              <div className="hidden md:flex justify-end mb-6 gap-3 items-center px-2">
+                <span className="text-sm font-medium text-stone-500 dark:text-stone-400">
+                  Visualización:
+                </span>
+                <div className="bg-white dark:bg-stone-800 rounded-lg p-1 shadow-sm border border-stone-200 dark:border-stone-700 flex gap-1">
+                  {[2, 3, 4, 5].map((cols) => (
+                    <button
+                      key={cols}
+                      onClick={() => {
+                        setGridColumns(cols);
+                        const newLimit = cols === 5 ? 15 : 12;
+                        const currentLimit = gridColumns === 5 ? 15 : 12;
+                        if (newLimit !== currentLimit) {
+                          setCurrentPage(1);
+                          fetchProducts({
+                            page: 1,
+                            limit: newLimit,
+                            ...filters,
+                            q: searchQuery
+                          });
+                        }
+                      }}
+                      className={`w-8 h-8 items-center justify-center rounded-md transition-all text-sm font-medium ${cols === 4 ? "hidden lg:flex" : cols === 5 ? "hidden xl:flex" : "flex"
+                        } ${gridColumns === cols
+                          ? "bg-stone-800 text-stone-50 dark:bg-stone-100 dark:text-stone-900 shadow-sm font-bold"
+                          : "text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-700"
+                        }`}
+                      aria-label={`Ver ${cols} columnas`}
+                      title={`${cols} columnas`}
+                    >
+                      {cols}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {filteredGarments.length > 0 ? (
-              <div className={`grid grid-cols-1 transition-all duration-300 ${gridColumns === 2 ? "md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 md:gap-12" :
-                gridColumns === 3 ? "md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8 md:gap-12" :
-                  gridColumns === 4 ? "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 md:gap-8" :
-                    "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
-                }`}>
-                {filteredGarments.map((garment) => (
-                  <VideoCard
-                    key={garment.id}
-                    garment={garment}
-                    onSelect={handleSelectGarmentWrapper}
-                    isAdmin={authenticated}
-                    onEdit={handleOpenForm}
-                    onDelete={handleDeleteProduct}
-                    isSelectionMode={isSelectionMode}
-                    isSelected={selectedIds.has(garment.id)}
-                    onToggleSelection={handleToggleSelection}
-                    isDisabled={isProductLoading || !!selectedGarment}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
-                No se encontraron prendas que coincidan con tu bÃºsqueda.
-              </p>
-            )}
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-            <section className="mt-24">
-              <Blog
-                posts={posts}
-                navigate={() => window.location.href = "/"}
-                onAddPost={() => handleOpenPostModal(null)}
-                onEditPost={handleOpenPostModal}
-                onDeletePost={handleDeletePost}
-                isLoading={isPostLoading}
-                pagination={{
-                  page: blogPagination.page,
-                  hasNextPage: blogPagination.hasNextPage,
-                  onPageChange: handleBlogPageChange
-                }}
-              />
-            </section>
-            <section className="mt-24 max-w-4xl mx-auto">
-              <header className="flex flex-col items-center text-center mb-12 gap-4">
-                <h1 className="text-5xl md:text-6xl font-semibold text-stone-900 dark:text-stone-100 tracking-wider">
-                  Preguntas Frecuentes
-                </h1>
-                <p className="mt-4 text-lg text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">
-                  Estamos aquÃ­ para ayudarte. Encuentra las respuestas a las preguntas mÃ¡s comunes de nuestra comunidad y compra con total confianza.
+              {filteredGarments.length > 0 ? (
+                <div className={`grid grid-cols-1 transition-all duration-300 ${gridColumns === 2 ? "md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 md:gap-12" :
+                  gridColumns === 3 ? "md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8 md:gap-12" :
+                    gridColumns === 4 ? "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 md:gap-8" :
+                      "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
+                  }`}>
+                  {filteredGarments.map((garment) => (
+                    <VideoCard
+                      key={garment.id}
+                      garment={garment}
+                      onSelect={handleSelectGarmentWrapper}
+                      isAdmin={authenticated}
+                      onEdit={handleOpenForm}
+                      onDelete={handleDeleteProduct}
+                      isSelectionMode={isSelectionMode}
+                      isSelected={selectedIds.has(garment.id)}
+                      onToggleSelection={handleToggleSelection}
+                      isDisabled={isProductLoading || !!selectedGarment}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
+                  No se encontraron prendas que coincidan con tu bÃºsqueda.
                 </p>
-                {authenticated && (
-                  <button
-                    onClick={() => {
-                      setFaqModalMode("create");
-                      setEditingFaq(null);
-                      setIsFaqModalOpen(true);
-                    }}
-                    className="inline-flex mt-8 items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    <span>Agregar pregunta</span>
-                  </button>
-                )}
-              </header>
-              <FaqAccordion
-                items={allFaqs.length > 0 ? allFaqs : faqData}
-                isAdmin={authenticated}
-                onEdit={(faq) => {
-                  const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;
-                  setEditingFaq(fullFaq);
-                  setFaqModalMode("edit");
-                  setIsFaqModalOpen(true);
-                }}
-                onDelete={(faq) => {
-                  const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;
-                  setEditingFaq(fullFaq);
-                  setFaqModalMode("delete");
-                  setIsFaqModalOpen(true);
-                }}
-                onReorder={handleReorderFaqs}
+              )}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
               />
-            </section>
-          </>
-        )}
-      </main>
-      <VideoModal
-        isOpen={!!selectedGarment}
-        garment={selectedGarment || undefined}
-        onClose={handleCloseModal}
-        garmentList={filteredGarments}
-        onChangeGarment={handleSelectGarment}
-      />
-      <AccessCodeModal
-        isOpen={isAccessCodeModalOpen}
-        onClose={() => {
-          if (!isLoginLoading) {
-            setIsAccessCodeModalOpen(false);
-            setAccessCodeError(null);
-          }
-        }}
-        onSubmit={handleAccessCodeSubmit}
-        error={accessCodeError}
-        isLoading={isLoginLoading}
-      />
-      <AdminFormModal
-        isOpen={isFormModalOpen}
-        garment={editingGarment}
-        onClose={() => setIsFormModalOpen(false)}
-        onSave={handleSaveGarment}
-      />
-      <BulkUploadModal
-        isOpen={isBulkUploadModalOpen}
-        onClose={() => setIsBulkUploadModalOpen(false)}
-        onBulkSaveComplete={handleBulkSaveComplete}
-      />
-      <WhatsappModal
-        isOpen={isWhatsappModalOpen}
-        onClose={() => setIsWhatsappModalOpen(false)}
-      />
-      <QrBatchConfigModal
-        isOpen={isQrBatchModalOpen}
-        onClose={() => setIsQrBatchModalOpen(false)}
-        garments={garments.filter((g) => selectedIds.has(g.id))}
-      />
-      <PostFormModal
-        isOpen={isPostModalOpen}
-        post={editingPost}
-        onClose={() => setIsPostModalOpen(false)}
-        onSubmit={handleSavePost}
-      />
-      <FaqModal
-        isOpen={isFaqModalOpen}
-        mode={faqModalMode}
-        faq={editingFaq}
-        onClose={() => {
-          setIsFaqModalOpen(false);
-          setEditingFaq(null);
-        }}
-        onSuccess={() => {
-          fetchFaqs(true, true, {
-            limit: FAQ_LIMIT,
-            estado: "activa",
-            order: "asc",
-          }).catch((err) => {
-            console.warn("Error al recargar preguntas frecuentes:", err);
-          });
-        }}
-      />
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          if (!isDeleting) {
-            setIsDeleteModalOpen(false);
-            setPostToDelete(null);
-          }
-        }}
-        onConfirm={confirmDeletePost}
-        title="Eliminar ArtÃ­culo"
-        message={`Â¿EstÃ¡s seguro de que quieres eliminar el artÃ­culo "${postToDelete?.title}"? Esta acciÃ³n no se puede deshacer.`}
-        confirmText="Eliminar"
-        variant="danger"
-        isProcessing={isDeleting}
-      />
+              <section className="mt-24">
+                <Blog
+                  posts={posts}
+                  navigate={() => window.location.href = "/"}
+                  onAddPost={() => handleOpenPostModal(null)}
+                  onEditPost={handleOpenPostModal}
+                  onDeletePost={handleDeletePost}
+                  isLoading={isPostLoading}
+                  pagination={{
+                    page: blogPagination.page,
+                    hasNextPage: blogPagination.hasNextPage,
+                    onPageChange: handleBlogPageChange
+                  }}
+                />
+              </section>
+              <section className="mt-24 max-w-4xl mx-auto">
+                <header className="flex flex-col items-center text-center mb-12 gap-4">
+                  <h1 className="text-5xl md:text-6xl font-semibold text-stone-900 dark:text-stone-100 tracking-wider">
+                    Preguntas Frecuentes
+                  </h1>
+                  <p className="mt-4 text-lg text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">
+                    Estamos aquÃ­ para ayudarte. Encuentra las respuestas a las preguntas mÃ¡s comunes de nuestra comunidad y compra con total confianza.
+                  </p>
+                  {authenticated && (
+                    <button
+                      onClick={() => {
+                        setFaqModalMode("create");
+                        setEditingFaq(null);
+                        setIsFaqModalOpen(true);
+                      }}
+                      className="inline-flex mt-8 items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
+                    >
+                      <PlusIcon className="w-4 h-4" />
+                      <span>Agregar pregunta</span>
+                    </button>
+                  )}
+                </header>
+                <FaqAccordion
+                  items={allFaqs.length > 0 ? allFaqs : faqData}
+                  isAdmin={authenticated}
+                  onEdit={(faq) => {
+                    const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;
+                    setEditingFaq(fullFaq);
+                    setFaqModalMode("edit");
+                    setIsFaqModalOpen(true);
+                  }}
+                  onDelete={(faq) => {
+                    const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;
+                    setEditingFaq(fullFaq);
+                    setFaqModalMode("delete");
+                    setIsFaqModalOpen(true);
+                  }}
+                  onReorder={handleReorderFaqs}
+                />
+              </section>
+            </>
+          )}
+        </main>
+        <VideoModal
+          isOpen={!!selectedGarment}
+          garment={selectedGarment || undefined}
+          onClose={handleCloseModal}
+          garmentList={filteredGarments}
+          onChangeGarment={handleSelectGarment}
+        />
+        <AccessCodeModal
+          isOpen={isAccessCodeModalOpen}
+          onClose={() => {
+            if (!isLoginLoading) {
+              setIsAccessCodeModalOpen(false);
+              setAccessCodeError(null);
+            }
+          }}
+          onSubmit={handleAccessCodeSubmit}
+          error={accessCodeError}
+          isLoading={isLoginLoading}
+        />
+        <AdminFormModal
+          isOpen={isFormModalOpen}
+          garment={editingGarment}
+          onClose={() => setIsFormModalOpen(false)}
+          onSave={handleSaveGarment}
+        />
+        <BulkUploadModal
+          isOpen={isBulkUploadModalOpen}
+          onClose={() => setIsBulkUploadModalOpen(false)}
+          onBulkSaveComplete={handleBulkSaveComplete}
+        />
+        <WhatsappModal
+          isOpen={isWhatsappModalOpen}
+          onClose={() => setIsWhatsappModalOpen(false)}
+        />
+        <QrBatchConfigModal
+          isOpen={isQrBatchModalOpen}
+          onClose={() => setIsQrBatchModalOpen(false)}
+          garments={garments.filter((g) => selectedIds.has(g.id))}
+        />
+        <PostFormModal
+          isOpen={isPostModalOpen}
+          post={editingPost}
+          onClose={() => setIsPostModalOpen(false)}
+          onSubmit={handleSavePost}
+        />
+        <FaqModal
+          isOpen={isFaqModalOpen}
+          mode={faqModalMode}
+          faq={editingFaq}
+          onClose={() => {
+            setIsFaqModalOpen(false);
+            setEditingFaq(null);
+          }}
+          onSuccess={() => {
+            fetchFaqs(true, true, {
+              limit: FAQ_LIMIT,
+              estado: "activa",
+              order: "asc",
+            }).catch((err) => {
+              console.warn("Error al recargar preguntas frecuentes:", err);
+            });
+          }}
+        />
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            if (!isDeleting) {
+              setIsDeleteModalOpen(false);
+              setPostToDelete(null);
+            }
+          }}
+          onConfirm={confirmDeletePost}
+          title="Eliminar ArtÃ­culo"
+          message={`Â¿EstÃ¡s seguro de que quieres eliminar el artÃ­culo "${postToDelete?.title}"? Esta acciÃ³n no se puede deshacer.`}
+          confirmText="Eliminar"
+          variant="danger"
+          isProcessing={isDeleting}
+        />
         <ConfirmationModal
           isOpen={isProductDeleteModalOpen}
           onClose={() => {
