@@ -78,6 +78,8 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
   const [imagePrincipalFile, setImagePrincipalFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [extraImages, setExtraImages] = useState<{ file?: File; preview: string; isNew: boolean }[]>([]);
+
   const {
     createProduct,
     updateProduct,
@@ -105,6 +107,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         cantidad: garment.cantidad !== undefined && garment.cantidad !== null ? String(garment.cantidad) : "0",
       });
       setPreviewUrl(garment.videoUrl || garment.imagen_principal || null);
+      setExtraImages((garment.imagenes || []).slice(0, 3).map(url => ({ preview: url, isNew: false })));
 
       setVideoFile(null);
       setImagePrincipalFile(null);
@@ -129,9 +132,143 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       setPreviewUrl(null);
       setVideoFile(null);
       setImagePrincipalFile(null);
+      setExtraImages([]);
       setFormErrors({});
     }
   }, [isOpen, garment]);
+
+
+
+  const handleExtraImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      const availableSlots = 3 - extraImages.length;
+      const filesToAdd = newFiles.slice(0, availableSlots);
+
+      const newImages = filesToAdd.map(file => ({
+        file,
+        preview: URL.createObjectURL(file),
+        isNew: true
+      }));
+
+      setExtraImages(prev => [...prev, ...newImages]);
+    }
+  };
+
+  const handleRemoveExtraImage = (index: number) => {
+    setExtraImages(prev => {
+      const newImages = [...prev];
+      const removed = newImages[index];
+      if (removed.isNew) {
+        URL.revokeObjectURL(removed.preview);
+      }
+      newImages.splice(index, 1);
+      return newImages;
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const errors: Record<string, string> = {};
+    if (!formData.title) errors.title = "El título es requerido";
+    if (!formData.brand) errors.brand = "La marca es requerida";
+    if (!formData.size) errors.size = "La talla es requerida";
+    if (!formData.color) errors.color = "El color es requerido";
+    if (!formData.description) errors.description = "La descripción es requerida";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    const priceAsNumber = formData.price
+      ? parseFloat(formData.price)
+      : undefined;
+    if (formData.price && isNaN(priceAsNumber!)) {
+      setFormErrors(prev => ({ ...prev, price: "Precio inválido" }));
+      return;
+    }
+
+    const cantidadAsNumber = formData.cantidad
+      ? parseInt(formData.cantidad, 10)
+      : 0;
+
+    if (isNaN(cantidadAsNumber) || cantidadAsNumber < 0) {
+      setFormErrors(prev => ({ ...prev, cantidad: "El stock no puede ser negativo" }));
+      return;
+    }
+
+    try {
+      // Separar imágenes nuevas (Archivos) de las existentes (URLs)
+      const newImageFiles = extraImages
+        .filter(img => img.isNew && img.file)
+        .map(img => img.file!);
+
+      const existingImageUrls = extraImages
+        .filter(img => !img.isNew)
+        .map(img => img.preview);
+
+      const dataToSave = {
+        title: formData.title,
+        brand: formData.brand,
+        size: formData.size,
+        color: formData.color,
+        description: formData.description,
+        price: priceAsNumber,
+        cantidad: cantidadAsNumber,
+        material: formData.material,
+        occasion: formData.occasion,
+        style_notes: formData.style_notes,
+        imagenes: existingImageUrls,
+        ...(formData.videoUrl && !videoFile
+          ? { videoUrl: formData.videoUrl }
+          : {}),
+      };
+
+      // Determinar si es crear o actualizar
+      const savePromise =
+        garment && garment.id
+          ? updateProduct(garment.id, dataToSave, videoFile, imagePrincipalFile, newImageFiles)
+          : createProduct(dataToSave, videoFile, imagePrincipalFile, newImageFiles);
+
+      savePromise
+        .then((product) => {
+          setFormErrors({});
+          if (onSave) {
+            try {
+              onSave(product);
+            } catch (callbackError) {
+              console.error("Error en callback onSave:", callbackError);
+            }
+          }
+          // Asegurar que el modal se cierre
+          setTimeout(() => onClose(), 100);
+        })
+        .catch((error) => {
+          // Manejar errores de validación del backend
+          if (error.errors && Array.isArray(error.errors)) {
+            const errorsObj: Record<string, string> = {};
+            error.errors.forEach((err: any) => {
+              if (err.field) {
+                errorsObj[err.field] = err.message;
+              }
+            });
+            setFormErrors(errorsObj);
+          } else if (error.message || error.error) {
+            // Error general
+            setFormErrors({ general: error.message || error.error });
+          } else {
+            setFormErrors({ general: "Error desconocido al guardar el producto" });
+          }
+        });
+    } catch (error: any) {
+      console.error("Error preparing submission:", error);
+      setFormErrors({ general: error.message || "Error al procesar imágenes" });
+    }
+  };
+
 
   useEffect(() => {
     const currentPreviewUrl = previewUrl;
@@ -219,91 +356,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
 
-    const errors: Record<string, string> = {};
-    if (!formData.title) errors.title = "El título es requerido";
-    if (!formData.brand) errors.brand = "La marca es requerida";
-    if (!formData.size) errors.size = "La talla es requerida";
-    if (!formData.color) errors.color = "El color es requerido";
-    if (!formData.description) errors.description = "La descripción es requerida";
-
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
-
-    const priceAsNumber = formData.price
-      ? parseFloat(formData.price)
-      : undefined;
-    if (formData.price && isNaN(priceAsNumber!)) {
-      setFormErrors(prev => ({ ...prev, price: "Precio inválido" }));
-      return;
-    }
-
-    const cantidadAsNumber = formData.cantidad
-      ? parseInt(formData.cantidad, 10)
-      : 0;
-
-    if (isNaN(cantidadAsNumber) || cantidadAsNumber < 0) {
-      setFormErrors(prev => ({ ...prev, cantidad: "El stock no puede ser negativo" }));
-      return;
-    }
-
-    const dataToSave = {
-      title: formData.title,
-      brand: formData.brand,
-      size: formData.size,
-      color: formData.color,
-      description: formData.description,
-      price: priceAsNumber,
-      cantidad: cantidadAsNumber,
-      material: formData.material,
-      occasion: formData.occasion,
-      style_notes: formData.style_notes,
-      ...(formData.videoUrl && !videoFile
-        ? { videoUrl: formData.videoUrl }
-        : {}),
-    };
-
-    // Determinar si es crear o actualizar
-    const savePromise =
-      garment && garment.id
-        ? updateProduct(garment.id, dataToSave, videoFile, imagePrincipalFile)
-        : createProduct(dataToSave, videoFile, imagePrincipalFile);
-
-    savePromise
-      .then((product) => {
-        setFormErrors({});
-        if (onSave) {
-          try {
-            onSave(product);
-          } catch (callbackError) {
-            console.error("Error en callback onSave:", callbackError);
-          }
-        }
-        // Asegurar que el modal se cierre
-        setTimeout(() => onClose(), 100);
-      })
-      .catch((error) => {
-        // Manejar errores de validación del backend
-        if (error.errors && Array.isArray(error.errors)) {
-          const errorsObj: Record<string, string> = {};
-          error.errors.forEach((err: any) => {
-            if (err.field) {
-              errorsObj[err.field] = err.message;
-            }
-          });
-          setFormErrors(errorsObj);
-        } else if (error.message || error.error) {
-          // Error general
-          setFormErrors({ general: error.message || error.error });
-        } else {
-          setFormErrors({ general: "Error desconocido al guardar el producto" });
-        }
-      });
-  };
 
   // Función helper para capturar un frame del video
   const captureFrame = (videoEl: HTMLVideoElement): Promise<string> => {
@@ -570,6 +623,38 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                     )}
                   </div>
                 )}
+              </div>
+
+              <div className="pt-4 border-t border-stone-200 dark:border-stone-700">
+                <label className="block text-sm font-semibold text-stone-700 dark:text-stone-200 mb-2">
+                  Imágenes Adicionales (Opcional - Máx 3)
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {extraImages.map((img, index) => (
+                    <div key={index} className="relative aspect-square rounded-md overflow-hidden bg-stone-200 dark:bg-stone-600">
+                      <img src={img.preview} alt={`Extra ${index}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExtraImage(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      >
+                        <CloseIcon className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {extraImages.length < 3 && (
+                    <label className="flex items-center justify-center border-2 border-dashed border-stone-300 dark:border-stone-500 rounded-md cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-700/50 aspect-square">
+                      <span className="text-xl text-stone-400">+</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleExtraImagesChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
 
               {previewUrl && (
