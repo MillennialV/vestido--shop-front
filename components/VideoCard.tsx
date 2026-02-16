@@ -228,14 +228,14 @@ const VideoCard: React.FC<VideoCardProps> = ({
           preload="none"
           onCanPlay={handleCanPlay}
           onError={handleError}
-          className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} brightness-90 ${!isSelectionMode ? "group-hover:brightness-100" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
+          className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
           title={`Vista previa en video de ${garment.title}`}
         />
       ) : garment.imagen_principal ? (
         <img
           src={garment.imagen_principal}
           alt={garment.title}
-          className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} brightness-90 ${!isSelectionMode ? "group-hover:brightness-100" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
+          className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
           onLoad={() => setIsMediaLoading(false)}
           onError={handleError}
         />

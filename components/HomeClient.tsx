@@ -82,6 +82,7 @@ export default function HomeClient({
   const [garmentToDelete, setGarmentToDelete] = useState<Garment | null>(null);
   const [isBulkDeleteConfirmation, setIsBulkDeleteConfirmation] = useState(false);
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+  const [gridColumns, setGridColumns] = useState(3);
   const { authenticated, onLogout, onLogin } = useAuth();
   const { fetchPosts, deletePost, posts, pagination: blogPagination, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts();
   const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
@@ -161,16 +162,39 @@ export default function HomeClient({
     });
   }, [garments, searchQuery, filters]);
   const totalPages = pagination.totalPages;
+  const [allProductsForFilters, setAllProductsForFilters] = useState<Garment[]>([]);
+
+  useEffect(() => {
+    const loadAllProductsForFilters = async () => {
+      try {
+        // Fetch a large number of products to get all available filter options
+        // Ideally this should be a dedicated "facets" endpoint, but fetching all works for now
+        const res = await fetch('/api/products?limit=1000&sort=created_at&order=desc');
+        if (res.ok) {
+          const data = await res.json();
+          const all = Array.isArray(data) ? data : data.products || [];
+          setAllProductsForFilters(all);
+        }
+      } catch (error) {
+        console.error("Error loading filter options:", error);
+      }
+    };
+    loadAllProductsForFilters();
+  }, []);
+
   const uniqueFilters = useMemo(() => {
+
+    const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
+
     const getUnique = (arr: (string | undefined | null)[]) =>
       [...new Set(arr.filter(v => v != null).map(v => String(v).trim()))].filter(Boolean).sort();
 
     return {
-      brands: getUnique(garments.map((g) => g.brand)),
-      sizes: getUnique(garments.map((g) => g.size)),
-      colors: getUnique(garments.map((g) => g.color)),
+      brands: getUnique(sourceData.map((g) => g.brand)),
+      sizes: getUnique(sourceData.map((g) => g.size)),
+      colors: getUnique(sourceData.map((g) => g.color)),
     };
-  }, [garments]);
+  }, [allProductsForFilters, initialGarments]);
   const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string; color?: string }) => {
     const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
@@ -520,8 +544,37 @@ export default function HomeClient({
                 onGenerateQr={() => setIsQrBatchModalOpen(true)}
               />
             )}
+
+            {/* Controles de Visualización - Visible en Tablet/Desktop */}
+            <div className="hidden md:flex justify-end mb-6 gap-3 items-center px-2">
+              <span className="text-sm font-medium text-stone-500 dark:text-stone-400">
+                Visualización:
+              </span>
+              <div className="bg-white dark:bg-stone-800 rounded-lg p-1 shadow-sm border border-stone-200 dark:border-stone-700 flex gap-1">
+                {[2, 3, 4, 5].map((cols) => (
+                  <button
+                    key={cols}
+                    onClick={() => setGridColumns(cols)}
+                    className={`w-8 h-8 items-center justify-center rounded-md transition-all text-sm font-medium ${cols === 4 ? "hidden lg:flex" : cols === 5 ? "hidden xl:flex" : "flex"
+                      } ${gridColumns === cols
+                        ? "bg-stone-800 text-stone-50 dark:bg-stone-100 dark:text-stone-900 shadow-sm font-bold"
+                        : "text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-700"
+                      }`}
+                    aria-label={`Ver ${cols} columnas`}
+                    title={`${cols} columnas`}
+                  >
+                    {cols}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {filteredGarments.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+              <div className={`grid grid-cols-1 transition-all duration-300 ${gridColumns === 2 ? "md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 md:gap-12" :
+                gridColumns === 3 ? "md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8 md:gap-12" :
+                  gridColumns === 4 ? "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 md:gap-8" :
+                    "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
+                }`}>
                 {filteredGarments.map((garment) => (
                   <VideoCard
                     key={garment.id}

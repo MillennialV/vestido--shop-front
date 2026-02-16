@@ -51,12 +51,8 @@ const Header: React.FC<HeaderProps> = ({
               >
                 Vestidos de Fiesta
               </h1>
-              <p className="mt-1 text-base text-stone-500 dark:text-stone-400 tracking-widest uppercase">
-                by Womanity
-              </p>
               <div className="mt-3 text-sm text-stone-600 dark:text-stone-500 tracking-wide">
                 <p>Av. Paz Soldán 255 Sótano A24 San Isidro</p>
-                <p className="mt-0.5 font-medium">(956382746)</p>
               </div>
             </a>
           </div>
