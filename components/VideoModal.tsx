@@ -20,8 +20,10 @@ import {
   ChevronUpIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ShoppingCartIcon,
 } from "./Icons";
 import { title } from "process";
+import { useCart } from "@/context/CartContext";
 
 const getEmbedUrl = (url: string) => {
   if (!url) return null;
@@ -149,6 +151,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   );
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [videoError, setVideoError] = useState<string | null>(null);
+  const { addToCart } = useCart();
 
   const handleAccordionClick = (id: string) => {
     setOpenAccordion((prev) => (prev === id ? null : id));
@@ -158,6 +161,14 @@ const VideoModal: React.FC<VideoModalProps> = ({
     console.log("[VideoModal] Video can play");
     setIsVideoLoading(false);
     setVideoError(null);
+  };
+
+  const handleAddToCart = () => {
+    if (garment) {
+      addToCart(garment);
+      setToastMessage("¡Agregado al carrito!");
+      setTimeout(() => setToastMessage(null), 3000);
+    }
   };
 
   const handleVideoError = (
@@ -574,24 +585,34 @@ const VideoModal: React.FC<VideoModalProps> = ({
                     : garment.price}
                 </p>
               )}
-              <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 flex-wrap">
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center grow sm:grow-0 px-6 py-3 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  <WhatsappIcon className="w-5 h-5 mr-3" />
-                  Consultar por WhatsApp
-                </a>
+              <div className="flex flex-col gap-3 mt-8">
                 <button
-                  onClick={handleShare}
-                  className="inline-flex items-center justify-center gap-2 grow sm:grow-0 px-6 py-3 font-semibold text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-700 rounded-lg shadow-md border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400"
-                  aria-label="Copiar enlace de la prenda"
+                  onClick={handleAddToCart}
+                  className="w-full inline-flex items-center justify-center px-6 py-4 text-base font-bold text-white bg-stone-900 dark:bg-stone-100 dark:text-stone-900 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-4 focus:ring-stone-500/50"
                 >
-                  <ShareIcon className="w-5 h-5" />
-                  Copiar Enlace
+                  <ShoppingCartIcon className="w-5 h-5 mr-3" />
+                  Agregar al Carrito
                 </button>
+
+                <div className="grid grid-cols-[1fr_auto] gap-3">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center px-6 py-3 font-semibold text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/50"
+                  >
+                    <WhatsappIcon className="w-5 h-5 mr-2" />
+                    WhatsApp
+                  </a>
+                  <button
+                    onClick={handleShare}
+                    className="inline-flex items-center justify-center w-14 text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-700 rounded-xl shadow-md border border-stone-200 dark:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-stone-200 dark:focus:ring-stone-500"
+                    aria-label="Copiar enlace"
+                    title="Copiar enlace"
+                  >
+                    <ShareIcon className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
 
