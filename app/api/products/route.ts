@@ -35,7 +35,8 @@ export async function GET(request: NextRequest) {
         const headers = getAuthHeaders(request);
         const res = await fetch(backendUrl.toString(), {
             method: 'GET',
-            headers: headers
+            headers: headers,
+            cache: 'no-store'
         });
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
@@ -108,6 +109,7 @@ export async function PUT(request: NextRequest) {
                 method: 'PUT',
                 headers: authHeaders,
                 body: formData,
+                cache: 'no-store'
             });
         } else {
             const body = await request.json();
@@ -121,6 +123,7 @@ export async function PUT(request: NextRequest) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(updateData),
+                cache: 'no-store'
             });
         }
 

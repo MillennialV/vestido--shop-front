@@ -85,7 +85,8 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
   const createProduct = async (
     productData: Record<string, any>,
     videoFile: File | null,
-    imagePrincipalFile: File | null = null
+    imagePrincipalFile: File | null = null,
+    additionalImages: File[] = []
   ): Promise<Garment> => {
     setIsLoading(true);
     setError(null);
@@ -93,7 +94,11 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
       const formData = new FormData();
       Object.entries(productData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          formData.append(key, String(value));
+          if (Array.isArray(value)) {
+            value.forEach((v) => formData.append(key, String(v)));
+          } else {
+            formData.append(key, String(value));
+          }
         }
       });
       if (videoFile) {
@@ -102,6 +107,12 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
       if (imagePrincipalFile) {
         formData.append('image_principal', imagePrincipalFile);
       }
+      if (additionalImages && additionalImages.length > 0) {
+        additionalImages.forEach((file) => {
+          formData.append('images', file);
+        });
+      }
+
       const res = await fetch('/api/products', {
         method: 'POST',
         body: formData,
@@ -125,33 +136,45 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
     id: number | string,
     productData: Partial<Garment>,
     videoFile: File | null = null,
-    imagePrincipalFile: File | null = null
+    imagePrincipalFile: File | null = null,
+    additionalImages: File[] = []
   ): Promise<Garment> => {
     setIsLoading(true);
     setError(null);
     try {
       let res: Response;
 
-      if (videoFile || imagePrincipalFile) {
+      if (videoFile || imagePrincipalFile || (additionalImages && additionalImages.length > 0)) {
         const formData = new FormData();
         formData.append('id', String(id));
         Object.entries(productData).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
-            formData.append(key, String(value));
+            if (Array.isArray(value)) {
+              value.forEach((v) => formData.append(key, String(v)));
+            } else {
+              formData.append(key, String(value));
+            }
           }
         });
         if (videoFile) formData.append('video', videoFile);
         if (imagePrincipalFile) formData.append('image_principal', imagePrincipalFile);
+        if (additionalImages && additionalImages.length > 0) {
+          additionalImages.forEach((file) => {
+            formData.append('images', file);
+          });
+        }
 
         res = await fetch('/api/products', {
           method: 'PUT',
           body: formData,
+          cache: 'no-store'
         });
       } else {
         res = await fetch(`/api/products`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, ...productData }),
+          cache: 'no-store'
         });
       }
 
