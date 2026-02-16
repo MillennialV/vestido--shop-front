@@ -14,4 +14,5 @@ export interface Garment {
     style_notes?: string;
     cantidad?: number;
     imagen_principal?: string;
+    imagenes?: string[];
 }

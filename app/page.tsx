@@ -33,7 +33,7 @@ async function fetchInitialData() {
 
   try {
     const [garmentsRes, postsRes, faqsRes] = await Promise.all([
-      fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?page=1&limit=12&sort=created_at&order=desc`, {
+      fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?page=1&limit=15&sort=created_at&order=desc`, {
         next: { revalidate }
       }),
       fetch(`${BLOG_BASE_API}/api/blog/posts?page=1&limit=6&sort=created_at&order=desc`, {
