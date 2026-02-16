@@ -86,7 +86,7 @@ export default function HomeClient({
   const { authenticated, onLogout, onLogin } = useAuth();
   const { fetchPosts, deletePost, posts, pagination: blogPagination, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts();
   const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = gridColumns === 5 ? 15 : 12;
   const POSTS_PER_PAGE = 6;
   const FAQ_LIMIT = Number(process.env.NEXT_PUBLIC_FAQ_LIMIT) || 5;
 
@@ -564,7 +564,20 @@ export default function HomeClient({
                 {[2, 3, 4, 5].map((cols) => (
                   <button
                     key={cols}
-                    onClick={() => setGridColumns(cols)}
+                    onClick={() => {
+                      setGridColumns(cols);
+                      const newLimit = cols === 5 ? 15 : 12;
+                      const currentLimit = gridColumns === 5 ? 15 : 12;
+                      if (newLimit !== currentLimit) {
+                        setCurrentPage(1);
+                        fetchProducts({
+                          page: 1,
+                          limit: newLimit,
+                          ...filters,
+                          q: searchQuery
+                        });
+                      }
+                    }}
                     className={`w-8 h-8 items-center justify-center rounded-md transition-all text-sm font-medium ${cols === 4 ? "hidden lg:flex" : cols === 5 ? "hidden xl:flex" : "flex"
                       } ${gridColumns === cols
                         ? "bg-stone-800 text-stone-50 dark:bg-stone-100 dark:text-stone-900 shadow-sm font-bold"
