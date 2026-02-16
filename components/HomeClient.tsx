@@ -9,7 +9,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { usePosts } from "@/hooks/usePosts";
 import { useFaqs } from "@/hooks/useFaqs";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import FilterPanel from "@/components/Footer";
 import VideoModal from "@/components/product/VideoModal";
 
 const AdminFormModal = dynamic(() => import("@/components/modals/AdminFormModal"), { ssr: false });
@@ -519,6 +519,16 @@ export default function HomeClient({
         onToggleAdmin={handleToggleAdmin}
         navigate={() => window.location.href = "/"}
       />
+      <FilterPanel
+        brands={uniqueFilters.brands}
+        sizes={uniqueFilters.sizes}
+        colors={uniqueFilters.colors}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+        onClearAll={handleClearFilters}
+      />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-80">
         {isLoading && garments.length === 0 && (
           <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
@@ -658,16 +668,6 @@ export default function HomeClient({
           </>
         )}
       </main>
-      <Footer
-        brands={uniqueFilters.brands}
-        sizes={uniqueFilters.sizes}
-        colors={uniqueFilters.colors}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        onClearAll={handleClearFilters}
-      />
       <VideoModal
         isOpen={!!selectedGarment}
         garment={selectedGarment || undefined}
@@ -772,6 +772,6 @@ export default function HomeClient({
         variant="danger"
         isProcessing={isDeletingProduct}
       />
-    </div>
+    </div >
   );
 }
