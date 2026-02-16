@@ -565,8 +565,12 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         }
 
         // Actualizar los datos de la prenda con la información de IA
-        setFiles((prev) =>
-          prev.map((f) => {
+        setFiles((prev) => {
+          const firstFile = prev[0];
+          const globalBrand = firstFile?.garmentData.brand;
+          const globalSize = firstFile?.garmentData.size;
+
+          return prev.map((f, index) => {
             if (f.id === file.id) {
               const updatedData = { ...f.garmentData };
               const newPrice = result.price;
@@ -576,12 +580,24 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 priceString = String(newPrice);
               }
 
+              // Aplicar herencia del primer elemento si existe (Brand y Size)
+              // Esto cumple el requerimiento: "si en el primer elemento agrego marca/talla, quiero que los demas se actualicen"
+              if (index > 0) {
+                if (globalBrand) updatedData.brand = globalBrand;
+                if (globalSize) updatedData.size = globalSize;
+              }
+
               // Update fields if they are empty or if the title is still the default (filename)
-              const isDefaultTitle = updatedData.title === file.file.name.replace(/\.[^/.]+$/, "");
+              // Fix: relax the check to include cases where extension might be present or not
+              const isDefaultTitle =
+                updatedData.title === file.file.name.replace(/\.[^/.]+$/, "") ||
+                updatedData.title === file.file.name;
 
               if ((!updatedData.title || isDefaultTitle) && result.title) {
                 updatedData.title = result.title;
               }
+
+              // Solo actualizar si no hay valor previo (o si acabamos de setear el globalBrand/Size, ya está lleno, así que IA no sobrescribe)
               if (!updatedData.brand && result.brand) updatedData.brand = result.brand;
               if (!updatedData.description && result.description) updatedData.description = result.description;
               if (!updatedData.color && result.color) updatedData.color = result.color;
@@ -599,8 +615,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               };
             }
             return f;
-          }),
-        );
+          });
+        });
 
       } catch (error: any) {
         updateFileState(file.id, {
