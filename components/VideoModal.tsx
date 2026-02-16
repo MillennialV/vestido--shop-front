@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import type { Garment } from "@/types/Garment";
 import ThumbnailStrip from "./ThumbnailStrip";
 import QrCodeModal from "./QrCodeModal";
@@ -378,10 +379,12 @@ const VideoModal: React.FC<VideoModalProps> = ({
                 />
               )
             ) : garment.imagen_principal ? (
-              <img
+              <Image
                 src={garment.imagen_principal}
                 alt={garment.title}
-                className="w-full h-full object-contain"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain"
                 onLoad={() => setIsVideoLoading(false)}
                 onError={() => {
                   setIsVideoLoading(false);

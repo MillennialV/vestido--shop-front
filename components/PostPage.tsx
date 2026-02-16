@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import type { Post } from '@/types/post';
 import { ArrowLeftIcon } from '../components/Icons';
 
@@ -28,11 +29,16 @@ const PostPage: React.FC<PostPageProps> = ({ post, navigate }) => {
                 <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">{post.title}</h1>
 
                 {post.featured_image_url && (
-                    <img
-                        src={post.featured_image_url}
-                        alt={post.title}
-                        className="w-full h-auto max-h-[500px] object-cover rounded-xl mb-8 shadow-sm"
-                    />
+                    <div className="relative w-full h-[300px] md:h-[500px] mb-8 rounded-xl overflow-hidden shadow-sm">
+                        <Image
+                            src={post.featured_image_url}
+                            alt={post.title}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                            priority
+                        />
+                    </div>
                 )}
 
                 {post.seo_description && (

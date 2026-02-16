@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import React, { useEffect, useRef } from "react";
 import type { Garment } from "@/types/Garment";
@@ -39,10 +40,12 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
       aria-current={isActive ? "true" : "false"}
     >
       {garment.imagen_principal ? (
-        <img
+        <Image
           src={garment.imagen_principal}
           alt={garment.title}
-          className="w-full h-full object-cover"
+          fill
+          sizes="100px"
+          className="object-cover"
         />
       ) : garment.videoUrl ? (
         <video

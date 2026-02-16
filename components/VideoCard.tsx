@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import Image from "next/image";
 import type { Garment } from "@/types/Garment";
 
 import {
@@ -232,10 +233,12 @@ const VideoCard: React.FC<VideoCardProps> = ({
           title={`Vista previa en video de ${garment.title}`}
         />
       ) : garment.imagen_principal ? (
-        <img
+        <Image
           src={garment.imagen_principal}
           alt={garment.title}
-          className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className={`object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
           onLoad={() => setIsMediaLoading(false)}
           onError={handleError}
         />
