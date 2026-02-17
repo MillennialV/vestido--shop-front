@@ -32,6 +32,7 @@ interface VideoCardProps {
   isSelected: boolean;
   onToggleSelection: (id: number) => void;
   isDisabled?: boolean;
+  priority?: boolean;
 }
 
 const VideoCard: React.FC<VideoCardProps> = ({
@@ -44,6 +45,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   isSelected,
   onToggleSelection,
   isDisabled = false,
+  priority = false,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLElement>(null);
@@ -241,6 +243,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
           className={`object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
           onLoad={() => setIsMediaLoading(false)}
           onError={handleError}
+          priority={priority}
         />
       ) : null}
       <div

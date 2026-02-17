@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { slugify } from "@/lib/slugify";
@@ -79,6 +79,9 @@ export default function HomeClient({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set<number>());
   const [selectedGarment, setSelectedGarment] = useState<Garment | null>(null);
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
   const [isProductLoading, setIsProductLoading] = useState(false);
   const [isProductDeleteModalOpen, setIsProductDeleteModalOpen] = useState(false);
   const [garmentToDelete, setGarmentToDelete] = useState<Garment | null>(null);
@@ -92,30 +95,24 @@ export default function HomeClient({
   const POSTS_PER_PAGE = 6;
   const FAQ_LIMIT = Number(process.env.NEXT_PUBLIC_FAQ_LIMIT) || 5;
 
-  const handleSelectGarment = useCallback((garment: Garment) => {
+  const handleSelectGarment = useCallback((garment: Garment, updateUrl = true) => {
     setSelectedGarment(garment);
-    setProducts((prev) => {
-      const currentGarments = Array.isArray(prev) ? prev : [];
-      const exists = currentGarments.some((g) => g.id === garment.id);
-      if (exists) {
-        return currentGarments.map((g) => (g.id === garment.id ? garment : g));
-      }
-      return currentGarments;
-    });
-    if (garment.slug) {
+    if (updateUrl && garment.slug) {
+      processedSlugRef.current = garment.slug;
       const newPath = `/${garment.slug}`;
-      window.history.pushState(null, "", `#${newPath}`);
+      window.history.pushState(null, "", newPath);
     }
   }, []);
 
   const handleCloseModal = useCallback(() => {
     setSelectedGarment(null);
-    if (window.location.hash.startsWith("#/")) {
-      window.history.pushState(null, "", window.location.pathname + window.location.search);
+    processedSlugRef.current = null; // Synchronize processedSlugRef on close
+    if (window.location.pathname !== "/") {
+      window.history.pushState(null, "", "/");
     }
   }, []);
 
-  const handleSelectGarmentWrapper = useCallback(async (garment: Garment) => {
+  const handleSelectGarmentWrapper = useCallback(async (garment: Garment, updateUrl = false) => {
     // If we're already loading a product, or a modal is open, do nothing.
     if (isProductLoading || (selectedGarment && selectedGarment.id === garment.id)) return;
 
@@ -130,15 +127,27 @@ export default function HomeClient({
         slug: fullGarment?.slug || garment.slug,
       };
 
-      handleSelectGarment(garmentWithSlug);
+      handleSelectGarment(garmentWithSlug, updateUrl);
     } catch (error) {
       console.error("Error fetching product details:", error);
       // Fallback: open with what we have
-      handleSelectGarment(garment);
+      handleSelectGarment(garment, updateUrl);
     } finally {
       setIsProductLoading(false);
     }
   }, [isProductLoading, selectedGarment, fetchProductById, handleSelectGarment]);
+
+  useEffect(() => {
+    if (!!selectedGarment) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [!!selectedGarment]);
+
 
   const sortByCreatedAt = <T extends { created_at: string }>(items: T[]): T[] => {
     return [...items].sort((a, b) => {
@@ -169,8 +178,6 @@ export default function HomeClient({
   useEffect(() => {
     const loadAllProductsForFilters = async () => {
       try {
-        // Fetch a large number of products to get all available filter options
-        // Ideally this should be a dedicated "facets" endpoint, but fetching all works for now
         const res = await fetch('/api/products?limit=1000&sort=created_at&order=desc');
         if (res.ok) {
           const data = await res.json();
@@ -185,9 +192,7 @@ export default function HomeClient({
   }, []);
 
   const uniqueFilters = useMemo(() => {
-
     const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
-
     const getUnique = (arr: (string | undefined | null)[]) =>
       [...new Set(arr.filter(v => v != null).map(v => String(v).trim()))].filter(Boolean).sort();
 
@@ -197,6 +202,7 @@ export default function HomeClient({
       colors: getUnique(sourceData.map((g) => g.color)),
     };
   }, [allProductsForFilters, initialGarments]);
+
   const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string; color?: string }) => {
     const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
@@ -208,6 +214,7 @@ export default function HomeClient({
       q: searchQuery
     });
   }, [filters, searchQuery, fetchProducts, ITEMS_PER_PAGE]);
+
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
@@ -218,6 +225,7 @@ export default function HomeClient({
       q: query
     });
   };
+
   const handleClearFilters = useCallback(() => {
     const defaultFilters = { brand: "all", size: "all", color: "all" };
     setFilters(defaultFilters);
@@ -230,6 +238,7 @@ export default function HomeClient({
       q: ""
     });
   }, [fetchProducts, ITEMS_PER_PAGE]);
+
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
@@ -242,6 +251,7 @@ export default function HomeClient({
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
   const handleToggleAdmin = async () => {
     if (authenticated) {
       try {
@@ -249,12 +259,13 @@ export default function HomeClient({
         setIsSelectionMode(false);
         setSelectedIds(new Set());
       } catch (error) {
-        console.error("Error al cerrar sesiÃ³n:", error);
+        console.error("Error al cerrar sesión:", error);
       }
     } else {
       setIsAccessCodeModalOpen(true);
     }
   };
+
   const handleAccessCodeSubmit = async (email: string, password: string) => {
     setIsLoginLoading(true);
     setAccessCodeError(null);
@@ -264,8 +275,8 @@ export default function HomeClient({
       setAccessCodeError(null);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      if (/401|credencial|credenciales invÃ¡lidas|invalid/i.test(errorMessage)) {
-        setAccessCodeError("Correo o contraseÃ±a incorrectos. IntÃ©ntalo de nuevo.");
+      if (/401|credencial|credenciales inválidas|invalid/i.test(errorMessage)) {
+        setAccessCodeError("Correo o contraseña incorrectos. Inténtalo de nuevo.");
       } else {
         setAccessCodeError(errorMessage);
       }
@@ -274,53 +285,46 @@ export default function HomeClient({
     }
   };
 
-
   useEffect(() => {
-    const handleHashChange = async () => {
-      const hash = window.location.hash;
-      if (!hash || !hash.startsWith("#/")) {
+    const handleUrlChange = async (isPopState = false) => {
+      const path = window.location.pathname;
+      if (!path || path === "/") {
+        if (isPopState) {
+          processedSlugRef.current = null;
+          setSelectedGarment(null);
+        }
+        return;
+      }
+      const slug = path.replace(/^\//, "");
+      if (!slug || slug === "blog" || slug.startsWith("blog/")) {
         processedSlugRef.current = null;
         return;
       }
-
-      const slug = hash.replace("#/", "");
-      if (!slug || slug === "/" || slug === "blog" || slug.startsWith("blog/")) {
-        processedSlugRef.current = null;
-        return;
-      }
-
-      // Prevent duplicate processing
       if (processedSlugRef.current === slug) return;
       processedSlugRef.current = slug;
-
-      console.log("[HomeClient] Processing deep link for slug:", slug);
-
-      // 1. Try to find in current list
       const foundInList = garments.find(g => g.slug === slug || slugify(g.title, g.id) === slug);
       if (foundInList) {
-        handleSelectGarmentWrapper(foundInList);
+        handleSelectGarmentWrapper(foundInList, true);
         return;
       }
-
-      // 2. Extract ID from slug (it ends with -ID)
       const idMatch = slug.match(/-(\d+)$/);
       if (idMatch) {
         const id = idMatch[1];
         try {
           const product = await fetchProductById(id);
           if (product) {
-            handleSelectGarment(product);
+            handleSelectGarment(product, true);
           }
         } catch (e) {
           console.error("[HomeClient] Error opening from deep link:", e);
         }
       }
     };
-
-    handleHashChange();
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, [handleSelectGarmentWrapper, fetchProductById]);
+    handleUrlChange(false);
+    const popStateListener = () => handleUrlChange(true);
+    window.addEventListener("popstate", popStateListener);
+    return () => window.removeEventListener("popstate", popStateListener);
+  }, [handleSelectGarmentWrapper, fetchProductById, garments, handleSelectGarment]);
 
   useEffect(() => {
     const getPosts = async () => {
@@ -329,60 +333,46 @@ export default function HomeClient({
     getPosts()
   }, [authenticated, fetchPosts]);
 
-
-
   const handleOpenForm = (garment: Garment | null = null) => {
     setEditingGarment(garment);
     setIsFormModalOpen(true);
     if (garment) {
       fetchProductById(garment.id).then((fresh) => {
-        if (fresh) {
-          setEditingGarment(fresh);
-        }
+        if (fresh) setEditingGarment(fresh);
       });
     }
   };
-  const handleSaveGarment = async (product: Garment) => {
-    try {
-      setProducts((prev) => {
-        const exists = prev.some((g) => g.id === product.id);
-        const newGarments = exists
-          ? prev.map((g) => (g.id === product.id ? product : g))
-          : [product, ...prev];
-        return sortByCreatedAt(newGarments);
-      });
-      fetchProducts({ page: currentPage, limit: ITEMS_PER_PAGE });
-      setEditingGarment(null);
-      setIsFormModalOpen(false);
-    } catch (err: any) {
-      console.error("Failed to process saved garment:", err);
-    }
-  };
-  const handleBulkSaveComplete = (newGarments: Garment[]) => {
-    // Primero actualizamos localmente para feedback instantÃ¡neo
-    setProducts((prev) => sortByCreatedAt([...newGarments, ...prev]));
-    setIsBulkUploadModalOpen(false);
 
-    // Luego refrescamos del servidor para asegurar que IDs, slugs y fechas estÃ©n sincronizados
-    fetchProducts({ page: 1, limit: ITEMS_PER_PAGE });
-    setCurrentPage(1);
+  const handleSaveGarment = async (product: Garment) => {
+    if (editingGarment) {
+      setProducts(garments.map(g => g.id === product.id ? product : g));
+    } else {
+      setProducts([product, ...garments]);
+    }
+    setIsFormModalOpen(false);
   };
-  const handleToggleSelectionMode = () => {
-    if (!authenticated) return;
-    setIsSelectionMode(!isSelectionMode);
-    setSelectedIds(new Set());
-  };
-  const handleToggleSelection = (id: number) => {
-    setSelectedIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
+
+  const handleBulkSaveComplete = useCallback((newGarments: Garment[]) => {
+    setProducts(prev => {
+      const existingIds = new Set(prev.map(p => p.id));
+      const uniqueNew = newGarments.filter(p => !existingIds.has(p.id));
+      return [...uniqueNew, ...prev];
     });
+    setIsBulkUploadModalOpen(false);
+  }, [setProducts]);
+
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) setSelectedIds(new Set());
   };
+
+  const handleToggleSelection = (id: number) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
+    setSelectedIds(newSelected);
+  };
+
   const handleBulkDelete = () => {
     if (selectedIds.size === 0) return;
     setIsBulkDeleteConfirmation(true);
@@ -391,6 +381,7 @@ export default function HomeClient({
 
   const handleDeleteProduct = (garment: Garment) => {
     setGarmentToDelete(garment);
+    setIsBulkDeleteConfirmation(false);
     setIsProductDeleteModalOpen(true);
   };
 
@@ -398,91 +389,66 @@ export default function HomeClient({
     setIsDeletingProduct(true);
     try {
       if (isBulkDeleteConfirmation) {
-        // Borrado masivo
         const idsArray = Array.from(selectedIds);
-        // El API actualmente solo soporta uno por uno, asÃ­ que iteramos
-        for (const id of idsArray) {
-          await deleteProduct(id);
-        }
-        setProducts((prev) => prev.filter((g) => !selectedIds.has(g.id)));
+        await Promise.all(idsArray.map(id => deleteProduct(id)));
+        setProducts(garments.filter(g => !selectedIds.has(g.id)));
         setSelectedIds(new Set());
         setIsSelectionMode(false);
       } else if (garmentToDelete) {
-        // Borrado individual
         await deleteProduct(garmentToDelete.id);
-        setProducts((prev) => prev.filter((g) => g.id !== garmentToDelete.id));
+        setProducts(garments.filter(g => g.id !== garmentToDelete.id));
       }
-
       setIsProductDeleteModalOpen(false);
-      setGarmentToDelete(null);
-      setIsBulkDeleteConfirmation(false);
-    } catch (err: any) {
-      console.error("Failed to delete product(s):", err);
-      alert("Hubo un error al eliminar. Por favor intenta de nuevo.");
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
     } finally {
       setIsDeletingProduct(false);
+      setGarmentToDelete(null);
+      setIsBulkDeleteConfirmation(false);
     }
   };
+
   const handleOpenPostModal = (post: Post | null = null) => {
     setEditingPost(post);
     setIsPostModalOpen(true);
   };
 
   const handleSavePost = async (id: number, post: any) => {
-    try {
-      if (id) {
-        await updatePost(id, post);
-      } else {
-        await createPost(post);
-      }
-      await fetchPosts();
-
-      setIsPostModalOpen(false);
-    } catch (err: any) {
-      console.error("Failed to update post:", err);
-      throw err;
+    if (id) {
+      await updatePost(id, post);
+    } else {
+      await createPost(post);
     }
+    await fetchPosts();
+    setIsPostModalOpen(false);
   };
 
   const handleDeletePost = (post: Post) => {
     setPostToDelete(post);
     setIsDeleteModalOpen(true);
   };
+
   const confirmDeletePost = async () => {
     if (!postToDelete) return;
     setIsDeleting(true);
     try {
       await deletePost(postToDelete.id);
-
-      // Calcular a quÃ© pÃ¡gina ir tras eliminar
-      const isLastItemOnPage = posts.length === 1;
-      const currentPage = blogPagination.page;
-
-      let nextPage = currentPage;
-      if (isLastItemOnPage && currentPage > 1) {
-        nextPage = currentPage - 1;
-      }
-
-      // Recargar posts para corregir huecos y paginaciÃ³n
-      await fetchPosts({ page: nextPage, limit: POSTS_PER_PAGE });
-
+      await fetchPosts();
       setIsDeleteModalOpen(false);
-      setPostToDelete(null);
     } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("Error al eliminar el artÃ­culo");
+      console.error("Error al eliminar post:", error);
     } finally {
       setIsDeleting(false);
+      setPostToDelete(null);
     }
   };
 
   const handleBlogPageChange = (page: number) => {
-    fetchPosts({ page, limit: POSTS_PER_PAGE });
+    fetchPosts({ page });
   };
 
   const handleReorderFaqs = useCallback(
     async (newOrder: FaqItem[]) => {
-      setFaqsLocal(newOrder);
       try {
         const updatePromises = newOrder
           .filter((item) => {
@@ -512,8 +478,9 @@ export default function HomeClient({
         });
       }
     },
-    [allFaqs, fetchFaqs],
+    [allFaqs, fetchFaqs, FAQ_LIMIT],
   );
+
   return (
     <CartProvider>
       <div className="bg-stone-50 dark:bg-stone-900 min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
@@ -604,7 +571,7 @@ export default function HomeClient({
                     gridColumns === 4 ? "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 md:gap-8" :
                       "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
                   }`}>
-                  {filteredGarments.map((garment) => (
+                  {filteredGarments.map((garment, index) => (
                     <VideoCard
                       key={garment.id}
                       garment={garment}
@@ -616,12 +583,13 @@ export default function HomeClient({
                       isSelected={selectedIds.has(garment.id)}
                       onToggleSelection={handleToggleSelection}
                       isDisabled={isProductLoading || !!selectedGarment}
+                      priority={index < 6}
                     />
                   ))}
                 </div>
               ) : (
                 <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
-                  No se encontraron prendas que coincidan con tu bÃºsqueda.
+                  No se encontraron prendas que coincidan con tu búsqueda.
                 </p>
               )}
               <Pagination
@@ -650,7 +618,7 @@ export default function HomeClient({
                     Preguntas Frecuentes
                   </h1>
                   <p className="mt-4 text-lg text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">
-                    Estamos aquÃ­ para ayudarte. Encuentra las respuestas a las preguntas mÃ¡s comunes de nuestra comunidad y compra con total confianza.
+                    Estamos aquí para ayudarte. Encuentra las respuestas a las preguntas más comunes de nuestra comunidad y compra con total confianza.
                   </p>
                   {authenticated && (
                     <button
@@ -759,8 +727,8 @@ export default function HomeClient({
             }
           }}
           onConfirm={confirmDeletePost}
-          title="Eliminar ArtÃ­culo"
-          message={`Â¿EstÃ¡s seguro de que quieres eliminar el artÃ­culo "${postToDelete?.title}"? Esta acciÃ³n no se puede deshacer.`}
+          title="Eliminar Artículo"
+          message={`¿Estás seguro de que quieres eliminar el artículo "${postToDelete?.title}"? Esta acción no se puede deshacer.`}
           confirmText="Eliminar"
           variant="danger"
           isProcessing={isDeleting}
@@ -778,11 +746,11 @@ export default function HomeClient({
             <div className="space-y-2">
               <p>
                 {isBulkDeleteConfirmation
-                  ? `Â¿EstÃ¡s seguro de que quieres eliminar las ${selectedIds.size} prendas seleccionadas?`
-                  : `Â¿EstÃ¡s seguro de que quieres eliminar el producto "${garmentToDelete?.title}"?`}
+                  ? `¿Estás seguro de que quieres eliminar las ${selectedIds.size} prendas seleccionadas?`
+                  : `¿Estás seguro de que quieres eliminar el producto "${garmentToDelete?.title}"?`}
               </p>
               <span className="text-sm text-red-500 font-medium block">
-                Esta acciÃ³n no se puede deshacer
+                Esta acción no se puede deshacer
               </span>
             </div>
           }
@@ -792,7 +760,7 @@ export default function HomeClient({
           isProcessing={isDeletingProduct}
         />
         <CartDrawer />
-      </div >
+      </div>
     </CartProvider>
   );
 }
