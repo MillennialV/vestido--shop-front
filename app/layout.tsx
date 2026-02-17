@@ -4,8 +4,11 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import React from "react";
+import Script from "next/script";
 import { AuthProvider } from "@/provider/AuthProvider";
+import { GA_TRACKING_ID } from "@/lib/analytics";
 import { CartProvider } from "@/context/CartContext";
+import CartDrawer from "@/components/CartDrawer";
 import { Chatbot } from "@/components/Chatbot";
 
 const inter = Inter({
@@ -28,11 +31,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
+  title: "Vestidos de Fiesta Importados en Lima | Womanity San Isidro",
   description:
-    "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro. Diseños exclusivos para tus eventos en Lima, Perú.",
+    "Descubre +1000 vestidos de fiesta importados en nuestro showroom de San Isidro. Vestidos de cóctel, gala y noche. WhatsApp 956-382-746. ¡Visítanos!",
   keywords:
-    "vestidos de fiesta lima, showroom san isidro, vestidos elegantes perú, vestidos importados, moda san isidro, womanity boutique, vestidos de noche, vestidos de gala, boutique en lima",
+    "vestidos de fiesta lima, showroom san isidro, vestidos elegantes perú, vestidos importados, womanity boutique, vestidos de noche, vestidos de gala, vestidos de boda lima",
   authors: [{ name: "Womanity Boutique" }],
   alternates: {
     canonical: "https://www.vestido.shop/",
@@ -40,10 +43,10 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://www.vestido.shop/",
-    title: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
+    title: "Vestidos de Fiesta Importados en Lima | Womanity San Isidro",
     description:
-      "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro. Diseños exclusivos para tus eventos en Lima, Perú.",
-    siteName: "Vestidos de Fiesta por Womanity Boutique",
+      "Descubre +1000 vestidos de fiesta importados en nuestro showroom de San Isidro. Diseños exclusivos para tus eventos.",
+    siteName: "Vestido.shop by Womanity",
     images: [
       {
         url: "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
@@ -55,9 +58,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
+    title: "Vestidos de Fiesta Importados en Lima",
     description:
-      "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro. Diseños exclusivos para tus eventos en Lima, Perú.",
+      "Showroom San Isidro. +1000 modelos exclusivos de marcas USA.",
     creator: "@WomanityBoutique",
     images: [
       "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
@@ -135,22 +138,47 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "Organization",
-              name: "Womanity Boutique",
-              url: "https://www.vestido.shop/",
-              logo: "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
-              description:
-                "Showroom de vestidos de fiesta importados en San Isidro, Lima. Diseños exclusivos para tus eventos.",
-              contactPoint: {
-                "@type": "ContactPoint",
-                contactType: "customer service",
-                email: "contacto@womanity-boutique.com",
+              "@type": "ClothingStore",
+              "name": "Vestido.shop by Womanity",
+              "image": "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
+              "url": "https://www.vestido.shop/",
+              "logo": "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
+              "description": "Showroom de vestidos de fiesta importados de marcas USA en San Isidro, Lima. Más de 1000 modelos exclusivos.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Av. Paz Soldán 255 Sótano A24",
+                "addressLocality": "San Isidro",
+                "addressRegion": "Lima",
+                "postalCode": "15073",
+                "addressCountry": "PE"
               },
-              sameAs: [
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": -12.0954,
+                "longitude": -77.0347
+              },
+              "telephone": "+51956382746",
+              "priceRange": "$$",
+              "openingHoursSpecification": [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday"
+                  ],
+                  "opens": "11:00",
+                  "closes": "20:00"
+                }
+              ],
+              "sameAs": [
                 "https://www.facebook.com/WomanityBoutique",
                 "https://www.instagram.com/WomanityBoutique",
-                "https://www.tiktok.com/@WomanityBoutique",
-              ],
+                "https://www.tiktok.com/@WomanityBoutique"
+              ]
             }),
           }}
         />
@@ -200,9 +228,30 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${cormorant.variable} bg-stone-50 font-sans`}>
+        {/* 
+        {GA_TRACKING_ID && GA_TRACKING_ID !== "G-XXXXXXXXXX" && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_TRACKING_ID}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        )}
+        */}
         <AuthProvider>
           <CartProvider>
             <div id="root">{children}</div>
+            <CartDrawer />
             <Chatbot />
           </CartProvider>
         </AuthProvider>

@@ -26,6 +26,7 @@ import CatalogToolbar from "@/components/CatalogToolbar";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import Blog from "@/components/Blog";
 import VideoCard from "@/components/VideoCard";
+import SiteFooter from "@/components/SiteFooter";
 import { faqData } from "@/lib/faqData";
 import { PlusIcon } from "@/components/Icons";
 import { useAuth } from "@/hooks/useAuth";
@@ -78,6 +79,9 @@ export default function HomeClient({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set<number>());
   const [selectedGarment, setSelectedGarment] = useState<Garment | null>(null);
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
   const [isProductLoading, setIsProductLoading] = useState(false);
   const [isProductDeleteModalOpen, setIsProductDeleteModalOpen] = useState(false);
   const [garmentToDelete, setGarmentToDelete] = useState<Garment | null>(null);
@@ -91,30 +95,24 @@ export default function HomeClient({
   const POSTS_PER_PAGE = 6;
   const FAQ_LIMIT = Number(process.env.NEXT_PUBLIC_FAQ_LIMIT) || 5;
 
-  const handleSelectGarment = useCallback((garment: Garment) => {
+  const handleSelectGarment = useCallback((garment: Garment, updateUrl = true) => {
     setSelectedGarment(garment);
-    setProducts((prev) => {
-      const currentGarments = Array.isArray(prev) ? prev : [];
-      const exists = currentGarments.some((g) => g.id === garment.id);
-      if (exists) {
-        return currentGarments.map((g) => (g.id === garment.id ? garment : g));
-      }
-      return currentGarments;
-    });
-    if (garment.slug) {
+    if (updateUrl && garment.slug) {
+      processedSlugRef.current = garment.slug;
       const newPath = `/${garment.slug}`;
-      window.history.pushState(null, "", `#${newPath}`);
+      window.history.pushState(null, "", newPath);
     }
   }, []);
 
   const handleCloseModal = useCallback(() => {
     setSelectedGarment(null);
-    if (window.location.hash.startsWith("#/")) {
-      window.history.pushState(null, "", window.location.pathname + window.location.search);
+    processedSlugRef.current = null; // Synchronize processedSlugRef on close
+    if (window.location.pathname !== "/") {
+      window.history.pushState(null, "", "/");
     }
   }, []);
 
-  const handleSelectGarmentWrapper = useCallback(async (garment: Garment) => {
+  const handleSelectGarmentWrapper = useCallback(async (garment: Garment, updateUrl = false) => {
     // If we're already loading a product, or a modal is open, do nothing.
     if (isProductLoading || (selectedGarment && selectedGarment.id === garment.id)) return;
 
@@ -129,15 +127,27 @@ export default function HomeClient({
         slug: fullGarment?.slug || garment.slug,
       };
 
-      handleSelectGarment(garmentWithSlug);
+      handleSelectGarment(garmentWithSlug, updateUrl);
     } catch (error) {
       console.error("Error fetching product details:", error);
       // Fallback: open with what we have
-      handleSelectGarment(garment);
+      handleSelectGarment(garment, updateUrl);
     } finally {
       setIsProductLoading(false);
     }
   }, [isProductLoading, selectedGarment, fetchProductById, handleSelectGarment]);
+
+  useEffect(() => {
+    if (!!selectedGarment) {
+      setIsRendered(true);
+      setTimeout(() => setIsVisible(true), 10);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setIsRendered(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [!!selectedGarment]);
+
 
   const sortByCreatedAt = <T extends { created_at: string }>(items: T[]): T[] => {
     return [...items].sort((a, b) => {
@@ -184,9 +194,7 @@ export default function HomeClient({
   }, []);
 
   const uniqueFilters = useMemo(() => {
-
     const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
-
     const getUnique = (arr: (string | undefined | null)[]) =>
       [...new Set(arr.filter(v => v != null).map(v => String(v).trim()))].filter(Boolean).sort();
 
@@ -207,6 +215,7 @@ export default function HomeClient({
       q: searchQuery
     });
   }, [filters, searchQuery, fetchProducts, ITEMS_PER_PAGE]);
+
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
@@ -217,6 +226,7 @@ export default function HomeClient({
       q: query
     });
   };
+
   const handleClearFilters = useCallback(() => {
     const defaultFilters = { brand: "all", size: "all", color: "all" };
     setFilters(defaultFilters);
@@ -229,6 +239,7 @@ export default function HomeClient({
       q: ""
     });
   }, [fetchProducts, ITEMS_PER_PAGE]);
+
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
@@ -241,6 +252,7 @@ export default function HomeClient({
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
   const handleToggleAdmin = async () => {
     if (authenticated) {
       try {
@@ -254,6 +266,7 @@ export default function HomeClient({
       setIsAccessCodeModalOpen(true);
     }
   };
+
   const handleAccessCodeSubmit = async (email: string, password: string) => {
     setIsLoginLoading(true);
     setAccessCodeError(null);
@@ -273,53 +286,46 @@ export default function HomeClient({
     }
   };
 
-
   useEffect(() => {
-    const handleHashChange = async () => {
-      const hash = window.location.hash;
-      if (!hash || !hash.startsWith("#/")) {
+    const handleUrlChange = async (isPopState = false) => {
+      const path = window.location.pathname;
+      if (!path || path === "/") {
+        if (isPopState) {
+          processedSlugRef.current = null;
+          setSelectedGarment(null);
+        }
+        return;
+      }
+      const slug = path.replace(/^\//, "");
+      if (!slug || slug === "blog" || slug.startsWith("blog/")) {
         processedSlugRef.current = null;
         return;
       }
-
-      const slug = hash.replace("#/", "");
-      if (!slug || slug === "/" || slug === "blog" || slug.startsWith("blog/")) {
-        processedSlugRef.current = null;
-        return;
-      }
-
-      // Prevent duplicate processing
       if (processedSlugRef.current === slug) return;
       processedSlugRef.current = slug;
-
-      console.log("[HomeClient] Processing deep link for slug:", slug);
-
-      // 1. Try to find in current list
       const foundInList = garments.find(g => g.slug === slug || slugify(g.title, g.id) === slug);
       if (foundInList) {
-        handleSelectGarmentWrapper(foundInList);
+        handleSelectGarmentWrapper(foundInList, true);
         return;
       }
-
-      // 2. Extract ID from slug (it ends with -ID)
       const idMatch = slug.match(/-(\d+)$/);
       if (idMatch) {
         const id = idMatch[1];
         try {
           const product = await fetchProductById(id);
           if (product) {
-            handleSelectGarment(product);
+            handleSelectGarment(product, true);
           }
         } catch (e) {
           console.error("[HomeClient] Error opening from deep link:", e);
         }
       }
     };
-
-    handleHashChange();
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, [handleSelectGarmentWrapper, fetchProductById]);
+    handleUrlChange(false);
+    const popStateListener = () => handleUrlChange(true);
+    window.addEventListener("popstate", popStateListener);
+    return () => window.removeEventListener("popstate", popStateListener);
+  }, [handleSelectGarmentWrapper, fetchProductById, garments, handleSelectGarment]);
 
   useEffect(() => {
     const getPosts = async () => {
@@ -328,16 +334,12 @@ export default function HomeClient({
     getPosts()
   }, [authenticated, fetchPosts]);
 
-
-
   const handleOpenForm = (garment: Garment | null = null) => {
     setEditingGarment(garment);
     setIsFormModalOpen(true);
     if (garment) {
       fetchProductById(garment.id).then((fresh) => {
-        if (fresh) {
-          setEditingGarment(fresh);
-        }
+        if (fresh) setEditingGarment(fresh);
       });
     }
   };
@@ -357,31 +359,31 @@ export default function HomeClient({
       console.error("Failed to process saved garment:", err);
     }
   };
-  const handleBulkSaveComplete = (newGarments: Garment[]) => {
-    // Primero actualizamos localmente para feedback instantÃ¡neo
-    setProducts((prev) => sortByCreatedAt([...newGarments, ...prev]));
-    setIsBulkUploadModalOpen(false);
 
-    // Luego refrescamos del servidor para asegurar que IDs, slugs y fechas estÃ©n sincronizados
+  const handleBulkSaveComplete = useCallback((newGarments: Garment[]) => {
+    setProducts(prev => {
+      const existingIds = new Set(prev.map(p => p.id));
+      const uniqueNew = newGarments.filter(p => !existingIds.has(p.id));
+      const sorted = sortByCreatedAt([...uniqueNew, ...prev]);
+      return sorted;
+    });
+    setIsBulkUploadModalOpen(false);
     fetchProducts({ page: 1, limit: ITEMS_PER_PAGE });
     setCurrentPage(1);
-  };
+  }, [setProducts, ITEMS_PER_PAGE, fetchProducts]);
+
   const handleToggleSelectionMode = () => {
-    if (!authenticated) return;
     setIsSelectionMode(!isSelectionMode);
-    setSelectedIds(new Set());
+    if (isSelectionMode) setSelectedIds(new Set());
   };
+
   const handleToggleSelection = (id: number) => {
-    setSelectedIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
+    setSelectedIds(newSelected);
   };
+
   const handleBulkDelete = () => {
     if (selectedIds.size === 0) return;
     setIsBulkDeleteConfirmation(true);
@@ -390,6 +392,7 @@ export default function HomeClient({
 
   const handleDeleteProduct = (garment: Garment) => {
     setGarmentToDelete(garment);
+    setIsBulkDeleteConfirmation(false);
     setIsProductDeleteModalOpen(true);
   };
 
@@ -397,63 +400,53 @@ export default function HomeClient({
     setIsDeletingProduct(true);
     try {
       if (isBulkDeleteConfirmation) {
-        // Borrado masivo
         const idsArray = Array.from(selectedIds);
-        // El API actualmente solo soporta uno por uno, asÃ­ que iteramos
-        for (const id of idsArray) {
-          await deleteProduct(id);
-        }
-        setProducts((prev) => prev.filter((g) => !selectedIds.has(g.id)));
+        await Promise.all(idsArray.map(id => deleteProduct(id)));
+        setProducts(garments.filter(g => !selectedIds.has(g.id)));
         setSelectedIds(new Set());
         setIsSelectionMode(false);
       } else if (garmentToDelete) {
-        // Borrado individual
         await deleteProduct(garmentToDelete.id);
-        setProducts((prev) => prev.filter((g) => g.id !== garmentToDelete.id));
+        setProducts(garments.filter(g => g.id !== garmentToDelete.id));
       }
-
       setIsProductDeleteModalOpen(false);
-      setGarmentToDelete(null);
-      setIsBulkDeleteConfirmation(false);
-    } catch (err: any) {
-      console.error("Failed to delete product(s):", err);
-      alert("Hubo un error al eliminar. Por favor intenta de nuevo.");
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
     } finally {
       setIsDeletingProduct(false);
+      setGarmentToDelete(null);
+      setIsBulkDeleteConfirmation(false);
     }
   };
+
   const handleOpenPostModal = (post: Post | null = null) => {
     setEditingPost(post);
     setIsPostModalOpen(true);
   };
 
   const handleSavePost = async (id: number, post: any) => {
-    try {
-      if (id) {
-        await updatePost(id, post);
-      } else {
-        await createPost(post);
-      }
-      await fetchPosts();
-
-      setIsPostModalOpen(false);
-    } catch (err: any) {
-      console.error("Failed to update post:", err);
-      throw err;
+    if (id) {
+      await updatePost(id, post);
+    } else {
+      await createPost(post);
     }
+    await fetchPosts();
+    setIsPostModalOpen(false);
   };
 
   const handleDeletePost = (post: Post) => {
     setPostToDelete(post);
     setIsDeleteModalOpen(true);
   };
+
   const confirmDeletePost = async () => {
     if (!postToDelete) return;
     setIsDeleting(true);
     try {
       await deletePost(postToDelete.id);
+      await deletePost(postToDelete.id);
 
-      // Calcular a quÃ© pÃ¡gina ir tras eliminar
+      // Calcular a qué página ir tras eliminar
       const isLastItemOnPage = posts.length === 1;
       const currentPage = blogPagination.page;
 
@@ -462,26 +455,24 @@ export default function HomeClient({
         nextPage = currentPage - 1;
       }
 
-      // Recargar posts para corregir huecos y paginaciÃ³n
+      // Recargar posts para corregir huecos y paginación
       await fetchPosts({ page: nextPage, limit: POSTS_PER_PAGE });
-
       setIsDeleteModalOpen(false);
-      setPostToDelete(null);
     } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("Error al eliminar el artÃ­culo");
+      console.error("Error al eliminar el artículo:", error);
+      alert("Error al eliminar el artículo");
     } finally {
       setIsDeleting(false);
+      setPostToDelete(null);
     }
   };
 
   const handleBlogPageChange = (page: number) => {
-    fetchPosts({ page, limit: POSTS_PER_PAGE });
+    fetchPosts({ page });
   };
 
   const handleReorderFaqs = useCallback(
     async (newOrder: FaqItem[]) => {
-      setFaqsLocal(newOrder);
       try {
         const updatePromises = newOrder
           .filter((item) => {
@@ -511,8 +502,9 @@ export default function HomeClient({
         });
       }
     },
-    [allFaqs, fetchFaqs],
+    [allFaqs, fetchFaqs, FAQ_LIMIT],
   );
+
   return (
     <div className="bg-stone-50 dark:bg-stone-900 min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
       <Header
@@ -543,18 +535,20 @@ export default function HomeClient({
         )}
         {!isLoading && !error && (
           <>
-            {authenticated && (
-              <CatalogToolbar
-                onAddGarment={() => handleOpenForm(null)}
-                onBulkUpload={() => setIsBulkUploadModalOpen(true)}
-                onToggleSelectionMode={handleToggleSelectionMode}
-                isSelectionMode={isSelectionMode}
-                selectedCount={selectedIds.size}
-                onBulkDelete={handleBulkDelete}
-                onWhatsapp={() => setIsWhatsappModalOpen(true)}
-                onGenerateQr={() => setIsQrBatchModalOpen(true)}
-              />
-            )}
+            <div id="catalogo">
+              {authenticated && (
+                <CatalogToolbar
+                  onAddGarment={() => handleOpenForm(null)}
+                  onBulkUpload={() => setIsBulkUploadModalOpen(true)}
+                  onToggleSelectionMode={handleToggleSelectionMode}
+                  isSelectionMode={isSelectionMode}
+                  selectedCount={selectedIds.size}
+                  onBulkDelete={handleBulkDelete}
+                  onWhatsapp={() => setIsWhatsappModalOpen(true)}
+                  onGenerateQr={() => setIsQrBatchModalOpen(true)}
+                />
+              )}
+            </div>
 
             <div className="hidden md:flex justify-end mb-6 gap-3 items-center px-2">
               <span className="text-sm font-medium text-stone-500 dark:text-stone-400">
@@ -586,7 +580,11 @@ export default function HomeClient({
                     aria-label={`Ver ${cols} columnas`}
                     title={`${cols} columnas`}
                   >
-                    {cols}
+                    <div className="grid gap-[1px] w-4 h-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+                      {Array.from({ length: cols }).map((_, i) => (
+                        <div key={i} className="bg-current rounded-[0.5px] h-full" />
+                      ))}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -598,7 +596,7 @@ export default function HomeClient({
                   gridColumns === 4 ? "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 md:gap-8" :
                     "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
                 }`}>
-                {filteredGarments.map((garment) => (
+                {filteredGarments.map((garment, index) => (
                   <VideoCard
                     key={garment.id}
                     garment={garment}
@@ -610,6 +608,7 @@ export default function HomeClient({
                     isSelected={selectedIds.has(garment.id)}
                     onToggleSelection={handleToggleSelection}
                     isDisabled={isProductLoading || !!selectedGarment}
+                    priority={index < 6}
                   />
                 ))}
               </div>
@@ -623,7 +622,7 @@ export default function HomeClient({
               totalPages={totalPages}
               onPageChange={handlePageChange}
             />
-            <section className="mt-24">
+            <section id="blog" className="mt-24">
               <Blog
                 posts={posts}
                 navigate={() => window.location.href = "/"}
@@ -638,7 +637,7 @@ export default function HomeClient({
                 }}
               />
             </section>
-            <section className="mt-24 max-w-4xl mx-auto">
+            <section id="faq" className="mt-24 max-w-4xl mx-auto">
               <header className="flex flex-col items-center text-center mb-12 gap-4">
                 <h1 className="text-5xl md:text-6xl font-semibold text-stone-900 dark:text-stone-100 tracking-wider">
                   Preguntas Frecuentes
@@ -785,7 +784,7 @@ export default function HomeClient({
         variant="danger"
         isProcessing={isDeletingProduct}
       />
-      <CartDrawer />
-    </div >
+      <SiteFooter />
+    </div>
   );
 }

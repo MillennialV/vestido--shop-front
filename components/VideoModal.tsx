@@ -22,8 +22,8 @@ import {
   ChevronRightIcon,
   ShoppingCartIcon,
 } from "./Icons";
-import { title } from "process";
 import { useCart } from "@/context/CartContext";
+import { trackWhatsAppClick, trackAddToCart } from "@/lib/analytics";
 
 const getEmbedUrl = (url: string) => {
   if (!url) return null;
@@ -166,6 +166,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   const handleAddToCart = () => {
     if (garment) {
       addToCart(garment);
+      trackAddToCart(garment.title, garment.id, typeof garment.price === "number" ? garment.price : parseFloat(String(garment.price || 0)));
       setToastMessage("¡Agregado al carrito!");
       setTimeout(() => setToastMessage(null), 3000);
     }
@@ -235,7 +236,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   const handleShare = async () => {
     if (!garment) return;
     const currentSlug = garment.slug || slugify(garment.title, garment.id);
-    const shareUrl = `${PUBLIC_URL}/#/${currentSlug}`;
+    const shareUrl = `${PUBLIC_URL}/${currentSlug}`;
     const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
 
     try {
@@ -299,7 +300,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     if (!garment) return;
 
     const currentSlug = garment.slug || slugify(garment.title, garment.id);
-    const shareUrl = `${PUBLIC_URL}/#/${currentSlug}`;
+    const shareUrl = `${PUBLIC_URL}/${currentSlug}`;
     const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
 
     const isMobile = isMobileDevice();
@@ -380,7 +381,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
       }
     }
     if (garment.slug) {
-      const productUrl = `${PUBLIC_URL}/#/${garment.slug}`;
+      const productUrl = `${PUBLIC_URL}/${garment.slug}`;
       message += `*Enlace:* ${productUrl}\n`;
     }
   }
@@ -388,328 +389,354 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
-  if (!isRendered || !garment) return null;
+  if (!garment) return null;
+
+  const productSchema = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": garment.title,
+    "image": garment.imagen_principal || (garment.imagenes && garment.imagenes[0]),
+    "description": garment.description,
+    "brand": {
+      "@type": "Brand",
+      "name": garment.brand
+    },
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "PEN",
+      "price": typeof garment.price === "number" ? garment.price : parseFloat(String(garment.price || 0)),
+      "availability": garment.cantidad && garment.cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "url": `${PUBLIC_URL}/${garment.slug || slugify(garment.title, garment.id)}`
+    }
+  };
 
   return (
-    <div
-      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
-      onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-    >
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
       <div
-        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
-        onClick={(e) => e.stopPropagation()}
+        className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 opacity-100`}
+        onClick={handleClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
       >
-        <button
-          ref={closeButtonRef}
-          onClick={handleClose}
-          className="absolute top-4 right-4 text-stone-800 dark:text-stone-200 hover:text-black dark:hover:text-white bg-white/70 dark:bg-stone-700/70 hover:bg-white/90 dark:hover:bg-stone-700/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400 z-20"
-          aria-label="Cerrar modal"
+        <div
+          className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
+          onClick={(e) => e.stopPropagation()}
         >
-          <CloseIcon className="w-6 h-6" />
-        </button>
+          <button
+            ref={closeButtonRef}
+            onClick={handleClose}
+            className="absolute top-4 right-4 text-stone-800 dark:text-stone-200 hover:text-black dark:hover:text-white bg-white/70 dark:bg-stone-700/70 hover:bg-white/90 dark:hover:bg-stone-700/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all focus:outline-none z-20"
+            aria-label="Cerrar modal"
+          >
+            <CloseIcon className="w-6 h-6" />
+          </button>
 
-        {toastMessage && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-cyan-500 text-white text-sm font-bold px-4 py-2 rounded-full animate-fade-in-out z-30">
-            {toastMessage}
-          </div>
-        )}
-
-        <div className="flex flex-col md:flex-row flex-grow overflow-y-auto md:overflow-hidden gap-0 custom-scrollbar">
-          {/* Gallery Section - Video/Image Stage */}
-          <div className="relative w-full md:w-1/2 flex flex-col bg-stone-100 dark:bg-stone-900 md:sticky md:top-0 md:h-screen md:max-h-[90vh]">
-
-            {/* Main Stage */}
-            <div className="relative w-full flex-grow bg-black flex items-center justify-center overflow-hidden aspect-[3/4] md:aspect-auto">
-
-              {/* Navigation Arrows (Overlay) */}
-              {mediaList.length > 1 && (
-                <>
-                  <button
-                    onClick={handlePrevMedia}
-                    className="absolute left-2 md:left-4 z-20 p-2 rounded-full bg-white/10 hover:bg-white/30 text-white transition-all backdrop-blur-sm group"
-                    aria-label="Anterior elemento"
-                  >
-                    <ChevronLeftIcon className="w-6 h-6 md:w-8 md:h-8 opacity-75 group-hover:opacity-100" />
-                  </button>
-                  <button
-                    onClick={handleNextMedia}
-                    className="absolute right-2 md:right-4 z-20 p-2 rounded-full bg-white/10 hover:bg-white/30 text-white transition-all backdrop-blur-sm group"
-                    aria-label="Siguiente elemento"
-                  >
-                    <ChevronRightIcon className="w-6 h-6 md:w-8 md:h-8 opacity-75 group-hover:opacity-100" />
-                  </button>
-                </>
-              )}
-
-              {/* Media Content */}
-              {activeMedia?.type === 'video' ? (
-                <>
-                  {isVideoLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/50">
-                      <SpinnerIcon className="w-10 h-10 text-white animate-spin" />
-                    </div>
-                  )}
-                  {videoError && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/80">
-                      <div className="text-center text-white p-4">
-                        <p className="text-lg font-semibold mb-2">Error</p>
-                        <p className="text-sm opacity-80">{videoError}</p>
-                      </div>
-                    </div>
-                  )}
-                  {getEmbedUrl(activeMedia.url) ? (
-                    <iframe
-                      src={getEmbedUrl(activeMedia.url)!}
-                      className="w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      onLoad={() => setIsVideoLoading(false)}
-                    />
-                  ) : (
-                    <video
-                      ref={videoRef}
-                      key={activeMedia.url}
-                      src={activeMedia.url}
-                      autoPlay
-                      loop
-                      muted
-                      controls
-                      playsInline
-                      preload="auto"
-                      onCanPlay={handleVideoCanPlay}
-                      onError={handleVideoError}
-                      onLoadStart={handleVideoLoadStart}
-                      className="w-full h-full object-contain"
-                    />
-                  )}
-                </>
-              ) : activeMedia?.type === 'image' ? (
-                <div className="relative w-full h-full">
-                  <Image
-                    src={activeMedia.url}
-                    alt={garment?.title || 'Imagen del producto'}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-contain"
-                    priority
-                  />
-                </div>
-              ) : (
-                <div className="text-white text-center p-8">
-                  <SpinnerIcon className="w-10 h-10 text-white animate-spin mb-4 mx-auto" />
-                  <p className="text-sm opacity-80">Cargando...</p>
-                </div>
-              )}
-
-              {/* Action Buttons (QR / Share) positioned inside the stage */}
-              <div className="absolute top-4 left-4 z-10 flex flex-col gap-3">
-                {/* Empty for now or maybe brand logo? */}
-              </div>
-
-              <div className="absolute bottom-20 md:bottom-24 right-4 z-10 flex flex-col items-center gap-3">
-                <button
-                  onClick={() => setIsQrModalOpen(true)}
-                  className="flex flex-col items-center text-white focus:outline-none rounded-full p-1 opacity-80 hover:opacity-100 transition-opacity"
-                >
-                  <span className="bg-black/40 backdrop-blur-md rounded-full p-2.5 shadow-lg border border-white/10">
-                    <QrCodeIcon className="w-5 h-5 text-white" />
-                  </span>
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="flex flex-col items-center text-white focus:outline-none rounded-full p-1 opacity-80 hover:opacity-100 transition-opacity"
-                >
-                  <span className="bg-black/40 backdrop-blur-md rounded-full p-2.5 shadow-lg border border-white/10">
-                    <ShareIcon className="w-5 h-5 text-white" />
-                  </span>
-                </button>
-              </div>
+          {toastMessage && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-cyan-500 text-white text-sm font-bold px-4 py-2 rounded-full animate-fade-in-out z-30">
+              {toastMessage}
             </div>
+          )}
 
-            {/* Internal Thumbnail Strip */}
-            {mediaList.length > 1 && (
-              <div className="w-full h-auto min-h-[80px] bg-black z-20 flex items-center gap-2 overflow-x-auto px-4 py-3 custom-scrollbar border-t border-stone-200 dark:border-stone-700 flex-shrink-0">
-                {mediaList.map((item, index) => (
-                  <button
-                    key={`${item.id}-${index}`}
-                    onClick={(e) => { e.stopPropagation(); setActiveMedia(item); }}
-                    className={`relative flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden transition-all duration-300 border-2 ${activeMedia?.id === item.id ? 'border-stone-800 dark:border-white opacity-100 ring-1 ring-stone-800 dark:ring-white' : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-400'}`}
-                  >
-                    {item.type === 'video' ? (
-                      <div className="w-full h-full bg-stone-900 flex items-center justify-center relative">
-                        {item.thumbnail ? (
-                          <Image src={item.thumbnail} alt="Video" fill className="object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-stone-800" />
-                        )}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                          <div className="w-6 h-6 bg-white/90 rounded-full flex items-center justify-center">
-                            <span className="text-black text-[10px] ml-0.5">▶</span>
-                          </div>
+          <div className="flex flex-col md:flex-row flex-grow overflow-y-auto md:overflow-hidden gap-0 custom-scrollbar">
+            {/* Gallery Section - Video/Image Stage */}
+            <div className="relative w-full md:w-1/2 flex flex-col bg-stone-100 dark:bg-stone-900 md:sticky md:top-0 md:h-screen md:max-h-[90vh]">
+
+              {/* Main Stage */}
+              <div className="relative w-full flex-grow bg-black flex items-center justify-center overflow-hidden aspect-[3/4] md:aspect-auto">
+
+                {/* Navigation Arrows (Overlay) */}
+                {mediaList.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrevMedia}
+                      className="absolute left-2 md:left-4 z-20 p-2 rounded-full bg-white/10 hover:bg-white/30 text-white transition-all backdrop-blur-sm group"
+                      aria-label="Anterior elemento"
+                    >
+                      <ChevronLeftIcon className="w-6 h-6 md:w-8 md:h-8 opacity-75 group-hover:opacity-100" />
+                    </button>
+                    <button
+                      onClick={handleNextMedia}
+                      className="absolute right-2 md:right-4 z-20 p-2 rounded-full bg-white/10 hover:bg-white/30 text-white transition-all backdrop-blur-sm group"
+                      aria-label="Siguiente elemento"
+                    >
+                      <ChevronRightIcon className="w-6 h-6 md:w-8 md:h-8 opacity-75 group-hover:opacity-100" />
+                    </button>
+                  </>
+                )}
+
+                {/* Media Content */}
+                {activeMedia?.type === 'video' ? (
+                  <>
+                    {isVideoLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/50">
+                        <SpinnerIcon className="w-10 h-10 text-white animate-spin" />
+                      </div>
+                    )}
+                    {videoError && (
+                      <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/80">
+                        <div className="text-center text-white p-4">
+                          <p className="text-lg font-semibold mb-2">Error</p>
+                          <p className="text-sm opacity-80">{videoError}</p>
                         </div>
                       </div>
+                    )}
+                    {getEmbedUrl(activeMedia.url) ? (
+                      <iframe
+                        src={getEmbedUrl(activeMedia.url)!}
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        onLoad={() => setIsVideoLoading(false)}
+                      />
                     ) : (
-                      <Image
-                        src={item.url}
-                        alt={`Vista ${index}`}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
+                      <video
+                        ref={videoRef}
+                        key={activeMedia.url}
+                        src={activeMedia.url}
+                        autoPlay
+                        loop
+                        muted
+                        controls={false}
+                        playsInline
+                        preload="auto"
+                        onCanPlay={handleVideoCanPlay}
+                        onError={handleVideoError}
+                        onLoadStart={handleVideoLoadStart}
+                        className="w-full h-full object-contain"
                       />
                     )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+                  </>
+                ) : activeMedia?.type === 'image' ? (
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={activeMedia.url}
+                      alt={garment.title}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 1024px) 100vw, 75vw"
+                      priority
+                    />
+                  </div>
+                ) : (
+                  <div className="text-white text-center p-8">
+                    <SpinnerIcon className="w-10 h-10 text-white animate-spin mb-4 mx-auto" />
+                    <p className="text-sm opacity-80">Cargando...</p>
+                  </div>
+                )}
 
-          <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col md:overflow-y-auto custom-scrollbar">
-            <div className="flex-shrink-0">
-              <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400">
-                {garment.brand}
-              </p>
-              <h2
-                id="modal-title"
-                className="text-4xl lg:text-5xl font-semibold text-stone-900 dark:text-stone-100 mt-2 mb-4"
-              >
-                {garment.title}
-              </h2>
-              {garment.price && (
-                <p className="text-3xl text-stone-700 dark:text-stone-200 font-light mb-4">
-                  S/{" "}
-                  {typeof garment.price === "number"
-                    ? garment.price.toFixed(2)
-                    : garment.price}
-                </p>
-              )}
-              <div className="flex flex-col gap-3 mt-8">
-                <button
-                  onClick={handleAddToCart}
-                  className="w-full inline-flex items-center justify-center px-6 py-4 text-base font-bold text-white bg-stone-900 dark:bg-stone-100 dark:text-stone-900 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-4 focus:ring-stone-500/50"
-                >
-                  <ShoppingCartIcon className="w-5 h-5 mr-3" />
-                  Agregar al Carrito
-                </button>
+                {/* Action Buttons (QR / Share) positioned inside the stage */}
+                <div className="absolute top-4 left-4 z-10 flex flex-col gap-3">
+                  {/* Empty for now or maybe brand logo? */}
+                </div>
 
-                <div className="grid grid-cols-[1fr_auto] gap-3">
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center px-6 py-3 font-semibold text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/50"
+                <div className="absolute bottom-12 right-4 z-10 flex flex-col items-center gap-3">
+                  <button
+                    onClick={() => setIsQrModalOpen(true)}
+                    className="flex flex-col items-center text-white focus:outline-none rounded-full p-1 opacity-80 hover:opacity-100 transition-opacity"
                   >
-                    <WhatsappIcon className="w-5 h-5 mr-2" />
-                    WhatsApp
-                  </a>
+                    <span className="bg-black/40 backdrop-blur-md rounded-full p-2.5 shadow-lg border border-white/10">
+                      <QrCodeIcon className="w-5 h-5 text-white" />
+                    </span>
+                  </button>
                   <button
                     onClick={handleShare}
-                    className="inline-flex items-center justify-center w-14 text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-700 rounded-xl shadow-md border border-stone-200 dark:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-stone-200 dark:focus:ring-stone-500"
-                    aria-label="Copiar enlace"
-                    title="Copiar enlace"
+                    className="flex flex-col items-center text-white focus:outline-none rounded-full p-1 opacity-80 hover:opacity-100 transition-opacity"
                   >
-                    <ShareIcon className="w-5 h-5" />
+                    <span className="bg-black/40 backdrop-blur-md rounded-full p-2.5 shadow-lg border border-white/10">
+                      <ShareIcon className="w-5 h-5 text-white" />
+                    </span>
                   </button>
                 </div>
               </div>
+
+              {/* Internal Thumbnail Strip */}
+              {mediaList.length > 1 && (
+                <div className="w-full h-auto min-h-[80px] bg-black z-20 flex items-center gap-2 overflow-x-auto px-4 py-3 custom-scrollbar border-t border-stone-200 dark:border-stone-700 flex-shrink-0">
+                  {mediaList.map((item, index) => (
+                    <button
+                      key={`${item.id}-${index}`}
+                      onClick={(e) => { e.stopPropagation(); setActiveMedia(item); }}
+                      className={`relative flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden transition-all duration-300 border-2 ${activeMedia?.id === item.id ? 'border-stone-800 dark:border-white opacity-100 ring-1 ring-stone-800 dark:ring-white' : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-400'}`}
+                    >
+                      {item.type === 'video' ? (
+                        <div className="w-full h-full bg-stone-900 flex items-center justify-center relative">
+                          {item.thumbnail ? (
+                            <Image src={item.thumbnail} alt="Video" fill className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-stone-800" />
+                          )}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <div className="w-6 h-6 bg-white/90 rounded-full flex items-center justify-center">
+                              <span className="text-black text-[10px] ml-0.5">▶</span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <Image
+                          src={item.url}
+                          alt={`Vista ${index}`}
+                          fill
+                          className="object-cover"
+                          sizes="80px"
+                        />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="flex-grow">
-              <AccordionItem
-                title="Descripción"
-                isOpen={openAccordion === "description"}
-                onClick={() => handleAccordionClick("description")}
-              >
-                <p className="leading-relaxed">{garment.description}</p>
-              </AccordionItem>
-              <AccordionItem
-                title="Detalles del Producto"
-                isOpen={openAccordion === "details"}
-                onClick={() => handleAccordionClick("details")}
-              >
-                <ul className="space-y-2 list-disc list-inside">
-                  {garment.material && (
-                    <li>
-                      <strong>Material:</strong> {garment.material}
-                    </li>
-                  )}
-                  {garment.occasion && (
-                    <li>
-                      <strong>Ocasión Ideal:</strong> {garment.occasion}
-                    </li>
-                  )}
-                  {garment.style_notes && (
-                    <li>
-                      <strong>Notas de Estilo:</strong> {garment.style_notes}
-                    </li>
-                  )}
-                  <li>
-                    <strong>Color:</strong> {garment.color}
-                  </li>
-                  <li>
-                    <strong>Tallas Disponibles:</strong> {garment.size}
-                  </li>
-                  {garment.cantidad !== undefined && (
-                    <li>
-                      <strong>Disponibilidad:</strong> {garment.cantidad > 0 ? (
-                        <span className="text-green-600 dark:text-green-400 font-semibold">
-                          En Stock ({garment.cantidad} unidades)
-                        </span>
-                      ) : (
-                        <span className="text-red-600 dark:text-red-400 font-semibold">
-                          Agotado
-                        </span>
-                      )}
-                    </li>
-                  )}
-                </ul>
-              </AccordionItem>
-              <AccordionItem
-                title="Envíos y Devoluciones"
-                isOpen={openAccordion === "shipping"}
-                onClick={() => handleAccordionClick("shipping")}
-              >
-                <p className="leading-relaxed">
-                  Ofrecemos envío express a todo el país (24-48 horas).
-                  Devoluciones aceptadas dentro de los 7 días posteriores a la
-                  recepción, con la prenda en su estado original.
+            <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col md:overflow-y-auto custom-scrollbar">
+              <div className="flex-shrink-0">
+                <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400">
+                  {garment.brand}
                 </p>
-              </AccordionItem>
+                <h2
+                  id="modal-title"
+                  className="text-4xl lg:text-4xl font-semibold text-stone-900 dark:text-stone-100 mt-2 mb-4"
+                >
+                  {garment.title}
+                </h2>
+                {garment.price && (
+                  <p className="text-3xl text-stone-700 dark:text-stone-200 font-light mb-4">
+                    S/{" "}
+                    {typeof garment.price === "number"
+                      ? garment.price.toFixed(2)
+                      : garment.price}
+                  </p>
+                )}
+                <div className="flex flex-col gap-3 mt-8">
+                  <button
+                    onClick={handleAddToCart}
+                    className="w-full inline-flex items-center justify-center px-6 py-4 text-base font-bold text-white bg-stone-900 dark:bg-stone-100 dark:text-stone-900 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-4 focus:ring-stone-500/50"
+                  >
+                    <ShoppingCartIcon className="w-5 h-5 mr-3" />
+                    Agregar al Carrito
+                  </button>
+
+                  <div className="grid grid-cols-[1fr_auto] gap-3">
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackWhatsAppClick(garment.title, garment.id)}
+                      className="inline-flex items-center justify-center px-6 py-3 font-semibold text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/50"
+                    >
+                      <WhatsappIcon className="w-5 h-5 mr-2" />
+                      WhatsApp
+                    </a>
+                    <button
+                      onClick={handleShare}
+                      className="inline-flex items-center justify-center w-14 text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-700 rounded-xl shadow-md border border-stone-200 dark:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-stone-200 dark:focus:ring-stone-500"
+                      aria-label="Copiar enlace"
+                      title="Copiar enlace"
+                    >
+                      <ShareIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-grow">
+                <AccordionItem
+                  title="Descripción"
+                  isOpen={openAccordion === "description"}
+                  onClick={() => handleAccordionClick("description")}
+                >
+                  <p className="leading-relaxed">{garment.description}</p>
+                </AccordionItem>
+                <AccordionItem
+                  title="Detalles del Producto"
+                  isOpen={openAccordion === "details"}
+                  onClick={() => handleAccordionClick("details")}
+                >
+                  <ul className="space-y-2 list-disc list-inside">
+                    {garment.material && (
+                      <li>
+                        <strong>Material:</strong> {garment.material}
+                      </li>
+                    )}
+                    {garment.occasion && (
+                      <li>
+                        <strong>Ocasión Ideal:</strong> {garment.occasion}
+                      </li>
+                    )}
+                    {garment.style_notes && (
+                      <li>
+                        <strong>Notas de Estilo:</strong> {garment.style_notes}
+                      </li>
+                    )}
+                    <li>
+                      <strong>Color:</strong> {garment.color}
+                    </li>
+                    <li>
+                      <strong>Tallas Disponibles:</strong> {garment.size}
+                    </li>
+                    {garment.cantidad !== undefined && (
+                      <li>
+                        <strong>Disponibilidad:</strong> {garment.cantidad > 0 ? (
+                          <span className="text-green-600 dark:text-green-400 font-semibold">
+                            En Stock ({garment.cantidad} unidades)
+                          </span>
+                        ) : (
+                          <span className="text-red-600 dark:text-red-400 font-semibold">
+                            Agotado
+                          </span>
+                        )}
+                      </li>
+                    )}
+                  </ul>
+                </AccordionItem>
+                <AccordionItem
+                  title="Envíos y Devoluciones"
+                  isOpen={openAccordion === "shipping"}
+                  onClick={() => handleAccordionClick("shipping")}
+                >
+                  <p className="leading-relaxed">
+                    Ofrecemos envío express a todo el país (24-48 horas).
+                    Devoluciones aceptadas dentro de los 7 días posteriores a la
+                    recepción, con la prenda en su estado original.
+                  </p>
+                </AccordionItem>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex justify-center items-center py-1 bg-stone-50 dark:bg-stone-800 border-t border-stone-200 dark:border-stone-700">
-          <button
-            onClick={() => setIsThumbnailStripVisible(!isThumbnailStripVisible)}
-            className="p-1 text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-500"
-            aria-expanded={isThumbnailStripVisible}
-            aria-controls="thumbnail-strip-container"
+          <div className="flex justify-center items-center py-1 bg-stone-50 dark:bg-stone-800 border-t border-stone-200 dark:border-stone-700">
+            <button
+              onClick={() => setIsThumbnailStripVisible(!isThumbnailStripVisible)}
+              className="p-1 text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-500"
+              aria-expanded={isThumbnailStripVisible}
+              aria-controls="thumbnail-strip-container"
+            >
+              <span className="sr-only">
+                {isThumbnailStripVisible
+                  ? "Ocultar miniaturas"
+                  : "Mostrar miniaturas"}
+              </span>
+              {isThumbnailStripVisible ? (
+                <ChevronUpIcon className="w-6 h-6" />
+              ) : (
+                <ChevronDownIcon className="w-6 h-6" />
+              )}
+            </button>
+          </div>
+
+          <div
+            id="thumbnail-strip-container"
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${isThumbnailStripVisible ? "max-h-48" : "max-h-0"}`}
           >
-            <span className="sr-only">
-              {isThumbnailStripVisible
-                ? "Ocultar miniaturas"
-                : "Mostrar miniaturas"}
-            </span>
-            {isThumbnailStripVisible ? (
-              <ChevronUpIcon className="w-6 h-6" />
-            ) : (
-              <ChevronDownIcon className="w-6 h-6" />
-            )}
-          </button>
-        </div>
-
-        <div
-          id="thumbnail-strip-container"
-          className={`transition-all duration-300 ease-in-out overflow-hidden ${isThumbnailStripVisible ? "max-h-48" : "max-h-0"}`}
-        >
-          <ThumbnailStrip
-            garments={garmentList}
-            currentGarment={garment}
-            onSelectGarment={onChangeGarment}
-          />
+            <ThumbnailStrip
+              garments={garmentList}
+              currentGarment={garment}
+              onSelectGarment={onChangeGarment}
+            />
+          </div>
         </div>
       </div>
 
@@ -718,9 +745,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
         onClose={() => setIsQrModalOpen(false)}
         garment={garment}
       />
-
-
-    </div>
+    </>
   );
 };
 

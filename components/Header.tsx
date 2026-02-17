@@ -36,6 +36,8 @@ const Header: React.FC<HeaderProps> = ({
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.location.href = `/#${id}`;
     }
   };
 
