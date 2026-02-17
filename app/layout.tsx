@@ -5,6 +5,7 @@ import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import React from "react";
 import { AuthProvider } from "@/provider/AuthProvider";
+import { CartProvider } from "@/context/CartContext";
 import { Chatbot } from "@/components/Chatbot";
 
 const inter = Inter({
@@ -200,8 +201,10 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${cormorant.variable} bg-stone-50 font-sans`}>
         <AuthProvider>
-          <div id="root">{children}</div>
-          <Chatbot />
+          <CartProvider>
+            <div id="root">{children}</div>
+            <Chatbot />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>
