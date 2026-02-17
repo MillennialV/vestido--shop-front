@@ -4,8 +4,11 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import React from "react";
+import Script from "next/script";
 import { AuthProvider } from "@/provider/AuthProvider";
-
+import { GA_TRACKING_ID } from "@/lib/analytics";
+import { CartProvider } from "@/context/CartContext";
+import CartDrawer from "@/components/CartDrawer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -224,8 +227,31 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${cormorant.variable} bg-stone-50 font-sans`}>
+        {/* 
+        {GA_TRACKING_ID && GA_TRACKING_ID !== "G-XXXXXXXXXX" && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_TRACKING_ID}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        )}
+        */}
         <AuthProvider>
-          <div id="root">{children}</div>
+          <CartProvider>
+            <div id="root">{children}</div>
+            <CartDrawer />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

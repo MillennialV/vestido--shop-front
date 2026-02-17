@@ -66,15 +66,63 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     };
 }
 
+async function getProduct(slug: string) {
+    try {
+        const res = await fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?limit=1000`);
+        if (res.ok) {
+            const data = await res.json();
+            const products = data?.data?.products || [];
+            return products.find((p: any) => p.slug === slug);
+        }
+    } catch (error) {
+        console.error("Error fetching product for schema:", error);
+    }
+    return null;
+}
+
 export default async function CatchAllPage({ params }: { params: Promise<{ slug?: string[] }> }) {
     const resolvedParams = await params;
-    const { garments, pagination, posts, faqs } = await fetchInitialData();
+    const slugArray = resolvedParams.slug;
+    const slug = slugArray && slugArray.length > 0 ? slugArray[0] : null;
+
+    const [initialData, product] = await Promise.all([
+        fetchInitialData(),
+        slug ? getProduct(slug) : Promise.resolve(null)
+    ]);
+
+    const productJsonLd = product ? {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": product.title,
+        "image": product.video_url?.replace(".mp4", ".webp") || product.poster_url, // Usar poster si existe
+        "description": product.description || `Vestido elegante ${product.title} disponible en Womanity Boutique San Isidro.`,
+        "brand": {
+            "@type": "Brand",
+            "name": product.brand || "Womanity Boutique"
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": `${PUBLIC_URL}/${product.slug}`,
+            "priceCurrency": "PEN",
+            "price": product.price || 0,
+            "availability": "https://schema.org/InStock"
+        }
+    } : null;
+
     return (
-        <HomeClient
-            initialGarments={garments}
-            initialPagination={pagination}
-            initialPosts={posts}
-            initialFaqs={faqs}
-        />
+        <>
+            {productJsonLd && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+                />
+            )}
+            <HomeClient
+                initialGarments={initialData.garments}
+                initialPagination={initialData.pagination}
+                initialPosts={initialData.posts}
+                initialFaqs={initialData.faqs}
+            />
+        </>
     );
 }

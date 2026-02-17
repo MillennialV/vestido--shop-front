@@ -4,6 +4,7 @@ import React from 'react';
 import { useCart } from '@/context/CartContext';
 import { CloseIcon, MinusIcon, PlusIcon } from '@/components/Icons';
 import Image from 'next/image';
+import { event } from '@/lib/analytics';
 
 const isExternalVideo = (url: string) => {
     if (!url) return false;
@@ -48,15 +49,21 @@ const CartDrawer: React.FC = () => {
     const { cart, removeFromCart, updateQuantity, cartTotal, isCartOpen, toggleCart } = useCart();
 
     const handleCheckout = () => {
+        // Track checkout initiation
+        event({
+            action: 'begin_checkout',
+            category: 'ecommerce',
+            label: `Total: S/ ${cartTotal.toFixed(2)}`,
+            value: cartTotal
+        });
+
         // Generate message for alert
         const itemsList = cart.map((item, index) =>
             `${index + 1}. ${item.title} - Talla: ${item.size} - Precio: S/ ${item.price}`
         ).join('\n');
 
         const total = `\n\nTotal a Pagar: S/ ${cartTotal.toFixed(2)}`;
-
         const message = `Resumen del Pedido:\n\n${itemsList}${total}`;
-
         alert(message);
     };
 

@@ -12,6 +12,7 @@ import {
   CheckCircleIcon,
   PlayIcon,
 } from "./Icons";
+import { trackWhatsAppClick } from "@/lib/analytics";
 
 const isExternalVideo = (url: string) => {
   if (!url) return false;
@@ -24,13 +25,13 @@ const isExternalVideo = (url: string) => {
 
 interface VideoCardProps {
   garment: Garment;
-  onSelect: (garment: Garment) => void;
-  isAdmin: boolean;
-  onEdit: (garment: Garment) => void;
-  onDelete: (garment: Garment) => void;
-  isSelectionMode: boolean;
-  isSelected: boolean;
-  onToggleSelection: (id: number) => void;
+  onSelect?: (garment: Garment) => void;
+  isAdmin?: boolean;
+  onEdit?: (garment: Garment) => void;
+  onDelete?: (garment: Garment) => void;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: (id: number) => void;
   isDisabled?: boolean;
   priority?: boolean;
 }
@@ -38,11 +39,11 @@ interface VideoCardProps {
 const VideoCard: React.FC<VideoCardProps> = ({
   garment,
   onSelect,
-  isAdmin,
+  isAdmin = false,
   onEdit,
   onDelete,
-  isSelectionMode,
-  isSelected,
+  isSelectionMode = false,
+  isSelected = false,
   onToggleSelection,
   isDisabled = false,
   priority = false,
@@ -60,7 +61,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
         setIsVisible(entry.isIntersecting);
       },
       {
-        rootMargin: "0px 0px 200px 0px",
+        rootMargin: "0px 0px 400px 0px",
       },
     );
 
@@ -115,9 +116,9 @@ const VideoCard: React.FC<VideoCardProps> = ({
     if (isDisabled) return;
 
     if (isSelectionMode) {
-      onToggleSelection(garment.id);
+      onToggleSelection?.(garment.id);
     } else {
-      onSelect(garment);
+      onSelect?.(garment);
     }
   };
 
@@ -130,12 +131,12 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onEdit(garment);
+    onEdit?.(garment);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onDelete(garment);
+    onDelete?.(garment);
   };
 
   const handleWhatsappClick = (e: React.MouseEvent) => {
@@ -157,6 +158,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
     message += `\n¿Podrían darme más información sobre la disponibilidad?`;
 
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    trackWhatsAppClick(garment.title, garment.id);
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -228,7 +230,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
           loop
           muted
           playsInline
-          preload="none"
+          preload={priority ? "auto" : "metadata"}
           onCanPlay={handleCanPlay}
           onError={handleError}
           className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}

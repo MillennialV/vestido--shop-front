@@ -23,6 +23,7 @@ import {
   ShoppingCartIcon,
 } from "./Icons";
 import { useCart } from "@/context/CartContext";
+import { trackWhatsAppClick, trackAddToCart } from "@/lib/analytics";
 
 const getEmbedUrl = (url: string) => {
   if (!url) return null;
@@ -165,6 +166,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   const handleAddToCart = () => {
     if (garment) {
       addToCart(garment);
+      trackAddToCart(garment.title, garment.id, typeof garment.price === "number" ? garment.price : parseFloat(String(garment.price || 0)));
       setToastMessage("¡Agregado al carrito!");
       setTimeout(() => setToastMessage(null), 3000);
     }
@@ -622,6 +624,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackWhatsAppClick(garment.title, garment.id)}
                       className="inline-flex items-center justify-center px-6 py-3 font-semibold text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/50"
                     >
                       <WhatsappIcon className="w-5 h-5 mr-2" />
