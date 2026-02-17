@@ -588,7 +588,11 @@ export default function HomeClient({
                       aria-label={`Ver ${cols} columnas`}
                       title={`${cols} columnas`}
                     >
-                      {cols}
+                      <div className="grid gap-[1px] w-4 h-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+                        {Array.from({ length: cols }).map((_, i) => (
+                          <div key={i} className="bg-current rounded-[0.5px] h-full" />
+                        ))}
+                      </div>
                     </button>
                   ))}
                 </div>

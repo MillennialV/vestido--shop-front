@@ -83,11 +83,12 @@ export const Chatbot: React.FC = () => {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none font-sans">
+        <div className="relative z-50 flex flex-col items-end font-sans">
             {/* Messages Area / Chat Window */}
             <div
                 className={`
             bg-white rounded-2xl shadow-2xl border border-stone-200 w-[85vw] md:w-80 overflow-hidden mb-4
+            absolute bottom-full right-0
             transition-all duration-300 origin-bottom-right pointer-events-auto
             ${isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4 pointer-events-none h-0 mb-0"}
         `}

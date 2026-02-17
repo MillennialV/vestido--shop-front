@@ -5,7 +5,7 @@ import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import React from "react";
 import { AuthProvider } from "@/provider/AuthProvider";
-import { Chatbot } from "@/components/Chatbot";
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -201,7 +201,6 @@ export default function RootLayout({
       <body className={`${inter.variable} ${cormorant.variable} bg-stone-50 font-sans`}>
         <AuthProvider>
           <div id="root">{children}</div>
-          <Chatbot />
         </AuthProvider>
       </body>
     </html>
