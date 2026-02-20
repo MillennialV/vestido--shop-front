@@ -447,7 +447,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
             <div className="relative w-full md:w-1/2 flex flex-col bg-stone-100 dark:bg-stone-900 md:sticky md:top-0 md:h-screen md:max-h-[90vh]">
 
               {/* Main Stage */}
-              <div className="relative w-full flex-grow bg-black flex items-center justify-center overflow-hidden aspect-[3/4] md:aspect-auto">
+              <div className="relative w-[80%] mx-auto md:w-full flex-grow bg-black flex items-center justify-center overflow-hidden aspect-[3/4] md:aspect-auto">
 
                 {/* Navigation Arrows (Overlay) */}
                 {mediaList.length > 1 && (
