@@ -179,6 +179,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
     <article
       ref={cardRef}
       className={`relative group aspect-[9/16] overflow-hidden rounded-lg shadow-lg transform transition-all duration-300 ease-in-out bg-stone-200 
+        w-[80%] mx-auto md:w-full
         ${isDisabled ? "cursor-not-allowed opacity-75 grayscale-[0.5]" : isSelectionMode ? "cursor-pointer" : "cursor-pointer hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500"}
         ${isSelected ? "ring-4 ring-offset-2 ring-sky-500" : ""}
       `}
