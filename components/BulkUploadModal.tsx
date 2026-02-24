@@ -22,9 +22,9 @@ interface BulkUploadModalProps {
   onBulkSaveComplete: (newGarments: Garment[]) => void;
 }
 
-const DEFAULT_PROMPT = `Fotografía de moda de alta calidad: elimina el fondo y el colgador por completo. Compón el vestido sobre una modelo peruana realista de talla 0. De pie, elegante con una cartera de mano, en una moderna y lujosa terraza en la azotea de San Isidro, Lima.
+const DEFAULT_PROMPT = `Fotografía de moda de alta calidad: elimina el fondo y el colgador por completo. Compón el vestido sobre una modelo peruana realista de talla 7. De pie, elegante con una cartera de mano, en una moderna y lujosa terraza en la azotea de San Isidro, Lima.
 
-Entorno e iluminación: resaltar ala modelo y el vestido para que se vea de la mejor manera y con el mejor contraste, con luces focalizadas como estudio hacia la modelo. Es la «hora azul» (crepúsculo). El fondo muestra una vista panorámica de las luces de la ciudad (efecto bokeh) y las siluetas oscuras de las montañas en la distancia. Hay una cálida iluminación artificial ámbar que proviene de las lámparas del suelo de la terraza, que proyecta un suave resplandor dorado en la parte inferior del vestido y el suelo de baldosas, creando un contraste con el fresco cielo azul.
+Entorno e iluminación: resaltar ala modelo y el vestido para que se vea de la mejor manera MAS NITIDEZ Y LUZ y con el mejor contraste, con luces focalizadas como estudio hacia la modelo. Es la «hora azul» (crepúsculo). El fondo muestra una vista panorámica de las luces de la ciudad (efecto bokeh) y las siluetas oscuras de las montañas en la distancia. Hay una cálida iluminación artificial ámbar que proviene de las lámparas del suelo de la terraza, que proyecta un suave resplandor dorado en la parte inferior del vestido y el suelo de baldosas, creando un contraste con el fresco cielo azul.
 
 Estilo: Fotografía cinematográfica, alta costura, enfoque nítido en el vestido, poca profundidad de campo, resolución 8k. --ar 4:5`;
 
@@ -587,13 +587,17 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 if (globalSize) updatedData.size = globalSize;
               }
 
-              // Update fields if they are empty or if the title is still the default (filename)
-              // Fix: relax the check to include cases where extension might be present or not
+              // Update fields if they are empty or if the title is still the default (filename).
+              // Strip _ai suffix to handle files renamed after AI image editing.
+              const baseFileName = file.file.name
+                .replace(/\.[^/.]+$/, "")  // remove extension
+                .replace(/_ai$/, "");       // remove _ai suffix added by image editing
               const isDefaultTitle =
-                updatedData.title === file.file.name.replace(/\.[^/.]+$/, "") ||
-                updatedData.title === file.file.name;
+                !updatedData.title ||
+                updatedData.title === file.file.name ||
+                updatedData.title.replace(/_ai$/, "") === baseFileName;
 
-              if ((!updatedData.title || isDefaultTitle) && result.title) {
+              if (isDefaultTitle && result.title) {
                 updatedData.title = result.title;
               }
 
@@ -605,7 +609,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               if (!updatedData.material && result.material) updatedData.material = result.material;
               if (!updatedData.occasion && result.occasion) updatedData.occasion = result.occasion;
               if (!updatedData.style_notes && result.style_notes) updatedData.style_notes = result.style_notes;
-              if (!updatedData.size && result.size) updatedData.size = result.size;
+              // Treat the default initial "M" size as empty so IA can fill in the detected size
+              const isDefaultSize = !updatedData.size || updatedData.size === "M";
+              if (isDefaultSize && result.size) updatedData.size = result.size;
 
               return {
                 ...f,
