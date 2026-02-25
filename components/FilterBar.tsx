@@ -3,9 +3,8 @@ import FilterModal from './FilterModal';
 interface FilterBarProps {
     brands: string[];
     sizes: string[];
-    colors: string[];
-    filters: { brand: string; size: string; color: string; };
-    onFilterChange: (filters: { brand?: string; size?: string; color?: string; }) => void;
+    filters: { brand: string; size: string; };
+    onFilterChange: (filters: { brand?: string; size?: string; }) => void;
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isFilterVisible: boolean;
@@ -17,7 +16,6 @@ interface FilterBarProps {
 const FilterBar: React.FC<FilterBarProps> = ({
     brands,
     sizes,
-    colors,
     filters,
     onFilterChange,
     searchQuery,
@@ -52,7 +50,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 <FilterModal
                     brands={brands}
                     sizes={sizes}
-                    colors={colors}
                     filters={filters}
                     onFilterChange={onFilterChange}
                     searchQuery={searchQuery}

@@ -4,9 +4,8 @@ import { SearchIcon, ChevronDownIcon } from './Icons';
 interface FilterModalProps {
     brands: string[];
     sizes: string[];
-    colors: string[];
-    filters: { brand: string; size: string; color: string; };
-    onFilterChange: (filters: { brand?: string; size?: string; color?: string; }) => void;
+    filters: { brand: string; size: string; };
+    onFilterChange: (filters: { brand?: string; size?: string; }) => void;
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isVisible: boolean;
@@ -15,7 +14,6 @@ interface FilterModalProps {
 const FilterModal: React.FC<FilterModalProps> = ({
     brands,
     sizes,
-    colors,
     filters,
     onFilterChange,
     searchQuery,
@@ -32,9 +30,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
         onFilterChange({ size: e.target.value });
     };
 
-    const handleColorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        onFilterChange({ color: e.target.value });
-    };
+    // No extra filters
 
     return (
         <div className="absolute top-12 left-0 z-50 flex flex-col gap-2 p-4 bg-color-four/70 dark:bg-color-two/70  rounded-2xl shadow-xl border border-stone-100 dark:border-stone-700 w-[calc(100vw-46px)] md:w-[30%] md:min-w-[300px] max-h-[80vh] overflow-y-auto overflow-x-hidden fd:relative fd:top-0 fd:flex-row fd:p-0 fd:bg-transparent fd:dark:bg-transparent fd:shadow-none fd:border-none fd:w-auto fd:max-h-none fd:overflow-visible fd:flex-grow flex-nowrap">
@@ -77,21 +73,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
                     <option value="all">Todas las tallas</option>
                     {sizes.map((size) => (
                         <option key={size} value={size}>{size}</option>
-                    ))}
-                </select>
-                <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
-            </div>
-
-            {/* Color Filter */}
-            <div className="relative w-full fd:flex-shrink-0 fd:w-auto">
-                <select
-                    value={filters.color}
-                    onChange={handleColorChange}
-                    className="input-primary w-full appearance-none rounded-full py-2 pl-4 pr-9 focus:ring-2 focus:ring-color-one transition-all cursor-pointer fd:min-w-[130px]"
-                >
-                    <option value="all">Todos los colores</option>
-                    {colors.map((color) => (
-                        <option key={color} value={color}>{color}</option>
                     ))}
                 </select>
                 <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
