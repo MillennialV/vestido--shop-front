@@ -64,7 +64,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
           return (
             <div
               key={item.id}
-              className="border-b border-stone-200 dark:border-stone-700 bg-white-200 dark:bg-stone-900 transition-all duration-300"
+              className="border-b border-stone-200 dark:border-stone-700 transition-all duration-300"
             >
               <div className="flex items-center w-full group">
                 <h2 className="flex-grow">
@@ -72,7 +72,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                     type="button"
                     aria-label={isOpen ? `Cerrar: ${item.pregunta}` : `Abrir: ${item.pregunta}`}
                     onClick={() => setOpenId(isOpen ? null : item.id)}
-                    className="flex justify-between items-center w-full py-5 text-left font-semibold text-stone-800 dark:text-stone-100 text-lg"
+                    className="flex justify-between items-center w-full py-5 text-left font-semibold text-color-two dark:text-color-four text-lg"
                   >
                     <span>{item.pregunta}</span>
                   </button>
@@ -82,7 +82,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                     type="button"
                     aria-label={isOpen ? `Cerrar: ${item.pregunta}` : `Abrir: ${item.pregunta}`}
                     onClick={() => setOpenId(isOpen ? null : item.id)}
-                    className="p-2 cursor-pointer text-stone-500 dark:text-stone-400"
+                    className="p-2 cursor-pointer text-color-two dark:text-color-four"
                   >
                     {isOpen ? (
                       <MinusIcon className="w-6 h-6" />

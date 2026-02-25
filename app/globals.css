@@ -28,7 +28,170 @@
 @theme {
     --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+
+    --color-color-one: #D5B46E;
+
+    --color-color-two: #1B1B1B;
+
+    --color-color-three: #000000;
+
+    --color-color-four: #FFFFFF;
+    --color-color-disable: #878787;
+
+    --color-color-background: rgba(248, 248, 243, 1);
+    --color-color-button-icon: #EAEAEA;
+    --breakpoint-fd: 1290px;
 }
+
+/*Color de titulo header*/
+.font-header {
+    font-family: var(--font-cormorant), serif;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 100%;
+    letter-spacing: 0%;
+    color: var(--color-color-one);
+}
+
+.font-footer {
+    font-family: var(--font-cormorant), serif;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 100%;
+    letter-spacing: 0%;
+    color: var(--color-color-three);
+}
+
+.font-p-footer {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 120%;
+    letter-spacing: -3%;
+    color: var(--color-color-three);
+}
+
+/*Color principal de textos*/
+.font-primary {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 100%;
+    letter-spacing: 0%;
+    color: var(--color-color-three);
+}
+
+.font-primary:hover {
+    color: var(--color-color-three);
+    transition: all 0.3s ease-in-out;
+    text-decoration: underline;
+    text-decoration-color: var(--color-color-one);
+    text-decoration-thickness: 3px;
+    letter-spacing: 1px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 100%;
+}
+
+.font-h1 {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 42px;
+    font-weight: 400;
+    line-height: 100%;
+    letter-spacing: 0%;
+    color: var(--color-color-three);
+}
+
+.dark .font-h1 {
+    color: var(--color-color-four);
+}
+
+.font-h2 {
+    font-family: var(--font-allrounder), sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 120%;
+    letter-spacing: -3%;
+    color: var(--color-color-three);
+}
+
+.dark .font-h2 {
+    color: var(--color-color-four);
+}
+
+.font-p {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 100%;
+    letter-spacing: 0%;
+    color: var(--color-color-three);
+}
+
+.dark .font-p {
+    color: var(--color-color-four);
+}
+
+.font-card-p {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 120%;
+    letter-spacing: -3%;
+    color: var(--color-color-disable);
+}
+
+.dark .font-card-p {
+    color: var(--color-color-four);
+}
+
+/*Color principal de textos en modo oscuro*/
+.dark .font-primary {
+    color: var(--color-color-four);
+}
+
+.font-date {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 100%;
+    letter-spacing: -3%;
+    color: var(--color-color-disable);
+}
+
+.dark .font-date {
+    color: var(--color-color-disable);
+}
+
+.input-primary {
+    background-color: var(--color-color-four);
+    color: var(--color-color-three);
+    font-family: var(--font-inter), sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.dark .input-primary {
+    background-color: var(--color-color-three);
+    color: var(--color-color-four);
+}
+
+.dark .font-primary:hover {
+    color: var(--color-color-four);
+}
+
+.font-read-article {
+    font-family: var(--font-roboto), sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 100%;
+    letter-spacing: -3%;
+    color: var(--color-color-one);
+}
+
+
+
 
 @layer utilities {
     .animate-fade-in-down {
@@ -39,14 +202,20 @@
         animation: scan 2s ease-in-out infinite;
     }
 
+
     @keyframes scan {
-        0%, 100% {
+
+        0%,
+        100% {
             top: 0%;
             opacity: 0;
         }
-        5%, 95% {
+
+        5%,
+        95% {
             opacity: 1;
         }
+
         50% {
             top: 100%;
             opacity: 1;

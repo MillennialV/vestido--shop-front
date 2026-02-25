@@ -2,6 +2,8 @@
 
 import React from "react";
 import { AdminIcon, ExitIcon, SunIcon, MoonIcon, ShoppingCartIcon } from "./Icons";
+import FilterModal from "./FilterModal";
+import MobileActionsMenu from "./MobileActionsMenu";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { useCart } from "@/context/CartContext";
 
@@ -9,12 +11,30 @@ interface HeaderProps {
   isAdmin: boolean;
   onToggleAdmin: () => void;
   navigate: (path: string) => void;
+  isFilterVisible: boolean;
+  onToggleFilters: () => void;
+  brands: string[];
+  sizes: string[];
+  colors: string[];
+  filters: { brand: string; size: string; color: string; };
+  onFilterChange: (filters: { brand?: string; size?: string; color?: string; }) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   isAdmin,
   onToggleAdmin,
   navigate,
+  isFilterVisible,
+  onToggleFilters,
+  brands,
+  sizes,
+  colors,
+  filters,
+  onFilterChange,
+  searchQuery,
+  onSearchChange,
 }) => {
   const { isDark, toggleDarkMode } = useDarkMode();
   const { totalItems, toggleCart } = useCart();
@@ -42,18 +62,56 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="py-4 border-b border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900  top-0 z-30 transition-colors duration-300">
+    <header className="sticky py-[25px] bg-color-four dark:bg-color-three top-0 z-30 transition-colors duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
 
-        <div className="flex flex-col md:grid md:grid-cols-3 items-center">
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-stone-600 dark:text-stone-400">
-            <button onClick={() => scrollToSection('catalogo')} className="hover:text-stone-900 dark:hover:text-stone-200 transition-colors">
+        <div className="flex items-center justify-between fd:grid fd:grid-cols-3 relative">
+          {/* Mobile Filter Toggle */}
+          <div className="fd:hidden flex items-center relative">
+            <button
+              onClick={onToggleFilters}
+              className="w-[15px] h-[15px] flex items-center justify-center text-color-three dark:text-color-four"
+              aria-label={isFilterVisible ? "Ocultar filtros" : "Mostrar filtros"}
+            >
+              {isFilterVisible ? (
+                <div className="w-4 h-[2px] bg-current" />
+              ) : (
+                <div className="relative w-4 h-4 flex items-center justify-center">
+                  <div className="w-4 h-[2px] bg-current" />
+                  <div className="w-[2px] h-4 bg-current absolute" />
+                </div>
+              )}
+            </button>
+
+            {/* Mobile Filter Modal - Attached to Header */}
+            {isFilterVisible && (
+              <div className="absolute top-full left-0 mt-2 z-[60]">
+                <FilterModal
+                  brands={brands}
+                  sizes={sizes}
+                  colors={colors}
+                  filters={filters}
+                  onFilterChange={onFilterChange}
+                  searchQuery={searchQuery}
+                  onSearchChange={onSearchChange}
+                  isVisible={isFilterVisible}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="hidden fd:flex items-center gap-6">
+            <button
+              onClick={() => scrollToSection('catalogo')}
+              className="dark font-primary">
               Catálogo
             </button>
-            <button onClick={() => scrollToSection('blog')} className="hover:text-stone-900 dark:hover:text-stone-200 transition-colors">
+            <button onClick={() => scrollToSection('blog')}
+              className="dark font-primary">
               Blog
             </button>
-            <button onClick={() => scrollToSection('faq')} className="hover:text-stone-900 dark:hover:text-stone-200 transition-colors">
+            <button onClick={() => scrollToSection('faq')}
+              className="dark font-primary">
               Preguntas
             </button>
           </div>
@@ -62,37 +120,34 @@ const Header: React.FC<HeaderProps> = ({
             <a
               href="/"
               onClick={(e) => handleLinkClick(e, "/")}
-              className="text-stone-900 dark:text-stone-100 hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
+              className="font-header"
             >
               <h1
-                className="text-3xl md:text-4xl font-semibold tracking-wider"
                 aria-label="title"
                 role="heading"
                 aria-level={1}
               >
-                Vestidos de Fiesta
+                WOMANITY
               </h1>
-              <div className="mt-3 text-sm text-stone-600 dark:text-stone-500 tracking-wide">
-                <p>Av. Paz Soldán 255 Sótano A24 San Isidro</p>
-              </div>
             </a>
           </div>
 
-          <div className="flex items-center justify-center md:justify-end gap-2 mt-4 md:mt-0">
-            <button
-              onClick={toggleCart}
-              className="relative p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors"
-              aria-label="Abrir carrito"
-            >
-              <ShoppingCartIcon className="w-6 h-6" />
-              {mounted && totalItems > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                  {totalItems}
-                </span>
-              )}
-            </button>
+          <div className="flex items-center justify-end gap-4 fd:gap-[41px]">
+            {/* Desktop Icons */}
+            <div className="hidden fd:flex items-center gap-4 fd:gap-[41px]">
+              <button
+                onClick={toggleCart}
+                className="relative p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors"
+                aria-label="Abrir carrito"
+              >
+                <ShoppingCartIcon className="w-6 h-6" />
+                {mounted && totalItems > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
 
-            {mounted && (
               <button
                 onClick={toggleDarkMode}
                 className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors"
@@ -104,23 +159,28 @@ const Header: React.FC<HeaderProps> = ({
                   <MoonIcon className="w-6 h-6" />
                 )}
               </button>
-            )}
 
-            <button
-              onClick={onToggleAdmin}
-              className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors"
-              aria-label={
-                isAdmin
-                  ? "Salir del modo administrador"
-                  : "Entrar al modo administrador"
-              }
-            >
-              {isAdmin ? (
-                <ExitIcon className="w-6 h-6" />
-              ) : (
-                <AdminIcon className="w-6 h-6" />
-              )}
-            </button>
+              <button
+                onClick={onToggleAdmin}
+                className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors"
+                aria-label={
+                  isAdmin
+                    ? "Salir del modo administrador"
+                    : "Entrar al modo administrador"
+                }
+              >
+                {isAdmin ? (
+                  <ExitIcon className="w-6 h-6" />
+                ) : (
+                  <AdminIcon className="w-6 h-6" />
+                )}
+              </button>
+            </div>
+
+            {/* Mobile Actions Menu */}
+            <div className="fd:hidden">
+              <MobileActionsMenu isAdmin={isAdmin} onToggleAdmin={onToggleAdmin} />
+            </div>
           </div>
         </div>
 
