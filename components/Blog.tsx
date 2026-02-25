@@ -26,9 +26,9 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onEditPost, onD
 
     return (
         <div className="animate-fade-in-down mb-24">
-            <header className="text-center mb-12">
-                <h1 className="text-5xl md:text-6xl font-semibold text-stone-900 dark:text-stone-100 tracking-wider">Nuestro Blog</h1>
-                <p className="mt-4 text-lg text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">
+            <header className="text-center mb-[18px]">
+                <h1 className="font-h1">Nuestro Blog</h1>
+                <p className="font-p mt-[28px] w-[60%] mx-auto">
                     Inspiración, estilo y las historias detrás de cada diseño. Sumérgete en el universo de Womanity Boutique.
                 </p>
                 {authenticated && (
@@ -45,13 +45,13 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onEditPost, onD
             </header>
 
             {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-16">
+                <div className="flex flex-col items-center justify-center py-[71px]">
                     <div className="w-8 h-8 border-4 border-stone-200 border-t-stone-800 rounded-full animate-spin mb-4"></div>
-                    <p className="text-stone-500 dark:text-stone-400">Cargando artículos...</p>
+                    <p className="font-p">Cargando artículos...</p>
                 </div>
             ) : posts && posts.length > 0 ? (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 py-[71px]">
                         {posts.map(post => (
                             <PostCard
                                 key={post.id}
@@ -72,8 +72,8 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onEditPost, onD
                     )}
                 </>
             ) : (
-                <div className="text-center py-16 bg-stone-50 dark:bg-stone-900 rounded-lg">
-                    <p className="text-lg text-stone-500 dark:text-stone-400">
+                <div className="text-center py-[71px] bg-stone-50 dark:bg-stone-900 rounded-lg">
+                    <p className="font-p">
                         Aún no hemos publicado ningún artículo. ¡Vuelve pronto!
                     </p>
                 </div>

@@ -37,9 +37,9 @@ const PostCard: React.FC<PostCardProps> = ({
   return (
     <Link
       href={`/posts/${post.slug}`}
-      className="group flex flex-col h-full bg-white dark:bg-stone-800/50 rounded-xl overflow-hidden border border-stone-100 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-500 transition-all duration-300 hover:shadow-xl"
+      className="group flex flex-col h-full bg-color-four dark:bg-color-three rounded-[20px] overflow-hidden transition-all duration-300 hover:shadow-xl"
     >
-      <div className="relative aspect-[16/10] overflow-hidden">
+      <div className="relative aspect-[16/10] overflow-hidden m-[15px] rounded-[20px] bg-color-two">
         <Image
           src={post.featured_image_url}
           alt={post.title}
@@ -98,33 +98,30 @@ const PostCard: React.FC<PostCardProps> = ({
         )}
       </div>
 
-      <div className="p-6 flex flex-col flex-grow relative">
-        <div className="flex items-center gap-3 text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">
-          <time dateTime={post.created_at}>
+      <div className="p-[15px] pt-[0px] flex flex-col flex-grow relative">
+        <div className="flex items-center gap-3 font-date mb-[23px] w-full">
+          <time className="flex justify-start w-full" dateTime={post.created_at}>
             {formatDate(post.updated_at || post.created_at)}
           </time>
-          <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-600" />
-          <span>{post.reading_time} min</span>
+          <span className="flex justify-end w-full">{post.reading_time} min</span>
         </div>
 
-        <h2 className="text-xl md:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-3 leading-tight group-hover:text-stone-600 dark:group-hover:text-stone-300 transition-colors">
+        <h2 className="font-h2 mb-[23px] transition-colors">
           {post.title}
         </h2>
 
-        <p className="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-6 line-clamp-3">
+        <p className="font-card-p mb-[11px]">
           {post.seo_description}
         </p>
 
-        <div className="mt-auto flex items-center text-sm font-semibold text-stone-900 dark:text-stone-100 group-hover:underline decoration-1 underline-offset-4">
-          Leer artículo
-          <svg
-            className="w-4 h-4 ml-1 transition-transform duration-300 group-hover:translate-x-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
+        <div className="mt-auto flex items-center font-read-article p-[19px]">
+          <div className="relative w-4 h-4 flex items-center justify-center">
+            <div className="w-4 h-[2px] bg-current" />
+            <div className="w-[2px] h-4 bg-current absolute" />
+          </div>
+          <div className="ml-[10px]">
+            Leer artículo
+          </div>
         </div>
       </div>
     </Link >
