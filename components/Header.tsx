@@ -11,15 +11,15 @@ interface HeaderProps {
   isAdmin: boolean;
   onToggleAdmin: () => void;
   navigate: (path: string) => void;
-  isFilterVisible: boolean;
-  onToggleFilters: () => void;
-  brands: string[];
-  sizes: string[];
-  colors: string[];
-  filters: { brand: string; size: string; color: string; };
-  onFilterChange: (filters: { brand?: string; size?: string; color?: string; }) => void;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
+  isFilterVisible?: boolean;
+  onToggleFilters?: () => void;
+  brands?: string[];
+  sizes?: string[];
+  colors?: string[];
+  filters?: { brand: string; size: string; color: string; };
+  onFilterChange?: (filters: { brand?: string; size?: string; color?: string; }) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -62,43 +62,45 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky py-[25px] bg-color-four dark:bg-color-three top-0 z-30 transition-colors duration-300">
+
+    <header className="sticky top-0 z-50 bg-color-four dark:bg-color-three border-b border-stone-100 dark:border-stone-800 shadow-sm py-[20px] transition-all duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
 
         <div className="flex items-center justify-between fd:grid fd:grid-cols-3 relative">
-          {/* Mobile Filter Toggle */}
-          <div className="fd:hidden flex items-center relative">
-            <button
-              onClick={onToggleFilters}
-              className="w-[15px] h-[15px] flex items-center justify-center text-color-three dark:text-color-four"
-              aria-label={isFilterVisible ? "Ocultar filtros" : "Mostrar filtros"}
-            >
-              {isFilterVisible ? (
-                <div className="w-4 h-[2px] bg-current" />
-              ) : (
-                <div className="relative w-4 h-4 flex items-center justify-center">
+          {onToggleFilters && (
+            <div className="fd:hidden flex items-center relative">
+              <button
+                onClick={onToggleFilters}
+                className="w-[15px] h-[15px] flex items-center justify-center text-color-three dark:text-color-four"
+                aria-label={isFilterVisible ? "Ocultar filtros" : "Mostrar filtros"}
+              >
+                {isFilterVisible ? (
                   <div className="w-4 h-[2px] bg-current" />
-                  <div className="w-[2px] h-4 bg-current absolute" />
+                ) : (
+                  <div className="relative w-4 h-4 flex items-center justify-center">
+                    <div className="w-4 h-[2px] bg-current" />
+                    <div className="w-[2px] h-4 bg-current absolute" />
+                  </div>
+                )}
+              </button>
+
+              {/* Mobile Filter Modal - Attached to Header */}
+              {isFilterVisible && brands && sizes && colors && filters && onFilterChange && searchQuery !== undefined && onSearchChange && (
+                <div className="absolute top-full left-0 mt-2 z-[60]">
+                  <FilterModal
+                    brands={brands}
+                    sizes={sizes}
+                    colors={colors}
+                    filters={filters}
+                    onFilterChange={onFilterChange}
+                    searchQuery={searchQuery}
+                    onSearchChange={onSearchChange}
+                    isVisible={isFilterVisible}
+                  />
                 </div>
               )}
-            </button>
-
-            {/* Mobile Filter Modal - Attached to Header */}
-            {isFilterVisible && (
-              <div className="absolute top-full left-0 mt-2 z-[60]">
-                <FilterModal
-                  brands={brands}
-                  sizes={sizes}
-                  colors={colors}
-                  filters={filters}
-                  onFilterChange={onFilterChange}
-                  searchQuery={searchQuery}
-                  onSearchChange={onSearchChange}
-                  isVisible={isFilterVisible}
-                />
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="hidden fd:flex items-center gap-6">
             <button
@@ -137,7 +139,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="hidden fd:flex items-center gap-4 fd:gap-[41px]">
               <button
                 onClick={toggleCart}
-                className="relative p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors"
+                className="relative p-2 rounded-full text-stone-600 text-color-three dark:text-color-four  transition-colors"
                 aria-label="Abrir carrito"
               >
                 <ShoppingCartIcon className="w-6 h-6" />

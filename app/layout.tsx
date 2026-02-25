@@ -9,6 +9,7 @@ import { AuthProvider } from "@/provider/AuthProvider";
 import { GA_TRACKING_ID } from "@/lib/analytics";
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/CartDrawer";
+import { Chatbot } from "@/components/Chatbot";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -251,6 +252,7 @@ export default function RootLayout({
           <CartProvider>
             <div id="root">{children}</div>
             <CartDrawer />
+            <Chatbot />
           </CartProvider>
         </AuthProvider>
       </body>
