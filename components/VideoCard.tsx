@@ -144,7 +144,9 @@ const VideoCard: React.FC<VideoCardProps> = ({
     const phoneNumber = "51956382746";
     let message = `Hola, me interesa la siguiente prenda:\n\n`;
     message += `*Producto:* ${garment.title}\n`;
-    message += `*Marca:* ${garment.brand}\n`;
+    if (garment.brand && garment.brand !== "No identificable") {
+      message += `*Marca:* ${garment.brand}\n`;
+    }
     message += `*ID de Producto:* ${garment.id}\n`;
     message += `*Talla:* ${garment.size}\n`;
     message += `*Color:* ${garment.color}\n`;
@@ -172,13 +174,14 @@ const VideoCard: React.FC<VideoCardProps> = ({
   // Mostrar contenido siempre que esté visible, incluso si el video falla
   const showContent = isVisible && !showSpinner;
 
-  const cardDescription = `${garment.title} por ${garment.brand}, Talla ${garment.size}, Color ${garment.color}`;
+  const brandDisplay = garment.brand && garment.brand !== "No identificable" ? garment.brand : null;
+  const cardDescription = `${garment.title}${brandDisplay ? ` por ${brandDisplay}` : ""}, Talla ${garment.size}, Color ${garment.color}`;
   const actionLabel = isSelectionMode ? `Seleccionar` : `Ver detalles de`;
 
   return (
     <article
       ref={cardRef}
-      className={`relative group aspect-[9/16] overflow-hidden rounded-lg shadow-lg transform transition-all duration-300 ease-in-out bg-stone-200 
+      className={`relative group aspect-[9/16] overflow-hidden rounded-[20px] shadow-lg transform transition-all duration-300 ease-in-out bg-stone-200 
         w-full mx-auto
         ${isDisabled ? "cursor-not-allowed opacity-75 grayscale-[0.5]" : isSelectionMode ? "cursor-pointer" : "cursor-pointer hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500"}
         ${isSelected ? "ring-4 ring-offset-2 ring-sky-500" : ""}
@@ -279,14 +282,14 @@ const VideoCard: React.FC<VideoCardProps> = ({
             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
               <button
                 onClick={handleEdit}
-                className="p-2 rounded-full bg-black/50 text-white hover:bg-black/80"
+                className="p-2 rounded-full bg-color-three/50 text-color-four hover:bg-color-three/80 "
                 aria-label={`Editar ${garment.title}`}
               >
                 <EditIcon className="w-5 h-5" />
               </button>
               <button
                 onClick={handleDelete}
-                className="p-2 rounded-full bg-black/50 text-white hover:bg-black/80"
+                className="p-2 rounded-full bg-color-three/50 text-color-four hover:bg-color-three/80 "
                 aria-label={`Eliminar ${garment.title}`}
               >
                 <DeleteIcon className="w-5 h-5" />
@@ -303,23 +306,15 @@ const VideoCard: React.FC<VideoCardProps> = ({
         <div
           className={`transform transition-transform duration-500 ease-in-out ${!isSelectionMode ? "group-hover:-translate-y-2" : ""}`}
         >
-          <h3 className="text-2xl font-semibold tracking-wide">
+          <h3 className="font-title-card text-center sm:px-[25%]">
             {garment.title || "Sin título"}
           </h3>
-          {garment.price && (
-            <p className="text-xl font-medium tracking-wide mt-1">
-              S/{" "}
-              {typeof garment.price === "string"
-                ? parseFloat(garment.price).toFixed(2)
-                : garment.price.toFixed(2)}
-            </p>
-          )}
-          <div
-            className={`h-0.5 w-12 bg-white/50 my-2 transition-all duration-500 ${!isSelectionMode ? "group-hover:w-20" : ""}`}
-          ></div>
-          <p className="text-sm uppercase tracking-widest text-stone-200">
-            {garment.brand || "Sin marca"} &middot; Talla:{" "}
-            {garment.size || "N/A"} {garment.color && `· ${garment.color}`}
+
+          <p className="font-subtitle-card text-center pt-[17px]">
+            {brandDisplay && (
+              <>{brandDisplay} &middot; </>
+            )}
+            Talla: {garment.size || "N/A"} {garment.color && `· ${garment.color}`}
             {isAdmin && garment.cantidad !== undefined && (
               <span className={`block mt-1 font-bold ${garment.cantidad > 0 ? 'text-green-400' : 'text-red-400'}`}>
                 Stock: {garment.cantidad}

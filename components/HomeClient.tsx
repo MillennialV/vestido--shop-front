@@ -521,7 +521,7 @@ export default function HomeClient({
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
       />
-      <main className="mx-[23px] fd:mx-auto fd:max-w-[1290px] bg-color-background dark:bg-color-two rounded-[21px] my-5 px-[26px] py-[30px]">
+      <main className="mx-[23px] fd:mx-auto fd:max-w-[1290px] bg-color-background dark:bg-color-background-dark rounded-[21px] my-5 px-[26px] py-[30px]">
         {isLoading && garments.length === 0 && (
           <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
             Cargando...
@@ -621,12 +621,12 @@ export default function HomeClient({
                 />
               </section>
               <section id="faq" className="mt-24 mb-[100px] max-w-4xl mx-auto">
-                <header className="flex flex-col items-center text-center mb-12 gap-4">
-                  <h1 className="text-5xl md:text-6xl font-semibold text-stone-900 dark:text-stone-100 tracking-wider">
+                <header className="flex flex-col items-center text-center mb-12 gap-[24px]">
+                  <h1 className="font-h1">
                     Preguntas Frecuentes
                   </h1>
-                  <p className="mt-4 text-lg text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">
-                    Estamos aquÃ­ para ayudarte. Encuentra las respuestas a las preguntas mÃ¡s comunes de nuestra comunidad y compra con total confianza.
+                  <p className="mt-4 font-p max-w-2xl mx-auto">
+                    Este es un espacio creado para ti. Aquí respondemos las dudas más frecuentes de nuestra comunidad con total confianza, transparencia y compromiso
                   </p>
                   {authenticated && (
                     <button

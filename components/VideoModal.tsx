@@ -365,7 +365,9 @@ const VideoModal: React.FC<VideoModalProps> = ({
   let message = `Hola, me interesa la siguiente prenda:\n\n`;
   if (garment) {
     message += `*Producto:* ${garment.title}\n`;
-    message += `*Marca:* ${garment.brand}\n`;
+    if (garment.brand && garment.brand !== "No identificable") {
+      message += `*Marca:* ${garment.brand}\n`;
+    }
     message += `*ID de Producto:* ${garment.id}\n`;
     message += `*Talla:* ${garment.size}\n`;
     message += `*Color:* ${garment.color}\n`;
@@ -399,7 +401,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     "description": garment.description,
     "brand": {
       "@type": "Brand",
-      "name": garment.brand
+      "name": garment.brand && garment.brand !== "No identificable" ? garment.brand : "Womanity Boutique"
     },
     "offers": {
       "@type": "Offer",
@@ -417,14 +419,14 @@ const VideoModal: React.FC<VideoModalProps> = ({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
       <div
-        className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 opacity-100`}
+        className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-0 md:p-4 opacity-100`}
         onClick={handleClose}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
         <div
-          className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
+          className={`relative bg-color-four dark:bg-color-background-dark rounded-none md:rounded-[25px] shadow-2xl w-full md:max-w-4xl h-full md:max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -442,115 +444,115 @@ const VideoModal: React.FC<VideoModalProps> = ({
             </div>
           )}
 
-          <div className="flex flex-col md:flex-row flex-grow overflow-y-auto md:overflow-hidden gap-0 custom-scrollbar">
+          <div className="flex flex-col md:flex-row flex-grow overflow-y-auto md:overflow-hidden gap-0 custom-scrollbar ">
             {/* Gallery Section - Video/Image Stage */}
-            <div className="relative w-full md:w-1/2 flex flex-col bg-stone-100 dark:bg-stone-900 md:sticky md:top-0 md:h-screen md:max-h-[90vh]">
+            <div className="relative w-full md:w-1/2 flex flex-col md:sticky md:top-0 md:h-screen md:max-h-[90vh]">
 
               {/* Main Stage */}
-              <div className="relative w-[80%] mx-auto md:w-full flex-grow bg-black flex items-center justify-center overflow-hidden aspect-[3/4] md:aspect-auto">
+              <div className="relative w-full mx-auto flex-grow flex items-center justify-center aspect-[3/4] md:aspect-auto min-h-[300px] p-0 md:p-[35px]">
+                <div className="relative w-full h-full p-3 md:rounded-[15px] overflow-hidden">
+                  {/* Navigation Arrows (Overlay) */}
+                  {mediaList.length > 1 && (
+                    <>
+                      <button
+                        onClick={handlePrevMedia}
+                        className="absolute left-2 md:left-4 z-30 p-2 rounded-full bg-white/10 hover:bg-white/30 text-white transition-all backdrop-blur-sm group"
+                        aria-label="Anterior elemento"
+                      >
+                        <ChevronLeftIcon className="w-6 h-6 md:w-8 md:h-8 opacity-75 group-hover:opacity-100" />
+                      </button>
+                      <button
+                        onClick={handleNextMedia}
+                        className="absolute right-2 md:right-4 z-30 p-2 rounded-full bg-white/10 hover:bg-white/30 text-white transition-all backdrop-blur-sm group"
+                        aria-label="Siguiente elemento"
+                      >
+                        <ChevronRightIcon className="w-6 h-6 md:w-8 md:h-8 opacity-75 group-hover:opacity-100" />
+                      </button>
+                    </>
+                  )}
 
-                {/* Navigation Arrows (Overlay) */}
-                {mediaList.length > 1 && (
-                  <>
-                    <button
-                      onClick={handlePrevMedia}
-                      className="absolute left-2 md:left-4 z-20 p-2 rounded-full bg-white/10 hover:bg-white/30 text-white transition-all backdrop-blur-sm group"
-                      aria-label="Anterior elemento"
-                    >
-                      <ChevronLeftIcon className="w-6 h-6 md:w-8 md:h-8 opacity-75 group-hover:opacity-100" />
-                    </button>
-                    <button
-                      onClick={handleNextMedia}
-                      className="absolute right-2 md:right-4 z-20 p-2 rounded-full bg-white/10 hover:bg-white/30 text-white transition-all backdrop-blur-sm group"
-                      aria-label="Siguiente elemento"
-                    >
-                      <ChevronRightIcon className="w-6 h-6 md:w-8 md:h-8 opacity-75 group-hover:opacity-100" />
-                    </button>
-                  </>
-                )}
-
-                {/* Media Content */}
-                {activeMedia?.type === 'video' ? (
-                  <>
-                    {isVideoLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/50">
-                        <SpinnerIcon className="w-10 h-10 text-white animate-spin" />
-                      </div>
-                    )}
-                    {videoError && (
-                      <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/80">
-                        <div className="text-center text-white p-4">
-                          <p className="text-lg font-semibold mb-2">Error</p>
-                          <p className="text-sm opacity-80">{videoError}</p>
-                        </div>
-                      </div>
-                    )}
-                    {getEmbedUrl(activeMedia.url) ? (
-                      <iframe
-                        src={getEmbedUrl(activeMedia.url)!}
-                        className="w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        onLoad={() => setIsVideoLoading(false)}
+                  {/* Media Content */}
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    {activeMedia?.type === 'video' ? (
+                      <>
+                        {isVideoLoading && (
+                          <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
+                            <SpinnerIcon className="w-10 h-10 text-white animate-spin" />
+                          </div>
+                        )}
+                        {videoError && (
+                          <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/80">
+                            <div className="text-center text-white p-4">
+                              <p className="text-lg font-semibold mb-2">Error</p>
+                              <p className="text-sm opacity-80">{videoError}</p>
+                            </div>
+                          </div>
+                        )}
+                        {getEmbedUrl(activeMedia.url) ? (
+                          <iframe
+                            src={getEmbedUrl(activeMedia.url)!}
+                            className="w-full h-full border-0 rounded-[15px]"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            onLoad={() => setIsVideoLoading(false)}
+                          />
+                        ) : (
+                          <video
+                            ref={videoRef}
+                            key={activeMedia.url}
+                            src={activeMedia.url}
+                            autoPlay
+                            loop
+                            muted
+                            controls={false}
+                            playsInline
+                            preload="auto"
+                            onCanPlay={handleVideoCanPlay}
+                            onError={handleVideoError}
+                            onLoadStart={handleVideoLoadStart}
+                            className="w-full h-full object-contain z-10 rounded-[15px]"
+                          />
+                        )}
+                      </>
+                    ) : activeMedia?.type === 'image' ? (
+                      <Image
+                        src={activeMedia.url}
+                        alt={garment.title}
+                        fill
+                        className="object-cover z-10 rounded-[15px]"
+                        sizes="(max-width: 1024px) 100vw, 75vw"
+                        priority
                       />
                     ) : (
-                      <video
-                        ref={videoRef}
-                        key={activeMedia.url}
-                        src={activeMedia.url}
-                        autoPlay
-                        loop
-                        muted
-                        controls={false}
-                        playsInline
-                        preload="auto"
-                        onCanPlay={handleVideoCanPlay}
-                        onError={handleVideoError}
-                        onLoadStart={handleVideoLoadStart}
-                        className="w-full h-full object-contain"
-                      />
+                      <div className="text-white text-center p-8">
+                        <SpinnerIcon className="w-10 h-10 text-white animate-spin mb-4 mx-auto" />
+                        <p className="text-sm opacity-80">Cargando...</p>
+                      </div>
                     )}
-                  </>
-                ) : activeMedia?.type === 'image' ? (
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={activeMedia.url}
-                      alt={garment.title}
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 1024px) 100vw, 75vw"
-                      priority
-                    />
                   </div>
-                ) : (
-                  <div className="text-white text-center p-8">
-                    <SpinnerIcon className="w-10 h-10 text-white animate-spin mb-4 mx-auto" />
-                    <p className="text-sm opacity-80">Cargando...</p>
+
+                  <div className="absolute top-4 left-4 z-20 flex flex-col gap-3">
+                    {/* Empty for now or maybe brand logo? */}
                   </div>
-                )}
 
-                {/* Action Buttons (QR / Share) positioned inside the stage */}
-                <div className="absolute top-4 left-4 z-10 flex flex-col gap-3">
-                  {/* Empty for now or maybe brand logo? */}
-                </div>
+                  {(!garment.cantidad || garment.cantidad <= 0) && (
+                    <div className="absolute inset-0 z-15 flex items-center justify-center bg-black/20 pointer-events-none m-3">
+                      <span className="text-color-four text-[42px] font-[700]  uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                        No Disponible
+                      </span>
+                    </div>
+                  )}
 
-                <div className="absolute bottom-12 right-4 z-10 flex flex-col items-center gap-3">
-                  <button
-                    onClick={() => setIsQrModalOpen(true)}
-                    className="flex flex-col items-center text-white focus:outline-none rounded-full p-1 opacity-80 hover:opacity-100 transition-opacity"
-                  >
-                    <span className="bg-black/40 backdrop-blur-md rounded-full p-2.5 shadow-lg border border-white/10">
-                      <QrCodeIcon className="w-5 h-5 text-white" />
-                    </span>
-                  </button>
-                  <button
-                    onClick={handleShare}
-                    className="flex flex-col items-center text-white focus:outline-none rounded-full p-1 opacity-80 hover:opacity-100 transition-opacity"
-                  >
-                    <span className="bg-black/40 backdrop-blur-md rounded-full p-2.5 shadow-lg border border-white/10">
-                      <ShareIcon className="w-5 h-5 text-white" />
-                    </span>
-                  </button>
+                  <div className="absolute bottom-6 right-6 z-20 flex flex-col items-center gap-3">
+                    <button
+                      onClick={() => setIsQrModalOpen(true)}
+                      className="flex flex-col items-center text-white focus:outline-none rounded-full p-1 opacity-80 hover:opacity-100 transition-opacity"
+                    >
+                      <span className="bg-black/40 backdrop-blur-md rounded-full p-2.5 shadow-lg border border-white/10">
+                        <QrCodeIcon className="w-5 h-5 text-white" />
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -591,48 +593,49 @@ const VideoModal: React.FC<VideoModalProps> = ({
               )}
             </div>
 
-            <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col md:overflow-y-auto custom-scrollbar">
+            <div className="flex w-full md:w-1/2 p-6 md:p-8 lg:pt-[48px] lg:pb-[0px] lg:pr-[33px] lg:pl-[0px] flex flex-col md:overflow-y-auto custom-scrollbar">
+              <div>
+                <p className="font-info-product" >COD: {garment.id ? garment.id : "No disponible"} / Stock: {garment.cantidad ? garment.cantidad : "0"}</p>
+              </div>
               <div className="flex-shrink-0">
-                <p className="text-sm uppercase tracking-widest text-stone-500 dark:text-stone-400">
-                  {garment.brand}
-                </p>
                 <h2
                   id="modal-title"
-                  className="text-4xl lg:text-4xl font-semibold text-stone-900 dark:text-stone-100 mt-2 mb-4"
+                  className="font-title-modal-product mt-[15px]"
                 >
                   {garment.title}
                 </h2>
                 {garment.price && (
-                  <p className="text-3xl text-stone-700 dark:text-stone-200 font-light mb-4">
+                  <p className={`font-price-modal-product mt-[17px] ${(!garment.cantidad || garment.cantidad <= 0) ? 'line-through opacity-50' : ''}`}>
                     S/{" "}
                     {typeof garment.price === "number"
                       ? garment.price.toFixed(2)
                       : garment.price}
                   </p>
                 )}
-                <div className="flex flex-col gap-3 mt-8">
+                <div className="flex flex-col gap-3 mt-[47px]">
                   <button
                     onClick={handleAddToCart}
-                    className="w-full inline-flex items-center justify-center px-6 py-4 text-base font-bold text-white bg-stone-900 dark:bg-stone-100 dark:text-stone-900 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-4 focus:ring-stone-500/50"
+                    disabled={!garment.cantidad || garment.cantidad <= 0}
+                    className={`w-full buttom-shop inline-flex items-center justify-center px-6 py-4 shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-stone-500/50 ${(!garment.cantidad || garment.cantidad <= 0) ? 'bg-color-disable cursor-not-allowed opacity-70' : 'hover:shadow-xl hover:-translate-y-0.5'}`}
                   >
                     <ShoppingCartIcon className="w-5 h-5 mr-3" />
-                    Agregar al Carrito
+                    Comprar
                   </button>
 
-                  <div className="grid grid-cols-[1fr_auto] gap-3">
+                  <div className="flex md:grid md:grid-cols-[1fr_auto] gap-3">
                     <a
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => trackWhatsAppClick(garment.title, garment.id)}
-                      className="inline-flex items-center justify-center px-6 py-3 font-semibold text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/50"
+                      className="flex-grow inline-flex items-center buttom-whatsapp justify-center px-6 py-3 bg-green-500 shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/50"
                     >
                       <WhatsappIcon className="w-5 h-5 mr-2" />
                       WhatsApp
                     </a>
                     <button
                       onClick={handleShare}
-                      className="inline-flex items-center justify-center w-14 text-stone-700 dark:text-stone-200 bg-white dark:bg-stone-700 rounded-xl shadow-md border border-stone-200 dark:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-600 transition-colors focus:outline-none focus:ring-4 focus:ring-stone-200 dark:focus:ring-stone-500"
+                      className="w-[70px] md:w-14 inline-flex items-center buttom-shared justify-center shadow-md border border-stone-200 transition-colors focus:outline-none focus:ring-4 focus:ring-stone-200 dark:focus:ring-stone-500"
                       aria-label="Copiar enlace"
                       title="Copiar enlace"
                     >
@@ -642,7 +645,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex-grow">
+              <div className="flex-grow hidden md:flex flex-col mt-8">
                 <AccordionItem
                   title="Descripción"
                   isOpen={openAccordion === "description"}
@@ -707,36 +710,35 @@ const VideoModal: React.FC<VideoModalProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-center items-center py-1 bg-stone-50 dark:bg-stone-800 border-t border-stone-200 dark:border-stone-700">
-            <button
-              onClick={() => setIsThumbnailStripVisible(!isThumbnailStripVisible)}
-              className="p-1 text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-500"
-              aria-expanded={isThumbnailStripVisible}
-              aria-controls="thumbnail-strip-container"
+          <div className="w-full bg-stone-50/50 dark:bg-stone-900/50 ">
+            <div className="flex justify-end items-center px-6 py-3">
+              <button
+                onClick={() => setIsThumbnailStripVisible(!isThumbnailStripVisible)}
+                className="group flex items-center gap-2 text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-all duration-300 focus:outline-none"
+                aria-expanded={isThumbnailStripVisible}
+                aria-controls="thumbnail-strip-container"
+              >
+                <span className="text-[14px] font-[400] transition-colors">
+                  {isThumbnailStripVisible ? "ocultar" : "Más Opciones"}
+                </span>
+                <span className="text-xl font-light leading-none mb-0.5">
+                  {isThumbnailStripVisible ? "−" : "+"}
+                </span>
+              </button>
+            </div>
+
+            <div
+              id="thumbnail-strip-container"
+              className={`transition-all duration-500 ease-in-out overflow-hidden w-full ${isThumbnailStripVisible ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
             >
-              <span className="sr-only">
-                {isThumbnailStripVisible
-                  ? "Ocultar miniaturas"
-                  : "Mostrar miniaturas"}
-              </span>
-              {isThumbnailStripVisible ? (
-                <ChevronUpIcon className="w-6 h-6" />
-              ) : (
-                <ChevronDownIcon className="w-6 h-6" />
-              )}
-            </button>
+              <ThumbnailStrip
+                garments={garmentList}
+                currentGarment={garment}
+                onSelectGarment={onChangeGarment}
+              />
+            </div>
           </div>
 
-          <div
-            id="thumbnail-strip-container"
-            className={`transition-all duration-300 ease-in-out overflow-hidden ${isThumbnailStripVisible ? "max-h-48" : "max-h-0"}`}
-          >
-            <ThumbnailStrip
-              garments={garmentList}
-              currentGarment={garment}
-              onSelectGarment={onChangeGarment}
-            />
-          </div>
         </div>
       </div>
 

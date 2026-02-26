@@ -26,7 +26,7 @@ const PostPage: React.FC<PostPageProps> = ({ post, navigate }) => {
             </a>
 
             <article>
-                <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">{post.title}</h1>
+                <h1 className="font-h1 mb-4">{post.title}</h1>
 
                 {post.featured_image_url && (
                     <div className="relative w-full h-[300px] md:h-[500px] mb-8 rounded-xl overflow-hidden shadow-sm">

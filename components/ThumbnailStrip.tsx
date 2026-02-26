@@ -32,9 +32,9 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
     <button
       ref={ref}
       onClick={() => onSelect(garment)}
-      className={`group relative w-20 h-[142px] flex-shrink-0 rounded-md overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white ${isActive
-        ? "ring-2 ring-white scale-105 shadow-lg"
-        : "ring-2 ring-transparent hover:scale-105 hover:ring-white/75"
+      className={`group relative w-[130px] h-[170px] flex-shrink-0 rounded-xl overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white ${isActive
+        ? "ring-2 ring-[#D4A373] scale-100 shadow-xl z-10"
+        : "opacity-90 grayscale hover:grayscale-0 hover:opacity-100"
         }`}
       aria-label={`Ver ${garment.title}`}
       aria-current={isActive ? "true" : "false"}
@@ -58,7 +58,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
       ) : (
         <div className="w-full h-full bg-stone-700"></div>
       )}
-      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+      <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
       <div className="absolute inset-0 flex items-center justify-center">
         <PlayIcon className="w-6 h-6 text-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform group-hover:scale-110" />
       </div>
@@ -78,9 +78,9 @@ const ThumbnailStrip: React.FC<ThumbnailStripProps> = ({
   onSelectGarment,
 }) => {
   return (
-    <div className="bg-black/50 p-4">
+    <div className="bg-transparent p-4 pb-6">
       <div
-        className="flex items-center gap-4 overflow-x-auto pb-2"
+        className="flex items-center gap-4 overflow-x-auto pb-4 pt-2 custom-scrollbar"
         role="toolbar"
         aria-label="Navegación de productos"
       >
