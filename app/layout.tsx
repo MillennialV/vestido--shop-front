@@ -38,6 +38,7 @@ export const metadata: Metadata = {
   keywords:
     "vestidos de fiesta lima, showroom san isidro, vestidos elegantes perú, vestidos importados, womanity boutique, vestidos de noche, vestidos de gala, vestidos de boda lima",
   authors: [{ name: "Womanity Boutique" }],
+  metadataBase: new URL("https://www.vestido.shop/"),
   alternates: {
     canonical: "https://www.vestido.shop/",
   },
