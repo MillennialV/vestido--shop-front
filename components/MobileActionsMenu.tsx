@@ -23,6 +23,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                 className="w-[15px] h-[15px] flex flex-col items-center justify-center gap-[4px] hover:bg-color-button-icon rounded-full transition-all active:scale-95 z-50"
                 aria-label="Abrir menú de acciones"
             >
+
                 <div className="w-[15px] h-[2.5px] bg-color-three dark:bg-color-four"></div>
                 <div className="w-[15px] h-[2.5px] bg-color-three dark:bg-color-four"></div>
             </button>

@@ -74,7 +74,7 @@ export default function HomeClient({
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({ brand: "all", size: "all", color: "all" });
+  const [filters, setFilters] = useState({ brand: "all", size: "all" });
   const [currentPage, setCurrentPage] = useState(1);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set<number>());
@@ -166,11 +166,13 @@ export default function HomeClient({
         searchQuery === "" ||
         garment.title.toLowerCase().includes(searchLower) ||
         garment.brand.toLowerCase().includes(searchLower) ||
-        (garment.description?.toLowerCase().includes(searchLower) ?? false);
+        (garment.description?.toLowerCase().includes(searchLower) ?? false) ||
+        garment.color.toLowerCase().includes(searchLower) ||
+        garment.size.toLowerCase().includes(searchLower) ||
+        (garment.material?.toLowerCase().includes(searchLower) ?? false);
       const matchesBrand = filters.brand === "all" || garment.brand === filters.brand;
       const matchesSize = filters.size === "all" || garment.size === filters.size;
-      const matchesColor = filters.color === "all" || garment.color === filters.color;
-      return matchesSearch && matchesBrand && matchesSize && matchesColor;
+      return matchesSearch && matchesBrand && matchesSize;
     });
   }, [garments, searchQuery, filters]);
   const totalPages = pagination.totalPages;
@@ -202,10 +204,9 @@ export default function HomeClient({
     return {
       brands: getUnique(sourceData.map((g) => g.brand)),
       sizes: getUnique(sourceData.map((g) => g.size)),
-      colors: getUnique(sourceData.map((g) => g.color)),
     };
   }, [allProductsForFilters, initialGarments]);
-  const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string; color?: string }) => {
+  const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string }) => {
     const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
     setCurrentPage(1);
@@ -229,7 +230,7 @@ export default function HomeClient({
   };
 
   const handleClearFilters = useCallback(() => {
-    const defaultFilters = { brand: "all", size: "all", color: "all" };
+    const defaultFilters = { brand: "all", size: "all" };
     setFilters(defaultFilters);
     setSearchQuery("");
     setCurrentPage(1);
@@ -445,7 +446,6 @@ export default function HomeClient({
     setIsDeleting(true);
     try {
       await deletePost(postToDelete.id);
-      await deletePost(postToDelete.id);
 
       // Calcular a quÃ© pÃ¡gina ir tras eliminar
       const isLastItemOnPage = posts.length === 1;
@@ -516,7 +516,6 @@ export default function HomeClient({
         onToggleFilters={() => setIsFilterVisible(!isFilterVisible)}
         brands={uniqueFilters.brands}
         sizes={uniqueFilters.sizes}
-        colors={uniqueFilters.colors}
         filters={filters}
         onFilterChange={handleFilterChange}
         searchQuery={searchQuery}
@@ -551,7 +550,6 @@ export default function HomeClient({
               <FilterBar
                 brands={uniqueFilters.brands}
                 sizes={uniqueFilters.sizes}
-                colors={uniqueFilters.colors}
                 filters={filters}
                 onFilterChange={handleFilterChange}
                 searchQuery={searchQuery}

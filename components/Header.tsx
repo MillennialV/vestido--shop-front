@@ -15,9 +15,8 @@ interface HeaderProps {
   onToggleFilters?: () => void;
   brands?: string[];
   sizes?: string[];
-  colors?: string[];
-  filters?: { brand: string; size: string; color: string; };
-  onFilterChange?: (filters: { brand?: string; size?: string; color?: string; }) => void;
+  filters?: { brand: string; size: string; };
+  onFilterChange?: (filters: { brand?: string; size?: string; }) => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
 }
@@ -30,7 +29,6 @@ const Header: React.FC<HeaderProps> = ({
   onToggleFilters,
   brands,
   sizes,
-  colors,
   filters,
   onFilterChange,
   searchQuery,
@@ -62,6 +60,7 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
+
     <header className="sticky top-0 z-50 bg-color-four dark:bg-color-three border-b border-stone-100 dark:border-stone-800 shadow-sm py-[20px] transition-all duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
 
@@ -84,12 +83,11 @@ const Header: React.FC<HeaderProps> = ({
               </button>
 
               {/* Mobile Filter Modal - Attached to Header */}
-              {isFilterVisible && brands && sizes && colors && filters && onFilterChange && searchQuery !== undefined && onSearchChange && (
+              {isFilterVisible && brands && sizes && filters && onFilterChange && searchQuery !== undefined && onSearchChange && (
                 <div className="absolute top-full left-0 mt-2 z-[60]">
                   <FilterModal
                     brands={brands}
                     sizes={sizes}
-                    colors={colors}
                     filters={filters}
                     onFilterChange={onFilterChange}
                     searchQuery={searchQuery}
@@ -152,10 +150,10 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={toggleDarkMode}
                 className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors"
-                aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+                aria-label={mounted ? (isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro") : "Cambiar modo"}
               >
-                {isDark ? (
-                  <SunIcon className="w-6 h-6" />
+                {mounted ? (
+                  isDark ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />
                 ) : (
                   <MoonIcon className="w-6 h-6" />
                 )}

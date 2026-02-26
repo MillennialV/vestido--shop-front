@@ -90,7 +90,7 @@ const Footer: React.FC<FooterProps> = ({
 
 
       </div>
-    </section>
+    </section >
   );
 };
 

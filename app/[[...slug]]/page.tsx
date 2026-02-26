@@ -44,6 +44,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     const slugArray = resolvedParams.slug;
     const slug = slugArray && slugArray.length > 0 ? slugArray[0] : null;
 
+    const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
+
     if (!slug) {
         return {
             title: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
@@ -51,18 +53,59 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
             openGraph: {
                 url: PUBLIC_URL,
                 type: "website",
+                images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
+            },
+            twitter: {
+                card: "summary_large_image",
+                images: [DEFAULT_OG_IMAGE],
             },
             robots: "index, follow",
         };
     }
 
+    // Buscar el producto para obtener su imagen real
+    const product = await getProduct(slug);
+
+    const productTitle = product?.title
+        ? `${product.title} | Womanity Boutique`
+        : `Vestido ${slug.replace(/-/g, ' ')} | Vestido.shop`;
+
+    const productDescription = product?.description
+        || "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro.";
+
+    // Prioridad: imagen_principal → primera imagen extra → imagen por defecto
+    const productImage: string =
+        product?.imagen_principal ||
+        (product?.imagenes && product.imagenes.length > 0 ? product.imagenes[0] : null) ||
+        DEFAULT_OG_IMAGE;
+
+    const productUrl = `${PUBLIC_URL}/${slug}`;
+
     return {
-        title: `Vestido ${slug.replace(/-/g, ' ')} | Vestido.shop`,
-        description: "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro.",
+        title: productTitle,
+        description: productDescription,
         openGraph: {
-            url: `${PUBLIC_URL}/${slug}`,
+            url: productUrl,
             type: "website",
-        }
+            title: productTitle,
+            description: productDescription,
+            images: [
+                {
+                    url: productImage,
+                    width: 800,
+                    height: 1000,
+                    alt: product?.title || slug,
+                },
+            ],
+            siteName: "Vestido.shop by Womanity",
+            locale: "es_PE",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: productTitle,
+            description: productDescription,
+            images: [productImage],
+        },
     };
 }
 

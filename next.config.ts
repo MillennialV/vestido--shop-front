@@ -5,21 +5,7 @@ const nextConfig: NextConfig = {
         remotePatterns: [
             {
                 protocol: 'https',
-                hostname: 'images.unsplash.com',
-            },
-            {
-                protocol: 'https',
-                hostname: 'storage.googleapis.com',
-            },
-            {
-                protocol: 'https',
-                hostname: '**.iaimpacto.com',
-            },
-            {
-                protocol: 'https',
-                hostname: 'vestidosmillev.blob.core.windows.net',
-                port: '',
-                pathname: '/**', 
+                hostname: '**',
             },
         ],
     },
