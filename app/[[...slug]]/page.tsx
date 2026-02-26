@@ -111,11 +111,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
 
 async function getProduct(slug: string) {
     try {
-        const res = await fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?limit=1000`);
+        const res = await fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?q=${slug}&limit=1`);
         if (res.ok) {
             const data = await res.json();
             const products = data?.data?.products || [];
-            return products.find((p: any) => p.slug === slug);
+            // Devuelve el primer producto si coincide el slug (en este endpoint q filtra texto amplio, nos aseguramos)
+            return products.find((p: any) => p.slug === slug) || products[0] || null;
         }
     } catch (error) {
         console.error("Error fetching product for schema:", error);
