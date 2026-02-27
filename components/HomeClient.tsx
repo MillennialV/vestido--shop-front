@@ -11,6 +11,8 @@ import { useFaqs } from "@/hooks/useFaqs";
 import Header from "@/components/Header";
 import FilterBar from "@/components/FilterBar";
 import VideoModal from "@/components/product/VideoModal";
+import ImageCarousel from "@/components/ImageCarousel";
+
 
 const AdminFormModal = dynamic(() => import("@/components/modals/AdminFormModal"), { ssr: false });
 const AccessCodeModal = dynamic(() => import("@/components/AccessCodeModal"), { ssr: false });
@@ -30,7 +32,7 @@ import SiteFooter from "@/components/SiteFooter";
 import { faqData } from "@/lib/faqData";
 import { PlusIcon } from "@/components/Icons";
 import { useAuth } from "@/hooks/useAuth";
-import CartDrawer from "@/components/CartDrawer";
+import CartModal from "@/components/CartModal";
 
 // Recibe los datos iniciales como props
 export default function HomeClient({
@@ -95,6 +97,9 @@ export default function HomeClient({
   const ITEMS_PER_PAGE = gridColumns === 5 ? 15 : 12;
   const POSTS_PER_PAGE = 6;
   const FAQ_LIMIT = Number(process.env.NEXT_PUBLIC_FAQ_LIMIT) || 5;
+
+  // Toggle for showing the Image Carousel
+  const SHOW_CAROUSEL = true;
 
   const handleSelectGarment = useCallback((garment: Garment, updateUrl = true) => {
     setSelectedGarment(garment);
@@ -468,6 +473,17 @@ export default function HomeClient({
     }
   };
 
+  const slides = useMemo(() => {
+    return garments
+      .filter((garment) => garment.imagen_principal)
+      .map((garment) => ({
+        id: garment.id,
+        imageUrl: garment.imagen_principal as string,
+        title: garment.title,
+        subtitle: garment.slug,
+      }));
+  }, [garments]);
+
   const handleBlogPageChange = (page: number) => {
     fetchPosts({ page });
   };
@@ -522,6 +538,12 @@ export default function HomeClient({
         onSearchChange={handleSearchChange}
       />
       <main className="mx-[12px] fd:mx-[23px] fd:mx-auto fd:max-w-[1290px] bg-color-background dark:bg-color-background-dark rounded-[21px] my-5 px-[26px] py-[30px]">
+        {SHOW_CAROUSEL && (
+          <ImageCarousel
+            slides={slides} autoPlayInterval={5000} />
+        )}
+
+
         {isLoading && garments.length === 0 && (
           <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
             Cargando...

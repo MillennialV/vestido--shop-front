@@ -78,7 +78,7 @@ const ThumbnailStrip: React.FC<ThumbnailStripProps> = ({
   onSelectGarment,
 }) => {
   return (
-    <div className="bg-transparent px-4 pt-0 pb-2">
+    <div className="bg-transparent px-4 pt-2 pb-2">
       <div
         className="flex items-center gap-2 overflow-x-auto pb-4 pt-0 custom-scrollbar"
         role="toolbar"

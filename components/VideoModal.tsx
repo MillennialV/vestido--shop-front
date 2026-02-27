@@ -143,7 +143,8 @@ const VideoModal: React.FC<VideoModalProps> = ({
   };
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isThumbnailStripVisible, setIsThumbnailStripVisible] = useState(true);
+  const thumbnailStripRef = useRef<HTMLDivElement>(null);
+  const [isThumbnailStripVisible, setIsThumbnailStripVisible] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [openAccordion, setOpenAccordion] = useState<string | null>(
@@ -224,6 +225,22 @@ const VideoModal: React.FC<VideoModalProps> = ({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose, garment, garmentList, onChangeGarment]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isThumbnailStripVisible &&
+        thumbnailStripRef.current &&
+        !thumbnailStripRef.current.contains(event.target as Node)
+      ) {
+        setIsThumbnailStripVisible(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isThumbnailStripVisible]);
 
   useEffect(() => {
     // Reset video loading state only when active media changes and is a video
@@ -707,30 +724,47 @@ const VideoModal: React.FC<VideoModalProps> = ({
                   </p>
                 </AccordionItem>
               </div>
+
+              {!isThumbnailStripVisible && (
+                <div className="flex justify-end flex-grow w-full md:flex flex-col justify-end items-end px-0 pb-[50px]">
+                  <button
+                    onClick={() => setIsThumbnailStripVisible(!isThumbnailStripVisible)}
+                    className="group flex items-center gap-2 mt-5 text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-all duration-300 focus:outline-none"
+                    aria-expanded={isThumbnailStripVisible}
+                    aria-controls="thumbnail-strip-container"
+                  >
+                    <span className="text-[14px] font-[400] transition-colors">
+                      Más Opciones
+                    </span>
+                    <span className="text-xl font-light leading-none mb-0.5">
+                      +
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="w-full bg-stone-50/50 dark:bg-stone-900/50 ">
-            <div className="flex justify-end items-center px-6 py-3">
-              <button
-                onClick={() => setIsThumbnailStripVisible(!isThumbnailStripVisible)}
-                className="group flex items-center gap-2 text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-all duration-300 focus:outline-none"
-                aria-expanded={isThumbnailStripVisible}
-                aria-controls="thumbnail-strip-container"
-              >
-                <span className="text-[14px] font-[400] transition-colors">
-                  {isThumbnailStripVisible ? "ocultar" : "Más Opciones"}
-                </span>
-                <span className="text-xl font-light leading-none mb-0.5">
-                  {isThumbnailStripVisible ? "−" : "+"}
-                </span>
-              </button>
-            </div>
-
+          <div className="w-full flex-shrink-0 bg-stone-50/50 dark:bg-stone-900/50" ref={thumbnailStripRef}>
             <div
               id="thumbnail-strip-container"
               className={`transition-all duration-500 ease-in-out overflow-hidden w-full ${isThumbnailStripVisible ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
             >
+              <div className="flex justify-end flex-grow w-full md:flex flex-col justify-end items-end px-5 pb-0 ">
+                <button
+                  onClick={() => setIsThumbnailStripVisible(!isThumbnailStripVisible)}
+                  className="group flex gap-2 mt-1 text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-all duration-300 focus:outline-none"
+                  aria-expanded={isThumbnailStripVisible}
+                  aria-controls="thumbnail-strip-container"
+                >
+                  <span className="text-[14px] font-[400] transition-colors">
+                    Ocultar
+                  </span>
+                  <span className="text-xl font-light leading-none mb-0.5">
+                    -
+                  </span>
+                </button>
+              </div>
               <ThumbnailStrip
                 garments={garmentList}
                 currentGarment={garment}

@@ -25,7 +25,7 @@ const PostPage: React.FC<PostPageProps> = ({ post, navigate }) => {
                 Volver al Blog
             </a>
 
-            <article>
+            <article className="bg-color-background dark:bg-color-background-dark p-4 rounded-xl">
                 <h1 className="font-h1 mb-4">{post.title}</h1>
 
                 {post.featured_image_url && (
