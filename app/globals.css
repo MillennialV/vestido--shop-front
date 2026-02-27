@@ -1,5 +1,30 @@
 @import "tailwindcss";
 
+@font-face {
+    font-family: 'Allrounder Monument Test Book';
+    src: url('../fonts/AllrounderMonumentTest-Book.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Allrounder Monument Test Medium';
+    src: url('../fonts/AllrounderMonumentTest-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Allrounder Monument Test Regular';
+    src: url('../fonts/AllrounderMonumentTest-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
@@ -28,6 +53,9 @@
 @theme {
     --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+    --font-allrounder-monument-test-book: var(--font-allrounder-monument-test-book), sans-serif;
+    --font-allrounder-monument-test-medium: var(--font-allrounder-monument-test-medium), sans-serif;
+    --font-allrounder-monument-test-regular: var(--font-allrounder-monument-test-regular), sans-serif;
 
     --color-color-one: #D5B46E;
 
@@ -95,7 +123,7 @@
 }
 
 .font-h1 {
-    font-family: var(--font-inter), sans-serif;
+    font-family: var(--font-allrounder-monument-test-regular), sans-serif;
     font-size: 42px;
     font-weight: 400;
     line-height: 100%;
@@ -108,7 +136,7 @@
 }
 
 .font-h2 {
-    font-family: var(--font-allrounder), sans-serif;
+    font-family: var(--font-allrounder-monument-test-regular), sans-serif;
     font-size: 18px;
     font-weight: 400;
     line-height: 120%;
@@ -227,7 +255,7 @@
 }
 
 .font-title-card {
-    font-family: var(--font-allrounder), sans-serif;
+    font-family: var(--font-allrounder-monument-test-regular);
     text-transform: uppercase;
     font-size: 18px;
     font-weight: 400;
@@ -289,6 +317,32 @@
 
 .dark .buttom-shared {
     background-color: var(--color-color-three);
+    color: var(--color-color-four);
+}
+
+.font-fqa-quest {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 100%;
+    letter-spacing: 0%;
+    color: var(--color-color-three);
+}
+
+.dark .font-fqa-quest {
+    color: var(--color-color-four);
+}
+
+.font-fqa-ans {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 100%;
+    letter-spacing: 0%;
+    color: var(--color-color-three);
+}
+
+.dark .font-fqa-ans {
     color: var(--color-color-four);
 }
 

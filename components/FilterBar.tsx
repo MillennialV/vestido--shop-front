@@ -26,7 +26,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     onGridColumnsChange,
 }) => {
     return (
-        <div className="relative flex items-center gap-2 mb-8 w-full overflow-visible">
+        <div className="relative flex items-center gap-2 mb-0 xl:mb-8 w-full overflow-visible">
             {/* Desktop Filter Toggle */}
             <div className="hidden fd:flex items-center">
                 <button

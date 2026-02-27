@@ -3,6 +3,7 @@ import React, { useEffect, useState, use as useReact } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import SiteFooter from "@/components/SiteFooter";
 import type { Post } from "@/types/post";
 import { ArrowLeftIcon } from "@/components/Icons";
 import LoadingOverlay from "@/components/LoadingOverlay";
@@ -93,23 +94,23 @@ export default function PostDetailClient({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-900">
+    <div className="min-h-screen bg-color-four dark:bg-color-three">
       <Header
         isAdmin={isAdmin}
         onToggleAdmin={() => setIsAdmin(!isAdmin)}
         navigate={handleNavigate}
       />
-      <main className="max-w-4xl mx-auto px-4 py-12">
+      <main className="max-w-4xl mx-auto px-4 py-4 bg-color-background dark:bg-color-background-dark my-5 rounded-xl">
         <button
           onClick={() => router.push("/#blog")}
-          className="flex items-center gap-2 text-stone-400 hover:text-stone-900 dark:hover:text-white mb-8"
+          className="flex items-center gap-2 text-stone-400 hover:text-stone-900 dark:hover:text-white mb-4"
         >
           <ArrowLeftIcon className="w-5 h-5" /> Volver al blog
         </button>
-        <h1 className="text-3xl text-stone-900 dark:text-stone-100 font-bold mb-4">
+        <h1 className="font-h1 mb-4">
           {post.title}
         </h1>
-        <div className="mb-6 text-stone-500 dark:text-stone-300 text-sm">
+        <div className="mb-6 font-card-p ">
           {post.updated_at && (
             <span>
               Publicado el{" "}
@@ -153,7 +154,7 @@ export default function PostDetailClient({ slug }: { slug: string }) {
 
         {relatedPosts.length > 0 && (
           <section className="mt-12">
-            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 mb-8">
+            <h2 className="font-h2 mb-8">
               Artículos recomendados
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -192,6 +193,7 @@ export default function PostDetailClient({ slug }: { slug: string }) {
           </section>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

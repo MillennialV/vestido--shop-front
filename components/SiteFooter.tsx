@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { FacebookIcon, InstagramIcon, WhatsappIcon } from "./Icons";
+import { FacebookIcon, InstagramIcon, WhatsappIcon } from "@/components/Icons";
 
 const SiteFooter: React.FC = () => {
     const currentYear = new Date().getFullYear();
@@ -19,6 +19,11 @@ const SiteFooter: React.FC = () => {
                         <p className="font-p-footer max-w-[250px]">
                             Tu destino premium en Lima para vestidos importados de USA. Calidad, estilo y exclusividad en San Isidro.
                         </p>
+                        <div className="flex gap-[16px] mt-[24px]">
+                            <Link href="#" className="hover:underline"><FacebookIcon className="size-[24px]" /></Link>
+                            <Link href="#" className="hover:underline"><InstagramIcon className="size-[24px]" /></Link>
+                            <Link href="#" className="hover:underline"><WhatsappIcon className="size-[24px]" /></Link>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-[40px]">

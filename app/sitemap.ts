@@ -34,12 +34,21 @@ async function getPosts() {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [garments, posts] = await Promise.all([getGarments(), getPosts()]);
 
-    const productEntries = garments.map((garment: any) => ({
-        url: `${PUBLIC_URL}/${garment.slug}`,
-        lastModified: garment.created_at ? new Date(garment.created_at) : new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.7,
-    }));
+    const productEntries = garments.map((garment: any) => {
+        let slug = garment.slug;
+        if (!slug) {
+            slug = garment.title
+                ? `${garment.title.toLowerCase().replace(/["']/g, '').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-')}-${garment.id}`
+                : `prenda-${garment.id}`;
+        }
+
+        return {
+            url: `${PUBLIC_URL}/${slug}`,
+            lastModified: garment.created_at ? new Date(garment.created_at) : new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.7,
+        };
+    });
 
     const blogEntries = posts.map((post: any) => ({
         url: `${PUBLIC_URL}/posts/${post.slug}`,

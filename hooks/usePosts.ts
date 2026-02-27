@@ -1,15 +1,15 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Post, BlogPagination } from '@/types/post';
 
-export const usePosts = () => {
+export const usePosts = (initialPosts: Post[] = []) => {
 
-    const [posts, setPosts] = useState<Post[]>([]);
+    const [posts, setPosts] = useState<Post[]>(initialPosts);
     const [pagination, setPagination] = useState<BlogPagination>({
         page: 1,
         limit: 10,
         hasNextPage: false
     });
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(initialPosts.length === 0);
     const [error, setError] = useState<string | null>(null);
 
     const fetchPosts = useCallback(async (params: { page?: number; limit?: number } = {}) => {
@@ -38,10 +38,12 @@ export const usePosts = () => {
         }
     }, []);
 
-    // Load posts on mount
+    // Load posts on mount only if no initial posts were provided
     useEffect(() => {
-        fetchPosts();
-    }, [fetchPosts]);
+        if (initialPosts.length === 0) {
+            fetchPosts();
+        }
+    }, [fetchPosts, initialPosts.length]);
 
     const fetchPostById = useCallback(async (id: number | string): Promise<Post | null> => {
         setIsLoading(true);

@@ -32,7 +32,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
     <button
       ref={ref}
       onClick={() => onSelect(garment)}
-      className={`group relative w-[130px] h-[170px] flex-shrink-0 rounded-xl overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white ${isActive
+      className={`group relative w-[80px] h-[100px] flex-shrink-0 rounded-xl overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white ${isActive
         ? "ring-2 ring-[#D4A373] scale-100 shadow-xl z-10"
         : "opacity-90 grayscale hover:grayscale-0 hover:opacity-100"
         }`}
@@ -78,9 +78,9 @@ const ThumbnailStrip: React.FC<ThumbnailStripProps> = ({
   onSelectGarment,
 }) => {
   return (
-    <div className="bg-transparent p-4 pb-6">
+    <div className="bg-transparent px-4 pt-2 pb-2">
       <div
-        className="flex items-center gap-4 overflow-x-auto pb-4 pt-2 custom-scrollbar"
+        className="flex items-center gap-2 overflow-x-auto pb-4 pt-0 custom-scrollbar"
         role="toolbar"
         aria-label="Navegación de productos"
       >

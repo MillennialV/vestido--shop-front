@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({
   onSearchChange,
 }) => {
   const { isDark, toggleDarkMode } = useDarkMode();
-  const { totalItems, toggleCart } = useCart();
+  const { totalItems, toggleCart, isCartOpen } = useCart();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -121,12 +121,14 @@ const Header: React.FC<HeaderProps> = ({
               onClick={(e) => handleLinkClick(e, "/")}
               className="font-header"
             >
-              <h1
-                aria-label="title"
-                role="heading"
-                aria-level={1}
+              <span
+                aria-hidden="true"
+                className="text-2xl md:text-3xl tracking-[0.2em] font-medium"
               >
                 WOMANITY
+              </span>
+              <h1 className="sr-only">
+                Vestidos de Fiesta Importados en Lima | Womanity Boutique San Isidro
               </h1>
             </a>
           </div>
@@ -136,7 +138,10 @@ const Header: React.FC<HeaderProps> = ({
             <div className="hidden fd:flex items-center gap-4 fd:gap-[41px]">
               <button
                 onClick={toggleCart}
-                className="relative p-2 rounded-full text-stone-600 text-color-three dark:text-color-four  transition-colors"
+                className={`relative p-2 rounded-full transition-all duration-300 ${isCartOpen
+                  ? "bg-color-background text-color-three dark:bg-color-background-dark dark:text-color-four scale-[1.15] shadow-sm"
+                  : "text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110"
+                  }`}
                 aria-label="Abrir carrito"
               >
                 <ShoppingCartIcon className="w-6 h-6" />
@@ -149,7 +154,7 @@ const Header: React.FC<HeaderProps> = ({
 
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors"
+                className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
                 aria-label={mounted ? (isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro") : "Cambiar modo"}
               >
                 {mounted ? (
@@ -161,7 +166,7 @@ const Header: React.FC<HeaderProps> = ({
 
               <button
                 onClick={onToggleAdmin}
-                className="p-2 rounded-full text-stone-600 dark:text-white hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-colors"
+                className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
                 aria-label={
                   isAdmin
                     ? "Salir del modo administrador"

@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { Garment } from "@/types/Garment";
 
 import {
@@ -178,7 +179,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   const cardDescription = `${garment.title}${brandDisplay ? ` por ${brandDisplay}` : ""}, Talla ${garment.size}, Color ${garment.color}`;
   const actionLabel = isSelectionMode ? `Seleccionar` : `Ver detalles de`;
 
-  return (
+  const cardContent = (
     <article
       ref={cardRef}
       className={`relative group aspect-[9/16] overflow-hidden rounded-[20px] shadow-lg transform transition-all duration-300 ease-in-out bg-stone-200 
@@ -315,6 +316,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
               <>{brandDisplay} &middot; </>
             )}
             Talla: {garment.size || "N/A"} {garment.color && `· ${garment.color}`}
+            {garment.price && ` · S/ ${garment.price}`}
             {isAdmin && garment.cantidad !== undefined && (
               <span className={`block mt-1 font-bold ${garment.cantidad > 0 ? 'text-green-400' : 'text-red-400'}`}>
                 Stock: {garment.cantidad}
@@ -325,6 +327,21 @@ const VideoCard: React.FC<VideoCardProps> = ({
       </div>
     </article>
   );
+
+  if (!isSelectionMode && garment.slug) {
+    return (
+      <Link href={`/${garment.slug}`} onClick={(e) => {
+        // Prevent default navigation to allow the existing modal logic to take over,
+        // but preserve the href for SEO/crawlers.
+        e.preventDefault();
+        handleClick();
+      }} className="w-full flex">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return cardContent;
 };
 
 export default VideoCard;
