@@ -121,12 +121,14 @@ const Header: React.FC<HeaderProps> = ({
               onClick={(e) => handleLinkClick(e, "/")}
               className="font-header"
             >
-              <h1
-                aria-label="title"
-                role="heading"
-                aria-level={1}
+              <span
+                aria-hidden="true"
+                className="text-2xl md:text-3xl tracking-[0.2em] font-medium"
               >
                 WOMANITY
+              </span>
+              <h1 className="sr-only">
+                Vestidos de Fiesta Importados en Lima | Womanity Boutique San Isidro
               </h1>
             </a>
           </div>

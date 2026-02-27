@@ -92,7 +92,7 @@ export default function HomeClient({
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const [gridColumns, setGridColumns] = useState(3);
   const { authenticated, onLogout, onLogin } = useAuth();
-  const { fetchPosts, deletePost, posts, pagination: blogPagination, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts();
+  const { fetchPosts, deletePost, posts, pagination: blogPagination, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts(initialPosts);
   const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
   const ITEMS_PER_PAGE = gridColumns === 5 ? 15 : 12;
   const POSTS_PER_PAGE = 6;
