@@ -507,7 +507,7 @@ export default function HomeClient({
   );
 
   return (
-    <div className="bg-color-four dark:bg-color-three min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
+    <div className="bg-color-four  dark:bg-color-three min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
       <Header
         isAdmin={authenticated}
         onToggleAdmin={handleToggleAdmin}
@@ -521,7 +521,7 @@ export default function HomeClient({
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
       />
-      <main className="mx-[23px] fd:mx-auto fd:max-w-[1290px] bg-color-background dark:bg-color-background-dark rounded-[21px] my-5 px-[26px] py-[30px]">
+      <main className="mx-[12px] fd:mx-[23px] fd:mx-auto fd:max-w-[1290px] bg-color-background dark:bg-color-background-dark rounded-[21px] my-5 px-[26px] py-[30px]">
         {isLoading && garments.length === 0 && (
           <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
             Cargando...

@@ -131,7 +131,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`border-b border-stone-200 dark:border-stone-700 bg-white-200 dark:bg-stone-900 transition-shadow ${snapshot.isDragging
+                        className={`border-b border-stone-200 dark:border-stone-700 transition-shadow ${snapshot.isDragging
                           ? "shadow-lg z-50 border-stone-400"
                           : ""
                           }`}
@@ -155,7 +155,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                               type="button"
                               onClick={() => setOpenId(isOpen ? null : item.id)}
                               aria-label={isOpen ? "Cerrar" : "Abrir"}
-                              className="flex justify-between items-center w-full py-5 text-left font-semibold text-stone-800 dark:text-stone-100 text-lg"
+                              className="flex justify-between items-center w-full py-5 text-left font-fqa-quest"
                             >
                               <span>{item.pregunta}</span>
                             </button>
@@ -201,7 +201,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                           className={`grid transition-all duration-300 ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
                         >
                           <div className="overflow-hidden">
-                            <p className="pb-5 text-stone-600 dark:text-stone-300">
+                            <p className="pb-5 font-fqa-ans ">
                               {item.respuesta}
                             </p>
                           </div>
