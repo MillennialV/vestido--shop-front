@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlusIcon, UploadIcon, CheckCircleIcon, DeleteIcon, WhatsappIcon, QrCodeIcon } from './Icons';
+import { PlusIcon, UploadIcon, CheckCircleIcon, DeleteIcon, WhatsappIcon, QrCodeIcon, DownloadIcon } from './Icons';
 
 interface CatalogToolbarProps {
     onAddGarment: () => void;
@@ -10,6 +10,7 @@ interface CatalogToolbarProps {
     onBulkDelete: () => void;
     onWhatsapp: () => void;
     onGenerateQr: () => void;
+    onDownloadImages: () => void;
 }
 
 const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
@@ -20,7 +21,8 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
     selectedCount,
     onBulkDelete,
     onWhatsapp,
-    onGenerateQr
+    onGenerateQr,
+    onDownloadImages
 }) => {
     return (
         <section className="mt-8 mb-8 bg-white/90 dark:bg-stone-900/90 backdrop-blur-sm border border-stone-200 dark:border-stone-700 rounded-xl shadow-sm overflow-hidden">
@@ -63,6 +65,14 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                         </button>
                         {isSelectionMode && selectedCount > 0 && (
                             <>
+                                <button
+                                    onClick={onDownloadImages}
+                                    className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold py-2.5 px-5 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700 hover:border-stone-400 dark:hover:border-stone-500 active:bg-stone-100 dark:active:bg-stone-600 transition-all duration-200 text-sm shadow-sm hover:shadow-md"
+                                    aria-label={`Descargar imágenes de ${selectedCount} prendas`}
+                                >
+                                    <DownloadIcon className="w-4 h-4" />
+                                    <span>Descargar</span>
+                                </button>
                                 <button
                                     onClick={onGenerateQr}
                                     className="inline-flex items-center gap-2 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-white font-semibold py-2.5 px-5 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600 transition-all duration-200 text-sm shadow-sm hover:shadow-md"
