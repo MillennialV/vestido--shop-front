@@ -42,6 +42,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
         }
     }, [currentIndex, autoPlayInterval, nextSlide, slides.length]);
 
+    useEffect(() => {
+        // Resetea el índice al cambiar los filtros para que no quede fuera de rango
+        setCurrentIndex(0);
+    }, [slides]);
+
     if (!slides || slides.length === 0) {
         return null; // o un skeleton loader
     }

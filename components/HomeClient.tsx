@@ -177,22 +177,7 @@ export default function HomeClient({
       return dateB - dateA;
     });
   };
-  const filteredGarments = useMemo(() => {
-    return garments.filter((garment) => {
-      const searchLower = searchQuery.toLowerCase();
-      const matchesSearch =
-        searchQuery === "" ||
-        garment.title.toLowerCase().includes(searchLower) ||
-        garment.brand.toLowerCase().includes(searchLower) ||
-        (garment.description?.toLowerCase().includes(searchLower) ?? false) ||
-        garment.color.toLowerCase().includes(searchLower) ||
-        garment.size.toLowerCase().includes(searchLower) ||
-        (garment.material?.toLowerCase().includes(searchLower) ?? false);
-      const matchesBrand = filters.brand === "all" || garment.brand === filters.brand;
-      const matchesSize = filters.size === "all" || garment.size === filters.size;
-      return matchesSearch && matchesBrand && matchesSize;
-    });
-  }, [garments, searchQuery, filters]);
+  const filteredGarments = garments;
   const totalPages = pagination.totalPages;
   const [allProductsForFilters, setAllProductsForFilters] = useState<Garment[]>([]);
 
@@ -575,7 +560,7 @@ export default function HomeClient({
   };
 
   const slides = useMemo(() => {
-    return garments
+    return filteredGarments
       .filter((garment) => garment.imagen_principal)
       .map((garment) => ({
         id: garment.id,
@@ -583,7 +568,7 @@ export default function HomeClient({
         title: garment.title,
         subtitle: garment.slug,
       }));
-  }, [garments]);
+  }, [filteredGarments]);
 
   const handleBlogPageChange = (page: number) => {
     fetchPosts({ page });
