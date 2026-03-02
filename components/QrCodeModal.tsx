@@ -36,7 +36,7 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({
   useEffect(() => {
     if (isRendered && garment && canvasRef.current) {
       const currentSlug = garment.slug || slugify(garment.title, garment.id);
-      const shareUrl = `${PUBLIC_URL}/${currentSlug}`;
+      const shareUrl = `${PUBLIC_URL}/producto/${currentSlug}`;
 
       QRCode.toCanvas(
         canvasRef.current,

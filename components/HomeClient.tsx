@@ -1,6 +1,7 @@
 ﻿"use client";
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slugify";
 import type { Garment } from "@/types/Garment";
 import type { FaqItem } from "@/types/FaqItem";
@@ -47,6 +48,7 @@ export default function HomeClient({
   initialFaqs: FaqItem[];
 }) {
   const processedSlugRef = useRef<string | null>(null);
+  const prevGarmentRef = useRef<Garment | null>(null);
   const [faqsLocal, setFaqsLocal] = useState<FaqItem[]>(initialFaqs);
   const [isLoading, setIsLoading] = useState(false);
   const {
@@ -92,6 +94,7 @@ export default function HomeClient({
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const [gridColumns, setGridColumns] = useState(3);
   const { authenticated, onLogout, onLogin } = useAuth();
+  const router = useRouter();
   const { fetchPosts, deletePost, posts, pagination: blogPagination, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts(initialPosts);
   const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
   const ITEMS_PER_PAGE = gridColumns === 5 ? 15 : 12;
@@ -101,24 +104,34 @@ export default function HomeClient({
   // Toggle for showing the Image Carousel
   const SHOW_CAROUSEL = true;
 
-  const handleSelectGarment = useCallback((garment: Garment, updateUrl = true) => {
+  const handleSelectGarment = useCallback((garment: Garment, _updateUrl = true) => {
     setSelectedGarment(garment);
-    if (updateUrl && garment.slug) {
-      processedSlugRef.current = garment.slug;
-      const newPath = `/${garment.slug}`;
-      window.history.pushState(null, "", newPath);
-    }
   }, []);
 
   const handleCloseModal = useCallback(() => {
     setSelectedGarment(null);
-    processedSlugRef.current = null; // Synchronize processedSlugRef on close
-    if (window.location.pathname !== "/") {
-      window.history.pushState(null, "", "/");
-    }
   }, []);
 
-  const handleSelectGarmentWrapper = useCallback(async (garment: Garment, updateUrl = false) => {
+  // Sync URL with selected garment without triggering full page re-renders
+  useEffect(() => {
+    if (selectedGarment) {
+      const slug = selectedGarment.slug || slugify(selectedGarment.title, selectedGarment.id);
+      const newPath = `/producto/${slug}`;
+      if (window.location.pathname !== newPath) {
+        window.history.pushState(null, "", newPath);
+        processedSlugRef.current = slug;
+      }
+    } else if (prevGarmentRef.current) {
+      // Only clean the URL if we are closing a previously selected garment
+      if (window.location.pathname !== "/" && !window.location.pathname.startsWith("/blog")) {
+        window.history.pushState(null, "", "/");
+        processedSlugRef.current = null;
+      }
+    }
+    prevGarmentRef.current = selectedGarment;
+  }, [selectedGarment]);
+
+  const handleSelectGarmentWrapper = useCallback(async (garment: Garment, updateUrl = true) => {
     // If we're already loading a product, or a modal is open, do nothing.
     if (isProductLoading || (selectedGarment && selectedGarment.id === garment.id)) return;
 
@@ -303,8 +316,12 @@ export default function HomeClient({
         }
         return;
       }
-      const slug = path.replace(/^\//, "");
-      if (!slug || slug === "blog" || slug.startsWith("blog/")) {
+      let slug = path.replace(/^\//, "");
+      if (slug.startsWith("producto/")) {
+        slug = slug.substring(9);
+      }
+
+      if (!slug || slug === "blog" || slug.startsWith("blog/") || slug === "producto") {
         processedSlugRef.current = null;
         return;
       }

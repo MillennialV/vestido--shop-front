@@ -42,11 +42,14 @@ async function fetchInitialData() {
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string[] }> }): Promise<Metadata> {
     const resolvedParams = await params;
     const slugArray = resolvedParams.slug;
-    const slug = slugArray && slugArray.length > 0 ? slugArray[0] : null;
+    let slug: string | null = null;
+    if (slugArray && slugArray.length > 0) {
+        slug = slugArray[0] === "producto" && slugArray.length > 1 ? slugArray[1] : slugArray[0];
+    }
 
     const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
 
-    if (!slug) {
+    if (!slug || slug === "producto") {
         return {
             title: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
             description: "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro.",
@@ -79,7 +82,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
         (product?.imagenes && product.imagenes.length > 0 ? product.imagenes[0] : null) ||
         DEFAULT_OG_IMAGE;
 
-    const productUrl = `${PUBLIC_URL}/${slug}`;
+    const productUrl = `${PUBLIC_URL}/producto/${slug}`;
 
     return {
         title: productTitle,
@@ -127,11 +130,14 @@ async function getProduct(slug: string) {
 export default async function CatchAllPage({ params }: { params: Promise<{ slug?: string[] }> }) {
     const resolvedParams = await params;
     const slugArray = resolvedParams.slug;
-    const slug = slugArray && slugArray.length > 0 ? slugArray[0] : null;
+    let slug: string | null = null;
+    if (slugArray && slugArray.length > 0) {
+        slug = slugArray[0] === "producto" && slugArray.length > 1 ? slugArray[1] : slugArray[0];
+    }
 
     const [initialData, product] = await Promise.all([
         fetchInitialData(),
-        slug ? getProduct(slug) : Promise.resolve(null)
+        (slug && slug !== "producto") ? getProduct(slug) : Promise.resolve(null)
     ]);
 
     const productJsonLd = product ? {
@@ -146,7 +152,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
         },
         "offers": {
             "@type": "Offer",
-            "url": `${PUBLIC_URL}/${product.slug}`,
+            "url": `${PUBLIC_URL}/producto/${product.slug}`,
             "priceCurrency": "PEN",
             "price": product.price || 0,
             "availability": "https://schema.org/InStock"
