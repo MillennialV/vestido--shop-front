@@ -280,7 +280,7 @@ export default function HomeClient({
         setIsSelectionMode(false);
         setSelectedItems(new Map());
       } catch (error) {
-        console.error("Error al cerrar sesiÃ³n:", error);
+        console.error("Error al cerrar sesión:", error);
       }
     } else {
       setIsAccessCodeModalOpen(true);
@@ -296,8 +296,8 @@ export default function HomeClient({
       setAccessCodeError(null);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      if (/401|credencial|credenciales invÃ¡lidas|invalid/i.test(errorMessage)) {
-        setAccessCodeError("Correo o contraseÃ±a incorrectos. IntÃ©ntalo de nuevo.");
+      if (/401|credencial|credenciales inválidas|invalid/i.test(errorMessage)) {
+        setAccessCodeError("Correo o contraseña incorrectos. Inténtalo de nuevo.");
       } else {
         setAccessCodeError(errorMessage);
       }
@@ -566,8 +566,8 @@ export default function HomeClient({
       await fetchPosts({ page: nextPage, limit: POSTS_PER_PAGE });
       setIsDeleteModalOpen(false);
     } catch (error) {
-      console.error("Error al eliminar el artÃ­culo:", error);
-      alert("Error al eliminar el artÃ­culo");
+      console.error("Error al eliminar el artículo:", error);
+      alert("Error al eliminar el artículo");
     } finally {
       setIsDeleting(false);
       setPostToDelete(null);
@@ -721,7 +721,7 @@ export default function HomeClient({
                 </div>
               ) : (
                 <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
-                  No se encontraron prendas que coincidan con tu bÃºsqueda.
+                  No se encontraron prendas que coincidan con tu búsqueda.
                 </p>
               )}
               <Pagination
@@ -860,8 +860,8 @@ export default function HomeClient({
           }
         }}
         onConfirm={confirmDeletePost}
-        title="Eliminar ArtÃ­culo"
-        message={`Â¿EstÃ¡s seguro de que quieres eliminar el artÃ­culo "${postToDelete?.title}"? Esta acciÃ³n no se puede deshacer.`}
+        title="Eliminar Artículo"
+        message={`¿Estás seguro de que quieres eliminar el artículo "${postToDelete?.title}"? Esta acción no se puede deshacer.`}
         confirmText="Eliminar"
         variant="danger"
         isProcessing={isDeleting}
@@ -879,11 +879,11 @@ export default function HomeClient({
           <div className="space-y-2">
             <p>
               {isBulkDeleteConfirmation
-                ? `Â¿EstÃ¡s seguro de que quieres eliminar las ${selectedItems.size} prendas seleccionadas?`
-                : `Â¿EstÃ¡s seguro de que quieres eliminar el producto "${garmentToDelete?.title}"?`}
+                ? `¿Estás seguro de que quieres eliminar las ${selectedItems.size} prendas seleccionadas?`
+                : `¿Estás seguro de que quieres eliminar el producto "${garmentToDelete?.title}"?`}
             </p>
             <span className="text-sm text-red-500 font-medium block">
-              Esta acciÃ³n no se puede deshacer
+              Esta acción no se puede deshacer
             </span>
           </div>
         }
