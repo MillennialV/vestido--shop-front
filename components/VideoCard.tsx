@@ -33,7 +33,7 @@ interface VideoCardProps {
   onDelete?: (garment: Garment) => void;
   isSelectionMode?: boolean;
   isSelected?: boolean;
-  onToggleSelection?: (id: number) => void;
+  onToggleSelection?: (garment: Garment) => void;
   isDisabled?: boolean;
   priority?: boolean;
 }
@@ -118,7 +118,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
     if (isDisabled) return;
 
     if (isSelectionMode) {
-      onToggleSelection?.(garment.id);
+      onToggleSelection?.(garment);
     } else {
       onSelect?.(garment);
     }
@@ -184,7 +184,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   const cardContent = (
     <article
       ref={cardRef}
-      className={`relative group aspect-[9/16] overflow-hidden rounded-[20px] shadow-lg transform transition-all duration-300 ease-in-out bg-stone-200 
+      className={`relative group aspect-[9/16] overflow-hidden rounded-[20px] shadow-lg transform transition-all duration-300 ease-in-out bg-stone-900 
         w-full mx-auto
         ${isDisabled ? "cursor-not-allowed opacity-75 grayscale-[0.5]" : isSelectionMode ? "cursor-pointer" : "cursor-pointer hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500"}
         ${isSelected ? "ring-4 ring-offset-2 ring-sky-500" : ""}
@@ -223,7 +223,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
       {isVisible && !garment.videoUrl && !garment.imagen_principal && (
         <div
-          className="absolute inset-0 bg-gradient-to-br from-stone-200 to-stone-300 dark:from-stone-700 dark:to-stone-800 z-10"
+          className="absolute inset-0 bg-stone-300 dark:bg-stone-700 z-0"
           aria-hidden="true"
         ></div>
       )}
@@ -240,7 +240,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
           preload={priority ? "auto" : "metadata"}
           onCanPlay={handleCanPlay}
           onError={handleError}
-          className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
+          className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""}`}
           title={`Vista previa en video de ${garment.title}`}
         />
       ) : garment.imagen_principal ? (
@@ -249,20 +249,20 @@ const VideoCard: React.FC<VideoCardProps> = ({
           alt={garment.title}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className={`object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""} ${!showContent ? "opacity-0" : "opacity-100"}`}
+          className={`object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""}`}
           onLoad={() => setIsMediaLoading(false)}
           onError={handleError}
           priority={priority}
         />
       ) : null}
       <div
-        className={`absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent transition-opacity duration-300 ${showContent ? "opacity-100" : "opacity-0"}`}
+        className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 z-10 opacity-100`}
       ></div>
 
       {isSelectionMode && (
-        <div className="absolute top-4 left-4 z-20" aria-hidden="true">
+        <div className="absolute top-4 left-4 z-30" aria-hidden="true">
           {isSelected ? (
-            <CheckCircleIcon className="w-8 h-8 text-sky-500 bg-white rounded-full" />
+            <CheckCircleIcon className="w-8 h-8 text-sky-500 bg-white rounded-full shadow-lg" />
           ) : (
             <CircleIcon className="w-8 h-8 text-white bg-black/30 rounded-full" />
           )}
@@ -304,7 +304,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
       {/* Contenido siempre visible cuando el card está visible, independientemente del estado del video */}
       <div
-        className={`absolute bottom-0 left-0 p-6 w-full text-white transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"}`}
+        className={`absolute bottom-0 left-0 p-6 w-full text-white transition-opacity duration-300 z-20 opacity-100`}
       >
         <div
           className={`transform transition-transform duration-500 ease-in-out ${!isSelectionMode ? "group-hover:-translate-y-2" : ""}`}

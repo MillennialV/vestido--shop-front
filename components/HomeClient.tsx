@@ -81,7 +81,7 @@ export default function HomeClient({
   const [filters, setFilters] = useState({ brand: "all", size: "all" });
   const [currentPage, setCurrentPage] = useState(1);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState(new Set<number>());
+  const [selectedItems, setSelectedItems] = useState(new Map<number, Garment>());
   const [selectedGarment, setSelectedGarment] = useState<Garment | null>(null);
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -278,7 +278,7 @@ export default function HomeClient({
       try {
         onLogout();
         setIsSelectionMode(false);
-        setSelectedIds(new Set());
+        setSelectedItems(new Map());
       } catch (error) {
         console.error("Error al cerrar sesiÃ³n:", error);
       }
@@ -398,18 +398,21 @@ export default function HomeClient({
 
   const handleToggleSelectionMode = () => {
     setIsSelectionMode(!isSelectionMode);
-    if (isSelectionMode) setSelectedIds(new Set());
+    if (!isSelectionMode) setSelectedItems(new Map());
   };
 
-  const handleToggleSelection = (id: number) => {
-    const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) newSelected.delete(id);
-    else newSelected.add(id);
-    setSelectedIds(newSelected);
+  const handleToggleSelection = (garment: Garment) => {
+    const newSelected = new Map(selectedItems);
+    if (newSelected.has(garment.id)) {
+      newSelected.delete(garment.id);
+    } else {
+      newSelected.set(garment.id, garment);
+    }
+    setSelectedItems(newSelected);
   };
 
   const handleBulkDelete = () => {
-    if (selectedIds.size === 0) return;
+    if (selectedItems.size === 0) return;
     setIsBulkDeleteConfirmation(true);
     setIsProductDeleteModalOpen(true);
   };
@@ -424,10 +427,10 @@ export default function HomeClient({
     setIsDeletingProduct(true);
     try {
       if (isBulkDeleteConfirmation) {
-        const idsArray = Array.from(selectedIds);
+        const idsArray = Array.from(selectedItems.keys());
         await Promise.all(idsArray.map(id => deleteProduct(id)));
-        setProducts(garments.filter(g => !selectedIds.has(g.id)));
-        setSelectedIds(new Set());
+        setProducts(garments.filter(g => !selectedItems.has(g.id)));
+        setSelectedItems(new Map());
         setIsSelectionMode(false);
       } else if (garmentToDelete) {
         await deleteProduct(garmentToDelete.id);
@@ -442,6 +445,87 @@ export default function HomeClient({
       setIsBulkDeleteConfirmation(false);
     }
   };
+
+  const handleDownloadImages = useCallback(async () => {
+    if (selectedItems.size === 0) return;
+
+    setIsLoading(true);
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+
+      const selectedGarmentsList = Array.from(selectedItems.values());
+
+      const downloadPromises = selectedGarmentsList.map(async (garment) => {
+        const imageUrl = garment.imagen_principal;
+        if (!imageUrl) return;
+
+        try {
+          const response = await fetch(imageUrl);
+          const blob = await response.blob();
+
+          // Convert to WebP
+          const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            const objectUrl = URL.createObjectURL(blob);
+            img.onload = () => {
+              URL.revokeObjectURL(objectUrl);
+              resolve(img);
+            };
+            img.onerror = (err) => {
+              URL.revokeObjectURL(objectUrl);
+              reject(err);
+            };
+            img.src = objectUrl;
+          });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            const webpBlob = await new Promise<Blob | null>((resolve) => {
+              canvas.toBlob((b) => resolve(b), 'image/webp', 1.0);
+            });
+
+            if (webpBlob) {
+              const safeDescription = (garment.description || garment.title || "sin-descripcion")
+                .substring(0, 20)
+                .replace(/\s+/g, '-')
+                .replace(/[/\\?%*:|"<>]/g, '-');
+              const fileName = `${garment.id}-${garment.size || 'N-A'}-${safeDescription}.webp`;
+              zip.file(fileName, webpBlob);
+            }
+          }
+        } catch (error) {
+          console.error(`Error procesando imagen para producto ${garment.id}:`, error);
+        }
+      });
+
+      await Promise.all(downloadPromises);
+
+      if (Object.keys(zip.files).length === 0) {
+        alert("No se pudieron procesar las imágenes.");
+        return;
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(content);
+      link.download = `vestidos-seleccionados-${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error("Error al generar el ZIP:", error);
+      alert("Error al generar el archivo de descarga.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedItems, garments]);
 
   const handleOpenPostModal = (post: Post | null = null) => {
     setEditingPost(post);
@@ -580,10 +664,11 @@ export default function HomeClient({
                   onBulkUpload={() => setIsBulkUploadModalOpen(true)}
                   onToggleSelectionMode={handleToggleSelectionMode}
                   isSelectionMode={isSelectionMode}
-                  selectedCount={selectedIds.size}
+                  selectedCount={selectedItems.size}
                   onBulkDelete={handleBulkDelete}
                   onWhatsapp={() => setIsWhatsappModalOpen(true)}
                   onGenerateQr={() => setIsQrBatchModalOpen(true)}
+                  onDownloadImages={handleDownloadImages}
                 />
               )}
               <FilterBar
@@ -627,7 +712,7 @@ export default function HomeClient({
                       onEdit={handleOpenForm}
                       onDelete={handleDeleteProduct}
                       isSelectionMode={isSelectionMode}
-                      isSelected={selectedIds.has(garment.id)}
+                      isSelected={selectedItems.has(garment.id)}
                       onToggleSelection={handleToggleSelection}
                       isDisabled={isProductLoading || !!selectedGarment}
                       priority={index < 6}
@@ -740,7 +825,7 @@ export default function HomeClient({
       <QrBatchConfigModal
         isOpen={isQrBatchModalOpen}
         onClose={() => setIsQrBatchModalOpen(false)}
-        garments={garments.filter((g) => selectedIds.has(g.id))}
+        garments={Array.from(selectedItems.values())}
       />
       <PostFormModal
         isOpen={isPostModalOpen}
@@ -794,7 +879,7 @@ export default function HomeClient({
           <div className="space-y-2">
             <p>
               {isBulkDeleteConfirmation
-                ? `Â¿EstÃ¡s seguro de que quieres eliminar las ${selectedIds.size} prendas seleccionadas?`
+                ? `Â¿EstÃ¡s seguro de que quieres eliminar las ${selectedItems.size} prendas seleccionadas?`
                 : `Â¿EstÃ¡s seguro de que quieres eliminar el producto "${garmentToDelete?.title}"?`}
             </p>
             <span className="text-sm text-red-500 font-medium block">
