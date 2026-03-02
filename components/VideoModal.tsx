@@ -253,7 +253,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   const handleShare = async () => {
     if (!garment) return;
     const currentSlug = garment.slug || slugify(garment.title, garment.id);
-    const shareUrl = `${PUBLIC_URL}/${currentSlug}`;
+    const shareUrl = `${PUBLIC_URL}/producto/${currentSlug}`;
     const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
 
     try {
@@ -317,7 +317,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     if (!garment) return;
 
     const currentSlug = garment.slug || slugify(garment.title, garment.id);
-    const shareUrl = `${PUBLIC_URL}/${currentSlug}`;
+    const shareUrl = `${PUBLIC_URL}/producto/${currentSlug}`;
     const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
 
     const isMobile = isMobileDevice();
@@ -400,7 +400,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
       }
     }
     if (garment.slug) {
-      const productUrl = `${PUBLIC_URL}/${garment.slug}`;
+      const productUrl = `${PUBLIC_URL}/producto/${garment.slug}`;
       message += `*Enlace:* ${productUrl}\n`;
     }
   }
@@ -425,7 +425,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
       "priceCurrency": "PEN",
       "price": typeof garment.price === "number" ? garment.price : parseFloat(String(garment.price || 0)),
       "availability": garment.cantidad && garment.cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      "url": `${PUBLIC_URL}/${garment.slug || slugify(garment.title, garment.id)}`
+      "url": `${PUBLIC_URL}/producto/${garment.slug || slugify(garment.title, garment.id)}`
     }
   };
 

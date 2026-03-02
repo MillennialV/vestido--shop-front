@@ -84,7 +84,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
 
                 // Generate QR
                 const currentSlug = garment.slug || slugify(garment.title, garment.id);
-                const url = `${PUBLIC_URL}/#/${currentSlug}`;
+                const url = `${PUBLIC_URL}/producto/${currentSlug}`;
 
                 try {
                     const qrDataUrl = await QRCode.toDataURL(url, {

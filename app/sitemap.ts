@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
 
         return {
-            url: `${PUBLIC_URL}/${slug}`,
+            url: `${PUBLIC_URL}/producto/${slug}`,
             lastModified: garment.created_at ? new Date(garment.created_at) : new Date(),
             changeFrequency: 'weekly' as const,
             priority: 0.7,

@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { slugify } from "@/lib/slugify";
 import type { Garment } from "@/types/Garment";
 
 import {
@@ -174,8 +175,9 @@ const VideoCard: React.FC<VideoCardProps> = ({
   const showSpinner = isVisible && garment.videoUrl && isMediaLoading;
   // Mostrar contenido siempre que esté visible, incluso si el video falla
   const showContent = isVisible && !showSpinner;
-
   const brandDisplay = garment.brand && garment.brand !== "No identificable" ? garment.brand : null;
+  const currentSlug = garment.slug || slugify(garment.title, garment.id);
+
   const cardDescription = `${garment.title}${brandDisplay ? ` por ${brandDisplay}` : ""}, Talla ${garment.size}, Color ${garment.color}`;
   const actionLabel = isSelectionMode ? `Seleccionar` : `Ver detalles de`;
 
@@ -328,14 +330,16 @@ const VideoCard: React.FC<VideoCardProps> = ({
     </article>
   );
 
-  if (!isSelectionMode && garment.slug) {
+  if (!isSelectionMode) {
     return (
-      <Link href={`/${garment.slug}`} onClick={(e) => {
-        // Prevent default navigation to allow the existing modal logic to take over,
-        // but preserve the href for SEO/crawlers.
-        e.preventDefault();
-        handleClick();
-      }} className="w-full flex">
+      <Link
+        href={`/producto/${currentSlug}`}
+        onClick={(e) => {
+          e.preventDefault();
+          handleClick();
+        }}
+        className="w-full flex"
+      >
         {cardContent}
       </Link>
     );

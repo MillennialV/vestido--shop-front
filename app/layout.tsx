@@ -247,11 +247,10 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${cormorant.variable} bg-stone-50 font-sans`}>
-        {/* 
-        {GA_TRACKING_ID && GA_TRACKING_ID !== "G-XXXXXXXXXX" && (
+        {process.env.NEXT_PUBLIC_GA_ID && process.env.NEXT_PUBLIC_GA_ID !== "G-XXXXXXXXXX" && (
           <>
             <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
               strategy="afterInteractive"
             />
             <Script id="google-analytics" strategy="afterInteractive">
@@ -259,14 +258,13 @@ export default function RootLayout({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${GA_TRACKING_ID}', {
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
                   page_path: window.location.pathname,
                 });
               `}
             </Script>
           </>
         )}
-        */}
         <AuthProvider>
           <ThemeProvider>
             <CartProvider>
