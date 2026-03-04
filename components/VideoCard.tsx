@@ -132,16 +132,19 @@ const VideoCard: React.FC<VideoCardProps> = ({
   };
 
   const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     onEdit?.(garment);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     onDelete?.(garment);
   };
 
   const handleWhatsappClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const phoneNumber = "51956382746";
     let message = `Hola, me interesa la siguiente prenda:\n\n`;
