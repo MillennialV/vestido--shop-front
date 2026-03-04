@@ -22,6 +22,7 @@ const FaqModal = dynamic(() => import("@/components/FaqModal"), { ssr: false });
 const PostFormModal = dynamic(() => import("@/components/PostFormModal"), { ssr: false });
 const WhatsappModal = dynamic(() => import("@/components/WhatsappModal"), { ssr: false });
 const QrBatchConfigModal = dynamic(() => import("@/components/QrBatchConfigModal"), { ssr: false });
+const DownloadAllModal = dynamic(() => import("@/components/modals/DownloadAllModal"), { ssr: false });
 
 import Pagination from "@/components/Pagination";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -81,7 +82,8 @@ export default function HomeClient({
   const [filters, setFilters] = useState({ brand: "all", size: "all" });
   const [currentPage, setCurrentPage] = useState(1);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedItems, setSelectedItems] = useState(new Map<number, Garment>());
+  const [selectedItems, setSelectedItems] = useState<Map<number, Garment>>(new Map());
+  const [isExporting, setIsExporting] = useState(false);
   const [selectedGarment, setSelectedGarment] = useState<Garment | null>(null);
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -93,6 +95,8 @@ export default function HomeClient({
   const [isBulkDeleteConfirmation, setIsBulkDeleteConfirmation] = useState(false);
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const [gridColumns, setGridColumns] = useState(3);
+  const [isDownloadAllModalOpen, setIsDownloadAllModalOpen] = useState(false);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const { authenticated, onLogout, onLogin } = useAuth();
   const router = useRouter();
   const { fetchPosts, deletePost, posts, pagination: blogPagination, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts(initialPosts);
@@ -434,7 +438,6 @@ export default function HomeClient({
   const handleDownloadImages = useCallback(async () => {
     if (selectedItems.size === 0) return;
 
-    setIsLoading(true);
     try {
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
@@ -507,10 +510,106 @@ export default function HomeClient({
     } catch (error) {
       console.error("Error al generar el ZIP:", error);
       alert("Error al generar el archivo de descarga.");
-    } finally {
-      setIsLoading(false);
     }
   }, [selectedItems, garments]);
+
+  const handleSelectAll = useCallback(() => {
+    const newSelected = new Map(selectedItems); // Mantenemos los que ya estaban o empezamos de cero si prefieres deseleccionar el resto
+    garments.forEach(p => newSelected.set(p.id, p));
+    console.log(newSelected.size);
+
+    setSelectedItems(newSelected);
+    setIsSelectionMode(true);
+  }, [selectedItems, garments]);
+
+  const handleDeselectAll = useCallback(() => {
+    setSelectedItems(new Map());
+  }, []);
+
+  const handleExportExcel = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      let productsToExport: Garment[] = [];
+
+      if (selectedItems.size > 0) {
+        productsToExport = Array.from(selectedItems.values());
+      } else {
+        const res = await fetch('/api/products?limit=10000&sort=created_at&order=desc');
+        if (!res.ok) throw new Error("Error fetching products for export");
+        const data = await res.json();
+        productsToExport = Array.isArray(data) ? data : data.products || [];
+      }
+
+      if (productsToExport.length === 0) {
+        alert("No hay productos para exportar.");
+        return;
+      }
+
+      // Headers profesionales
+      const headers = [
+        "ID",
+        "Producto",
+        "Marca",
+        "Talla",
+        "Color",
+        "Precio",
+        "Stock",
+        "Material",
+        "Ocasión",
+        "Descripción",
+        "Notas de Estilo",
+        "URL Video",
+        "URL Imagen",
+        "Slug",
+        "Fecha de Registro"
+      ];
+
+      const rows = productsToExport.map(p => {
+        // Formatear fecha de forma legible
+        const date = p.created_at ? new Date(p.created_at).toLocaleDateString('es-ES') : 'N/A';
+
+        // Limpiar textos para evitar que rompan el CSV
+        const clean = (text: string | undefined | null) =>
+          text ? `"${text.replace(/"/g, '""').replace(/\n/g, ' ')}"` : '""';
+
+        return [
+          p.id,
+          clean(p.title),
+          clean(p.brand),
+          clean(p.size),
+          clean(p.color),
+          p.price || 0,
+          p.cantidad || 0,
+          clean(p.material),
+          clean(p.occasion),
+          clean(p.description),
+          clean(p.style_notes),
+          clean(p.videoUrl),
+          clean(p.imagen_principal),
+          clean(p.slug),
+          clean(date)
+        ];
+      });
+
+      // Usamos punto y coma (;) como separador para mejor compatibilidad con Excel en regiones con coma decimal
+      const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `catalogo_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error(error);
+      alert("Error al exportar a Excel.");
+    } finally {
+      setIsExporting(false);
+    }
+  }, [selectedItems]);
 
   const handleOpenPostModal = (post: Post | null = null) => {
     setEditingPost(post);
@@ -654,6 +753,11 @@ export default function HomeClient({
                   onWhatsapp={() => setIsWhatsappModalOpen(true)}
                   onGenerateQr={() => setIsQrBatchModalOpen(true)}
                   onDownloadImages={handleDownloadImages}
+                  onDownloadAll={() => setIsDownloadAllModalOpen(true)}
+                  onSelectAll={handleSelectAll}
+                  onDeselectAll={handleDeselectAll}
+                  onExportExcel={handleExportExcel}
+                  isExportingExcel={isExporting}
                 />
               )}
               <FilterBar
@@ -811,6 +915,85 @@ export default function HomeClient({
         isOpen={isQrBatchModalOpen}
         onClose={() => setIsQrBatchModalOpen(false)}
         garments={Array.from(selectedItems.values())}
+      />
+      <DownloadAllModal
+        isOpen={isDownloadAllModalOpen}
+        onClose={() => setIsDownloadAllModalOpen(false)}
+        isDownloading={isDownloadingAll}
+        onConfirm={async () => {
+          setIsDownloadingAll(true);
+          try {
+            // 1. Obtener TODOS los productos sin paginación
+            const res = await fetch('/api/products?limit=10000&sort=created_at&order=desc');
+            if (!res.ok) throw new Error("Error al obtener productos");
+            const data = await res.json();
+            const allProducts: Garment[] = Array.isArray(data) ? data : data.products || [];
+
+            if (allProducts.length === 0) {
+              alert("No hay productos para descargar.");
+              return;
+            }
+
+            // 2. Importar dinamico de jszip para consistencia
+            const JSZip = (await import('jszip')).default;
+            const zip = new JSZip();
+            const imgFolder = zip.folder("imagenes_catalogo");
+            if (!imgFolder) throw new Error("Error ZIP");
+
+            // Helper function for slugify
+            const slugify = (text: string, id: number) => {
+              const baseSlug = text
+                .toString()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w-]+/g, '')
+                .replace(/--+/g, '-');
+              return `${baseSlug}-${id}`;
+            };
+
+            // 3. Descargar imágenes
+            const downloadPromises = allProducts
+              .filter(p => !!p.imagen_principal)
+              .map(async (p) => {
+                try {
+                  const imgUrl = p.imagen_principal as string;
+                  const response = await fetch(imgUrl);
+                  if (!response.ok) return;
+                  const blob = await response.blob();
+
+                  // Regla: slug o titulo
+                  const currentSlug = p.slug || slugify(p.title, p.id);
+                  const extension = imgUrl.split('.').pop()?.split(/[?#]/)[0] || 'jpg';
+                  imgFolder.file(`${currentSlug}.${extension}`, blob);
+                } catch (err) {
+                  console.error(`Error descargando imagen ${p.id}:`, err);
+                }
+              });
+
+            await Promise.all(downloadPromises);
+
+            // 4. Generar y disparar descarga
+            const content = await zip.generateAsync({ type: "blob" });
+            const url = URL.createObjectURL(content);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `catalogo_completo_${new Date().toISOString().split('T')[0]}.zip`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            setIsDownloadAllModalOpen(false);
+          } catch (error) {
+            console.error("Error descarga masiva:", error);
+            alert("Error al procesar la descarga masiva.");
+          } finally {
+            setIsDownloadingAll(false);
+          }
+        }}
       />
       <PostFormModal
         isOpen={isPostModalOpen}
