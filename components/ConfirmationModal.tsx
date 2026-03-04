@@ -61,7 +61,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             aria-modal="true"
         >
             <div
-                className={`relative bg-white dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-md overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+                className={`relative bg-color-four dark:bg-color-three rounded-lg shadow-2xl w-full max-w-md overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6">
@@ -70,10 +70,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             <ExclamationTriangleIcon className="w-6 h-6" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-xl font-semibold text-stone-900 dark:text-stone-100 mb-2">
+                            <h3 className="font-h3 mb-2">
                                 {title}
                             </h3>
-                            <div className="text-stone-600 dark:text-stone-300 leading-relaxed">
+                            <div className="font-p-modal  leading-relaxed">
                                 {message}
                             </div>
                         </div>

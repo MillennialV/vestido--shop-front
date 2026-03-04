@@ -148,6 +148,32 @@
     color: var(--color-color-four);
 }
 
+.font-h3 {
+    font-family: var(--font-allrounder-monument-test-regular), sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 120%;
+    letter-spacing: -3%;
+    color: var(--color-color-three);
+}
+
+.dark .font-h3 {
+    color: var(--color-color-four);
+}
+
+.font-p-modal {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 120%;
+    letter-spacing: -3%;
+    color: var(--color-color-three);
+}
+
+.dark .font-p-modal {
+    color: var(--color-color-four);
+}
+
 .font-p {
     font-family: var(--font-inter), sans-serif;
     font-size: 18px;
