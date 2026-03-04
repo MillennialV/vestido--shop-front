@@ -140,7 +140,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           title: file.name.replace(/\.[^/.]+$/, ""),
           brand: "",
           description: "",
-          size: "M",
+          size: "",
           color: "",
           price: "",
           material: "",
@@ -583,8 +583,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               // Aplicar herencia del primer elemento si existe (Brand y Size)
               // Esto cumple el requerimiento: "si en el primer elemento agrego marca/talla, quiero que los demas se actualicen"
               if (index > 0) {
-                if (globalBrand) updatedData.brand = globalBrand;
-                if (globalSize) updatedData.size = globalSize;
+                if (globalBrand && globalBrand.trim() !== "") updatedData.brand = globalBrand;
+                if (globalSize && globalSize.trim() !== "") updatedData.size = globalSize;
               }
 
               // Update fields if they are empty or if the title is still the default (filename).
@@ -601,17 +601,20 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 updatedData.title = result.title;
               }
 
-              // Solo actualizar si no hay valor previo (o si acabamos de setear el globalBrand/Size, ya está lleno, así que IA no sobrescribe)
-              if (!updatedData.brand && result.brand) updatedData.brand = result.brand;
+              const shouldFillBrand = globalBrand === undefined || globalBrand.trim() !== "";
+              const shouldFillSize = globalSize === undefined || globalSize.trim() !== "";
+
+              if (shouldFillBrand && !updatedData.brand && result.brand) updatedData.brand = result.brand;
               if (!updatedData.description && result.description) updatedData.description = result.description;
               if (!updatedData.color && result.color) updatedData.color = result.color;
               if (!updatedData.price && priceString) updatedData.price = priceString;
               if (!updatedData.material && result.material) updatedData.material = result.material;
               if (!updatedData.occasion && result.occasion) updatedData.occasion = result.occasion;
               if (!updatedData.style_notes && result.style_notes) updatedData.style_notes = result.style_notes;
-              // Treat the default initial "M" size as empty so IA can fill in the detected size
-              const isDefaultSize = !updatedData.size || updatedData.size === "M";
-              if (isDefaultSize && result.size) updatedData.size = result.size;
+
+              if (shouldFillSize && (!updatedData.size || updatedData.size === "M" || updatedData.size.trim() === "") && result.size) {
+                updatedData.size = result.size;
+              }
 
               return {
                 ...f,
