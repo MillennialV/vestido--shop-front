@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 import type { Garment } from '@/types/Garment';
 
@@ -16,8 +16,15 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
   const [selectedProduct, setSelectedProduct] = useState<Garment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchProducts = useCallback(async (params: { page?: number; limit?: number; brand?: string; size?: string; color?: string; q?: string } = {}) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setIsLoading(true);
     setError(null);
     try {
@@ -36,7 +43,9 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
       if (params.color && params.color !== 'all') queryParams.append('color', params.color);
       if (params.q) queryParams.append('q', params.q);
 
-      const res = await fetch(`/api/products?${queryParams.toString()}`);
+      const res = await fetch(`/api/products?${queryParams.toString()}`, {
+        signal: controller.signal
+      });
       if (!res.ok) throw new Error('Error al cargar productos');
       const data = await res.json();
       const fetchedProducts = Array.isArray(data) ? data : data.products || [];
@@ -49,18 +58,29 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
       setProducts(fetchedProducts);
       setPagination(fetchedPagination);
       return fetchedProducts;
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log('[useProducts] Petición cancelada por una nueva búsqueda');
+        return [];
+      }
       const msg = err instanceof Error ? err.message : 'Error al cargar productos';
       setError(msg);
       console.error('[useProducts] Error:', err);
       return [];
     } finally {
-      setIsLoading(false);
+      if (abortControllerRef.current === controller) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     fetchProducts();
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchProducts]);
 
   const fetchProductById = useCallback(async (id: number | string): Promise<Garment | null> => {

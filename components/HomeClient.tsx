@@ -50,6 +50,7 @@ export default function HomeClient({
 }) {
   const processedSlugRef = useRef<string | null>(null);
   const prevGarmentRef = useRef<Garment | null>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [faqsLocal, setFaqsLocal] = useState<FaqItem[]>(initialFaqs);
   const [isLoading, setIsLoading] = useState(false);
   const {
@@ -217,6 +218,11 @@ export default function HomeClient({
     const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
     setCurrentPage(1);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
     fetchProducts({
       page: 1,
       limit: ITEMS_PER_PAGE,
@@ -227,13 +233,20 @@ export default function HomeClient({
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1);
-    fetchProducts({
-      page: 1,
-      limit: ITEMS_PER_PAGE,
-      ...filters,
-      q: query
-    });
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setCurrentPage(1);
+      fetchProducts({
+        page: 1,
+        limit: ITEMS_PER_PAGE,
+        ...filters,
+        q: query
+      });
+    }, 800);
   };
 
   const handleClearFilters = useCallback(() => {
@@ -241,6 +254,11 @@ export default function HomeClient({
     setFilters(defaultFilters);
     setSearchQuery("");
     setCurrentPage(1);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
     fetchProducts({
       page: 1,
       limit: ITEMS_PER_PAGE,
