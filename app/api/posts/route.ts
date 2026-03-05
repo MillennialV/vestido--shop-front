@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'http://localhost:3000';
 
-const getAuthHeaders = (req: NextRequest) => {
+const getAuthHeaders = (req: NextRequest, isJson: boolean = true) => {
     const token = req.cookies.get('authToken')?.value;
     return {
-        'Content-Type': 'application/json',
+        ...(isJson ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? {
             Authorization: `Bearer ${token}`,
             Cookie: `authToken=${token}`
@@ -54,20 +54,39 @@ export async function GET(req: NextRequest) {
 // POST /api/posts
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
+        const contentType = req.headers.get('content-type') || '';
+        const isFormData = contentType.includes('multipart/form-data');
+        let options: RequestInit = { method: 'POST' };
 
-        const { slug, seo_keywords, categoryId, ...bodyWithoutSlug } = body;
+        if (isFormData) {
+            const formData = await req.formData();
+            formData.delete('slug');
+            formData.delete('seo_keywords');
 
-        const res = await fetch(`${BLOG_BASE_API}/api/blog/posts`, {
-            method: 'POST',
-            headers: getAuthHeaders(req),
-            body: JSON.stringify(bodyWithoutSlug),
-        });
+            options.headers = getAuthHeaders(req, false);
+            options.body = formData;
+        } else {
+            const body = await req.json();
+            const { slug, seo_keywords, categoryId, ...bodyWithoutSlug } = body;
 
-        const data = await res.json();
+            options.headers = getAuthHeaders(req, true);
+            options.body = JSON.stringify(bodyWithoutSlug);
+        }
 
-        if (!data.success) {
-            throw new Error(data.message || 'Error al crear el post');
+        const res = await fetch(`${BLOG_BASE_API}/api/blog/posts`, options);
+
+        let data;
+        const textResponse = await res.text();
+        try {
+            data = JSON.parse(textResponse);
+        } catch (e) {
+            console.error('No se pudo parsear como JSON:', textResponse);
+            throw new Error(`Error en el backend: ${res.status}`);
+        }
+
+        if (res.ok === false || (data && data.success === false)) {
+            console.error('Backend devolvió error:', data);
+            throw new Error(data.message || data.error || 'Error al crear el post');
         }
 
         return NextResponse.json(data);
@@ -84,15 +103,26 @@ export async function PUT(req: NextRequest) {
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
 
-        const body = await req.json();
+        const contentType = req.headers.get('content-type') || '';
+        const isFormData = contentType.includes('multipart/form-data');
+        let options: RequestInit = { method: 'PUT' };
 
-        const { slug, seo_keywords, categoryId, ...bodyWithoutSlug } = body;
+        if (isFormData) {
+            const formData = await req.formData();
+            formData.delete('slug');
+            formData.delete('seo_keywords');
 
-        const res = await fetch(`${BLOG_BASE_API}/api/blog/posts/${id}`, {
-            method: 'PUT',
-            headers: getAuthHeaders(req),
-            body: JSON.stringify(bodyWithoutSlug),
-        });
+            options.headers = getAuthHeaders(req, false);
+            options.body = formData;
+        } else {
+            const body = await req.json();
+            const { slug, seo_keywords, categoryId, ...bodyWithoutSlug } = body;
+
+            options.headers = getAuthHeaders(req, true);
+            options.body = JSON.stringify(bodyWithoutSlug);
+        }
+
+        const res = await fetch(`${BLOG_BASE_API}/api/blog/posts/${id}`, options);
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Error al actualizar el post');
@@ -111,9 +141,16 @@ export async function DELETE(req: NextRequest) {
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
 
+        let bodyContents: string | undefined = undefined;
+        try {
+            const body = await req.json();
+            bodyContents = JSON.stringify(body);
+        } catch (e) { }
+
         const res = await fetch(`${BLOG_BASE_API}/api/blog/posts/${id}`, {
             method: 'DELETE',
-            headers: getAuthHeaders(req),
+            headers: getAuthHeaders(req, true),
+            body: bodyContents
         });
 
         if (!res.ok) {

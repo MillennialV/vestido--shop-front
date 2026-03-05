@@ -68,6 +68,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
                             src={slide.imageUrl}
                             alt={slide.altText || slide.title || `Slide ${index}`}
                             fill
+                            unoptimized
                             className="object-cover"
                             priority={index === 0}
                         />

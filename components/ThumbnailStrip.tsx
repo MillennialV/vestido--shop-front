@@ -44,6 +44,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
           src={garment.imagen_principal}
           alt={garment.title}
           fill
+          unoptimized
           sizes="100px"
           className="object-cover"
         />

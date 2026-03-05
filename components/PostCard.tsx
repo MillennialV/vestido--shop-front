@@ -44,6 +44,7 @@ const PostCard: React.FC<PostCardProps> = ({
           src={post.featured_image_url}
           alt={post.title}
           fill
+          unoptimized
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
         />
