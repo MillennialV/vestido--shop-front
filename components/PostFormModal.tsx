@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
 import type { Post } from "@/types/post";
 import { useCategories } from "@/hooks/useCategories";
-import { azureStorageService } from "@/services/azureStorageService";
 import { CloseIcon, SpinnerIcon, UploadIcon } from "@/components/Icons";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), {
@@ -139,27 +138,23 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
     }
 
     try {
-      let finalImageUrl = formData.featured_image_url;
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('content', formData.content);
+      formDataToSend.append('reading_time', String(parseInt(formData.reading_time) || 1));
+      if (formData.seo_description) {
+        formDataToSend.append('seo_description', formData.seo_description);
+      }
+      formDataToSend.append('is_published', formData.is_published ? 'true' : 'false');
+      formDataToSend.append('category_ids', String(formData.categoryId));
 
       if (imageFile) {
-        if (post?.featured_image_url && post.featured_image_url.includes('blob.core.windows.net')) {
-          await azureStorageService.deleteImage(post.featured_image_url);
-        }
-
-        finalImageUrl = await azureStorageService.uploadImage(imageFile);
+        formDataToSend.append('featured_image', imageFile);
+      } else if (formData.featured_image_url) {
+        formDataToSend.append('featured_image_url', formData.featured_image_url);
       }
 
-      const postData = {
-        title: formData.title,
-        content: formData.content,
-        featured_image_url: finalImageUrl,
-        reading_time: parseInt(formData.reading_time) || 1,
-        seo_description: formData.seo_description,
-        is_published: formData.is_published,
-        category_ids: [Number(formData.categoryId)],
-      };
-
-      await onSubmit(post?.id || 0, postData);
+      await onSubmit(post?.id || 0, formDataToSend);
     } catch (err: any) {
       console.error("Error capturado:", err.message);
       setSubmitError(err.message || "Error al guardar");

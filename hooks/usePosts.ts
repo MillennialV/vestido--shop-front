@@ -67,10 +67,11 @@ export const usePosts = (initialPosts: Post[] = []) => {
         setIsLoading(true);
         setError(null);
         try {
+            const isFormData = postData instanceof FormData;
             const res = await fetch('/api/posts', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(postData),
+                headers: isFormData ? undefined : { 'Content-Type': 'application/json' },
+                body: isFormData ? postData : JSON.stringify(postData),
             });
 
             const response = await res.json();
@@ -94,10 +95,11 @@ export const usePosts = (initialPosts: Post[] = []) => {
         setIsLoading(true);
         setError(null);
         try {
+            const isFormData = postData instanceof FormData;
             const res = await fetch(`/api/posts?id=${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(postData),
+                headers: isFormData ? undefined : { 'Content-Type': 'application/json' },
+                body: isFormData ? postData : JSON.stringify(postData),
             });
             const response = await res.json();
 
@@ -113,15 +115,17 @@ export const usePosts = (initialPosts: Post[] = []) => {
         }
     };
 
-    const deletePost = async (id: number | string): Promise<void> => {
+    const deletePost = async (post: Post): Promise<void> => {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/api/posts?id=${id}`, {
+            const res = await fetch(`/api/posts?id=${post.id}`, {
                 method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ featured_image_url: post.featured_image_url })
             });
             if (!res.ok) throw new Error('Error al eliminar el post');
-            setPosts((prev: Post[]) => prev.filter(p => p.id !== id && String(p.id) !== String(id)));
+            setPosts((prev: Post[]) => prev.filter(p => p.id !== post.id && String(p.id) !== String(post.id)));
         } catch (err: any) {
             setError(err.message || 'Error al eliminar el producto');
             throw error;

@@ -653,7 +653,7 @@ export default function HomeClient({
     if (!postToDelete) return;
     setIsDeleting(true);
     try {
-      await deletePost(postToDelete.id);
+      await deletePost(postToDelete);
 
       // Calcular a quÃ© pÃ¡gina ir tras eliminar
       const isLastItemOnPage = posts.length === 1;
