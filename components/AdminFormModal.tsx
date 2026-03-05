@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import type { Garment } from "@/types/Garment";
 import { useProducts } from "@/hooks/useProducts";
 import { CloseIcon, SparklesIcon, SpinnerIcon } from "@/components/Icons";
+import { convertToWebP } from "@/lib/imageUtils";
 
 const isExternalVideo = (url: string) => {
   if (!url) return false;
@@ -139,17 +140,29 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
 
 
-  const handleExtraImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExtraImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       const newFiles = Array.from(files);
       const availableSlots = 3 - extraImages.length;
       const filesToAdd = newFiles.slice(0, availableSlots);
 
-      const newImages = filesToAdd.map(file => ({
-        file,
-        preview: URL.createObjectURL(file),
-        isNew: true
+      const newImages = await Promise.all(filesToAdd.map(async file => {
+        // Convertir cada imagen extra a WebP inmediatamente
+        let fileToProcess = file;
+        try {
+          if (file.type.startsWith('image/')) {
+            fileToProcess = await convertToWebP(file);
+          }
+        } catch (err) {
+          console.error("Error al convertir imagen extra a WebP:", err);
+        }
+
+        return {
+          file: fileToProcess,
+          preview: URL.createObjectURL(fileToProcess),
+          isNew: true
+        };
       }));
 
       setExtraImages(prev => [...prev, ...newImages]);
@@ -228,6 +241,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       };
 
       // Determinar si es crear o actualizar
+      // Nota: imagePrincipalFile y newImageFiles ya son WebP gracias a los handlers de selección
       const savePromise =
         garment && garment.id
           ? updateProduct(garment.id, dataToSave, videoFile, imagePrincipalFile, newImageFiles)
@@ -323,11 +337,19 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     }
   };
 
-  const handleImagePrincipalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImagePrincipalFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImagePrincipalFile(file);
-      const newPreviewUrl = URL.createObjectURL(file);
+      // Convertir a WebP inmediatamente para previsualización real
+      let fileToProcess = file;
+      try {
+        fileToProcess = await convertToWebP(file);
+      } catch (err) {
+        console.error("Error al convertir imagen principal a WebP:", err);
+      }
+
+      setImagePrincipalFile(fileToProcess);
+      const newPreviewUrl = URL.createObjectURL(fileToProcess);
       // Si no hay video, usar la imagen como preview
       if (!videoFile && !formData.videoUrl) {
         setPreviewUrl(newPreviewUrl);

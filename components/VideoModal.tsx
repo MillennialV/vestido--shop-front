@@ -536,6 +536,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
                         src={activeMedia.url}
                         alt={garment.title}
                         fill
+                        unoptimized
                         className="object-cover z-10 rounded-[15px]"
                         sizes="(max-width: 1024px) 100vw, 75vw"
                         priority
@@ -585,7 +586,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
                       {item.type === 'video' ? (
                         <div className="w-full h-full bg-stone-900 flex items-center justify-center relative">
                           {item.thumbnail ? (
-                            <Image src={item.thumbnail} alt="Video" fill className="object-cover" />
+                            <Image src={item.thumbnail} alt="Video" fill unoptimized className="object-cover" />
                           ) : (
                             <div className="w-full h-full bg-stone-800" />
                           )}
@@ -600,6 +601,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
                           src={item.url}
                           alt={`Vista ${index}`}
                           fill
+                          unoptimized
                           className="object-cover"
                           sizes="80px"
                         />

@@ -15,6 +15,7 @@ import {
   DownloadIcon,
 } from "./Icons";
 import JSZip from "jszip";
+import { convertToWebP } from "@/lib/imageUtils";
 
 interface BulkUploadModalProps {
   isOpen: boolean;
@@ -125,31 +126,47 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
   if (!isRendered) return null;
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
     if (!selectedFiles) return;
-    const newFiles: UploadableFile[] = Array.from(selectedFiles)
+
+    // Procesar archivos en paralelo
+    const newFiles: UploadableFile[] = await Promise.all(Array.from(selectedFiles)
       .filter((file) => file.type.startsWith("video/") || file.type.startsWith("image/"))
-      .map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        previewUrl: URL.createObjectURL(file),
-        status: "pending",
-        progress: 0,
-        garmentData: {
-          title: file.name.replace(/\.[^/.]+$/, ""),
-          brand: "",
-          description: "",
-          size: "",
-          color: "",
-          price: "",
-          material: "",
-          occasion: "",
-          style_notes: "",
-          cantidad: "1",
-        },
-        videoRef: React.createRef<HTMLVideoElement>(),
+      .map(async (file) => {
+        let fileToProcess = file;
+
+        // Si es imagen, convertir a WebP inmediatamente para previsualización real
+        if (file.type.startsWith("image/")) {
+          try {
+            fileToProcess = await convertToWebP(file);
+          } catch (err) {
+            console.error("Error al convertir a WebP en selección masiva:", err);
+          }
+        }
+
+        return {
+          id: crypto.randomUUID(),
+          file: fileToProcess,
+          previewUrl: URL.createObjectURL(fileToProcess),
+          status: "pending",
+          progress: 0,
+          garmentData: {
+            title: fileToProcess.name.replace(/\.[^/.]+$/, "").replace(/_ai$/, ""),
+            brand: "",
+            description: "",
+            size: "",
+            color: "",
+            price: "",
+            material: "",
+            occasion: "",
+            style_notes: "",
+            cantidad: "1",
+          },
+          videoRef: React.createRef<HTMLVideoElement>(),
+        };
       }));
+
     setFiles((prev) => [...prev, ...newFiles]);
 
     // Limpiar el valor del input para permitir volver a seleccionar el mismo archivo si se elimina
@@ -702,7 +719,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             const formData = new FormData();
 
             if (isImage) {
-              // Si es una imagen, la enviamos directamente como imagen_principal
+              // El archivo f.file ya es WebP gracias al handler de selección o edición IA
               formData.append("image_principal", f.file);
             } else {
               // Si es un video, enviamos el archivo de video
