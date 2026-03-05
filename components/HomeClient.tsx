@@ -13,6 +13,8 @@ import Header from "@/components/Header";
 import FilterBar from "@/components/FilterBar";
 import VideoModal from "@/components/product/VideoModal";
 import ImageCarousel from "@/components/ImageCarousel";
+import { useBanners, Banner } from "@/hooks/useBanners";
+import { convertToWebP } from "@/lib/imageUtils";
 
 
 const AdminFormModal = dynamic(() => import("@/components/modals/AdminFormModal"), { ssr: false });
@@ -23,6 +25,9 @@ const PostFormModal = dynamic(() => import("@/components/PostFormModal"), { ssr:
 const WhatsappModal = dynamic(() => import("@/components/WhatsappModal"), { ssr: false });
 const QrBatchConfigModal = dynamic(() => import("@/components/QrBatchConfigModal"), { ssr: false });
 const DownloadAllModal = dynamic(() => import("@/components/modals/DownloadAllModal"), { ssr: false });
+const BannerUploadModal = dynamic(() => import("@/components/modals/BannerUploadModal"), { ssr: false });
+const BannerEditModal = dynamic(() => import("@/components/modals/BannerEditModal"), { ssr: false });
+import { BannerUploadItem } from "@/components/modals/BannerUploadModal";
 
 import Pagination from "@/components/Pagination";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -62,6 +67,12 @@ export default function HomeClient({
     setProducts,
     isLoading: isProductsLoading
   } = useProducts(initialGarments, initialPagination);
+
+  const { banners, fetchBanners, uploadBanner, deleteBanner, updateBanner } = useBanners();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [deletingBanner, setDeletingBanner] = useState<Banner | null>(null);
+  const [isBannerUploadModalOpen, setIsBannerUploadModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAccessCodeModalOpen, setIsAccessCodeModalOpen] = useState(false);
   const [accessCodeError, setAccessCodeError] = useState<string | null>(null);
@@ -98,8 +109,14 @@ export default function HomeClient({
   const [gridColumns, setGridColumns] = useState(3);
   const [isDownloadAllModalOpen, setIsDownloadAllModalOpen] = useState(false);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
-  const { authenticated, onLogout, onLogin } = useAuth();
+  const { authenticated, onLogout, onLogin, organization } = useAuth();
   const router = useRouter();
+
+  // Console.log para verificar la organización actual del usuario
+  useEffect(() => {
+    console.log("Datos de Organización actual en HomeClient:", organization);
+  }, [organization]);
+
   const { fetchPosts, deletePost, posts, pagination: blogPagination, updatePost, createPost, isLoading: isPostLoading, error: postError } = usePosts(initialPosts);
   const { fetchFaqs, faqs: allFaqs } = useFaqs(initialFaqs);
   const ITEMS_PER_PAGE = gridColumns === 5 ? 15 : 12;
@@ -108,6 +125,10 @@ export default function HomeClient({
 
   // Toggle for showing the Image Carousel
   const SHOW_CAROUSEL = true;
+
+  useEffect(() => {
+    fetchBanners();
+  }, [fetchBanners]);
 
   const handleSelectGarment = useCallback((garment: Garment, _updateUrl = true) => {
     setSelectedGarment(garment);
@@ -135,6 +156,13 @@ export default function HomeClient({
     }
     prevGarmentRef.current = selectedGarment;
   }, [selectedGarment]);
+
+  // Redirigir al panel si el usuario está autenticado pero no tiene organización
+  useEffect(() => {
+    if (authenticated && !organization) {
+      router.push("/panel");
+    }
+  }, [authenticated, organization, router]);
 
   const handleSelectGarmentWrapper = useCallback(async (garment: Garment, updateUrl = true) => {
     // If we're already loading a product, or a modal is open, do nothing.
@@ -402,6 +430,22 @@ export default function HomeClient({
     fetchProducts({ page: 1, limit: ITEMS_PER_PAGE });
     setCurrentPage(1);
   }, [setProducts, ITEMS_PER_PAGE, fetchProducts]);
+
+  const handleUploadBannersModal = async (items: BannerUploadItem[]) => {
+    //setIsLoading(true);
+    try {
+      for (const item of items) {
+        if (item.file) {
+          await uploadBanner(item.file, item.title);
+        }
+      }
+    } catch (err: any) {
+      alert("Error subiendo banners: " + err.message);
+    } finally {
+      //setIsLoading(false);
+      setIsBannerUploadModalOpen(false);
+    }
+  };
 
   const handleToggleSelectionMode = () => {
     setIsSelectionMode(!isSelectionMode);
@@ -676,16 +720,14 @@ export default function HomeClient({
     }
   };
 
-  const slides = useMemo(() => {
-    return filteredGarments
-      .filter((garment) => garment.imagen_principal)
-      .map((garment) => ({
-        id: garment.id,
-        imageUrl: garment.imagen_principal as string,
-        title: garment.title,
-        subtitle: garment.slug,
-      }));
-  }, [filteredGarments]);
+  const bannerSlides = useMemo(() => {
+    return banners.map((banner) => ({
+      id: banner.id,
+      imageUrl: banner.image_url,
+      title: banner.title,
+      // subtitle: "Meta: " + banner.title,
+    }));
+  }, [banners]);
 
   const handleBlogPageChange = (page: number) => {
     fetchPosts({ page });
@@ -742,10 +784,70 @@ export default function HomeClient({
       />
       <main className="mx-[12px] fd:mx-[23px] fd:mx-auto fd:max-w-[1290px] bg-color-background dark:bg-color-background-dark rounded-[21px] my-5 px-[26px] py-[30px]">
         {SHOW_CAROUSEL && (
-          <ImageCarousel
-            slides={slides} autoPlayInterval={5000} />
+          <div className="mb-5 relative">
+            {authenticated && (
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={() => setIsBannerUploadModalOpen(true)}
+                  className="flex items-center gap-2 bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-stone-800 transition-colors"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  Agregar Banners
+                </button>
+              </div>
+            )}
+            <ImageCarousel
+              slides={bannerSlides}
+              autoPlayInterval={5000}
+              isAdmin={authenticated}
+              onEdit={(slide) => {
+                const b = banners.find((x) => x.id === slide.id);
+                if (b) setEditingBanner(b);
+              }}
+              onDelete={(slide) => {
+                const b = banners.find((x) => x.id === slide.id);
+                if (b) setDeletingBanner(b);
+              }}
+            />
+          </div>
         )}
 
+
+        {/* Modal de Eliminar Banner */}
+        {deletingBanner && (
+          <ConfirmationModal
+            isOpen={true}
+            onClose={() => setDeletingBanner(null)}
+            onConfirm={async () => {
+              try {
+                await deleteBanner(deletingBanner.id);
+                setDeletingBanner(null);
+              } catch (err: any) {
+                alert("Error eliminando: " + err.message);
+              }
+            }}
+            title="Eliminar Imagen del Banner"
+            message={`¿Estás seguro de que deseas eliminar la imagen "${deletingBanner.title}"? Esta acción no se puede deshacer.`}
+            confirmText="Eliminar"
+            cancelText="Cancelar"
+          />
+        )}
+
+        {/* Modal de Editar Banner Mejorado */}
+        <BannerEditModal
+          isOpen={!!editingBanner}
+          banner={editingBanner}
+          onClose={() => setEditingBanner(null)}
+          onSave={async (id, updates, file) => {
+            await updateBanner(id, updates, file);
+          }}
+        />
+
+        <BannerUploadModal
+          isOpen={isBannerUploadModalOpen}
+          onClose={() => setIsBannerUploadModalOpen(false)}
+          onUpload={handleUploadBannersModal}
+        />
 
         {isLoading && garments.length === 0 && (
           <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">

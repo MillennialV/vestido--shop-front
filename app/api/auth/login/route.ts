@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       success: true,
       user: (data as any).data?.user,
+      organization: (data as any).data?.organization,
       token: (data as any).data?.token
     });
     response.cookies.set('authToken', (data as any).data?.token, {

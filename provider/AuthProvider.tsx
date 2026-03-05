@@ -8,7 +8,9 @@ import { User } from "../types/auth";
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authenticated, setAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [organization, setOrganization] = useState<any | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -20,16 +22,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const data = await res.json();
           setAuthenticated(true);
           setUser(data.user || null);
+          setOrganization(data.organization || null);
           if (data.token) {
             localStorage.setItem('authToken', data.token);
           }
         } else {
           setAuthenticated(false);
           setUser(null);
+          setOrganization(null);
         }
       } catch {
         setAuthenticated(false);
         setUser(null);
+        setOrganization(null);
+      } finally {
+        setIsLoading(false);
       }
     };
     checkSession();
@@ -48,8 +55,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const data = await res.json();
     setAuthenticated(true);
     setUser(data.user || null);
+    setOrganization(data.organization || null);
     if (data.token) {
       localStorage.setItem('authToken', data.token);
+    }
+
+    if (!data.organization) {
+      window.location.href = '/panel';
+    } else {
+      // Si tiene organización, asume que continúa el login normal o 
+      // si requiere subdominio, podrías parsearlo aquí.
+      window.location.href = data.organization.domain
+        ? `https://${data.organization.domain}/panel`
+        : '/panel';
     }
   };
 
@@ -57,6 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setAuthenticated(false);
     setUser(null);
+    setOrganization(null);
     localStorage.removeItem('authToken');
   };
 
@@ -64,10 +83,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return user;
   };
 
-  const value: AuthContextType = { onLogin, onLogout, authenticated, getUser };
+  const value: AuthContextType = { onLogin, onLogout, authenticated, getUser, organization };
 
-  if (!mounted) {
-    return <>{children}</>;
+  if (!mounted || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-stone-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-stone-900 dark:border-white"></div>
+      </div>
+    );
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

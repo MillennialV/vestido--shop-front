@@ -260,7 +260,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
         />
       ) : null}
       <div
-        className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 z-10 opacity-100`}
+        className={`absolute inset-0 transition-opacity duration-300 z-10 opacity-100`}
       ></div>
 
       {isSelectionMode && (

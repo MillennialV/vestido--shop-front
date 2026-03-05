@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { ChevronLeftIcon, ChevronRightIcon } from "./Icons";
+import { ChevronLeftIcon, ChevronRightIcon, EditIcon, DeleteIcon } from "./Icons";
 
 export interface CarouselSlide {
     id: string | number;
@@ -15,11 +15,17 @@ export interface CarouselSlide {
 interface ImageCarouselProps {
     slides: CarouselSlide[];
     autoPlayInterval?: number; // en milisegundos, 0 para desactivar
+    isAdmin?: boolean;
+    onEdit?: (slide: CarouselSlide) => void;
+    onDelete?: (slide: CarouselSlide) => void;
 }
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({
     slides,
     autoPlayInterval = 5000,
+    isAdmin = false,
+    onEdit,
+    onDelete,
 }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -74,18 +80,31 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
                         />
 
                         {/* Overlay Gradiente Oscuro para mejor lectura de texto */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/10 flex flex-col items-center justify-center p-6 text-center">
-                            {slide.subtitle && (
-                                <p className="text-white text-lg md:text-xl lg:text-2xl font-light mb-2 font-inter tracking-wide drop-shadow-md">
-                                    {slide.subtitle}
-                                </p>
-                            )}
-                            {slide.title && (
-                                <h2 className="text-white text-3xl md:text-5xl lg:text-6xl font-header tracking-wider uppercase drop-shadow-lg font-bold">
-                                    {slide.title}
-                                </h2>
-                            )}
-                        </div>
+
+
+                        {/* Botones de Administrador superpuestos (Esquina Superior Derecha) */}
+                        {isAdmin && (
+                            <div className="absolute top-4 right-4 z-30 flex gap-2">
+                                {onEdit && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); onEdit(slide); }}
+                                        className="w-10 h-10 bg-white/10 hover:bg-stone-800/80 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all shadow-md group-hover:bg-stone-800"
+                                        title="Editar Banner"
+                                    >
+                                        <EditIcon className="w-5 h-5 text-white" />
+                                    </button>
+                                )}
+                                {onDelete && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); onDelete(slide); }}
+                                        className="w-10 h-10 bg-white/10 hover:bg-red-600/90 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all shadow-md group-hover:bg-red-600"
+                                        title="Eliminar Banner"
+                                    >
+                                        <DeleteIcon className="w-5 h-5 text-white" />
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

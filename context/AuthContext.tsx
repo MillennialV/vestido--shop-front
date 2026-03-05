@@ -6,6 +6,7 @@ export interface AuthContextType {
   onLogout: () => Promise<any>;
   authenticated: boolean;
   getUser?: () => User | null;
+  organization?: any | null;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
