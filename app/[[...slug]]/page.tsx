@@ -5,6 +5,7 @@ import { PUBLIC_URL } from "@/lib/seo";
 const INVENTARIO_BASE_API = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
 const FAQS_BASE_API = process.env.NEXT_PUBLIC_API_PREGUNTAS_BASE_URL || 'http://localhost:3005';
+const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
 
 async function fetchInitialData() {
     const revalidate = 60;
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
         slug = slugArray[0] === "producto" && slugArray.length > 1 ? slugArray[1] : slugArray[0];
     }
 
-    const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
+
 
     if (!slug || slug === "producto") {
         return {
@@ -140,22 +141,29 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
         (slug && slug !== "producto") ? getProduct(slug) : Promise.resolve(null)
     ]);
 
-    const productJsonLd = product ? {
+    // Bug 1: solo generar schema si el producto tiene slug válido
+    const productJsonLd = (product && product.slug) ? {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": product.title,
-        "image": product.video_url?.replace(".mp4", ".webp") || product.poster_url, // Usar poster si existe
+        // Bug 2: usar imagen real del producto, no la URL del video
+        "image": product.imagen_principal || product.imagenes?.[0] || DEFAULT_OG_IMAGE,
         "description": product.description || `Vestido elegante ${product.title} disponible en Womanity Boutique San Isidro.`,
         "brand": {
             "@type": "Brand",
             "name": product.brand || "Womanity Boutique"
         },
+        // Bug 4: agregar sku si existe
+        ...(product.sku ? { "sku": product.sku } : {}),
         "offers": {
             "@type": "Offer",
             "url": `${PUBLIC_URL}/producto/${product.slug}`,
             "priceCurrency": "PEN",
-            "price": product.price || 0,
-            "availability": "https://schema.org/InStock"
+            // Bug 3: solo incluir price si tiene valor real
+            ...(product.price ? { "price": String(product.price) } : {}),
+            "availability": "https://schema.org/InStock",
+            // Bug 5: agregar itemCondition requerido por Google Shopping
+            "itemCondition": "https://schema.org/NewCondition"
         }
     } : null;
 
