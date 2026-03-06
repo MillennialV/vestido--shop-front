@@ -134,7 +134,7 @@ export const setGarmentPageSeo = (garment: Garment) => {
         'description': garment.description,
         'productID': garment.id,
         'url': url,
-        'image': garment.videoUrl || DEFAULT_IMAGE_URL,
+        'image': garment.imagen_principal || garment.imagenes?.[0] || DEFAULT_IMAGE_URL,
         'brand': {
             '@type': 'Brand',
             'name': garment.brand,
@@ -142,7 +142,7 @@ export const setGarmentPageSeo = (garment: Garment) => {
         'offers': garment.price ? {
             '@type': 'Offer',
             'priceCurrency': 'PEN',
-            'price': garment.price.toFixed(2),
+            'price': parseFloat(String(garment.price)).toFixed(2),
             'availability': 'https://schema.org/InStock',
             'url': url,
         } : undefined,
