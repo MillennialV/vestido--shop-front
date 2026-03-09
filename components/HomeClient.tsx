@@ -25,10 +25,13 @@ const QrBatchConfigModal = dynamic(() => import("@/components/QrBatchConfigModal
 const DownloadAllModal = dynamic(() => import("@/components/modals/DownloadAllModal"), { ssr: false });
 
 import Pagination from "@/components/Pagination";
-import FaqAccordion from "@/components/FaqAccordion";
+const Blog = dynamic(() => import("@/components/Blog"), { 
+  ssr: true,
+  loading: () => <div className="py-20 text-center animate-pulse">Cargando Blog...</div>
+});
+const FaqAccordion = dynamic(() => import("@/components/FaqAccordion"), { ssr: true });
 import CatalogToolbar from "@/components/CatalogToolbar";
 import ConfirmationModal from "@/components/ConfirmationModal";
-import Blog from "@/components/Blog";
 import VideoCard from "@/components/VideoCard";
 import SiteFooter from "@/components/SiteFooter";
 import { faqData } from "@/lib/faqData";
@@ -822,7 +825,7 @@ export default function HomeClient({
                       isSelected={selectedItems.has(garment.id)}
                       onToggleSelection={handleToggleSelection}
                       isDisabled={isProductLoading || !!selectedGarment}
-                      priority={index === 0}
+                      priority={index < 2}
                     />
                   ))}
                 </div>

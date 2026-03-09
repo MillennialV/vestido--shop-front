@@ -257,6 +257,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
           onLoad={() => setIsMediaLoading(false)}
           onError={handleError}
           priority={priority}
+          fetchPriority={priority ? "high" : "auto"}
         />
       ) : null}
       <div

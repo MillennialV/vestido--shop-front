@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { FacebookIcon, InstagramIcon, WhatsappIcon } from "@/components/Icons";
+import { CONTACT_INFO } from "@/lib/metadata-constants";
 
 const SiteFooter: React.FC = () => {
     const currentYear = new Date().getFullYear();
@@ -20,9 +21,36 @@ const SiteFooter: React.FC = () => {
                             Tu destino premium en Lima para vestidos importados de USA. Calidad, estilo y exclusividad en San Isidro.
                         </p>
                         <div className="flex gap-[16px] mt-[24px]">
-                            <Link href="#" className="hover:underline"><FacebookIcon className="size-[24px]" /></Link>
-                            <Link href="#" className="hover:underline"><InstagramIcon className="size-[24px]" /></Link>
-                            <Link href="#" className="hover:underline"><WhatsappIcon className="size-[24px]" /></Link>
+                            <Link 
+                                href={CONTACT_INFO.socialLinks.facebook} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:underline transition-all duration-200"
+                                aria-label="Visitar nuestra página de Facebook"
+                            >
+                                <FacebookIcon className="size-[24px]" />
+                                <span className="text-sm font-p-footer">Facebook</span>
+                            </Link>
+                            <Link 
+                                href={CONTACT_INFO.socialLinks.instagram} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:underline transition-all duration-200"
+                                aria-label="Visitar nuestro perfil de Instagram"
+                            >
+                                <InstagramIcon className="size-[24px]" />
+                                <span className="text-sm font-p-footer">Instagram</span>
+                            </Link>
+                            <Link 
+                                href={`https://wa.me/${CONTACT_INFO.phone.replace('+', '')}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:underline transition-all duration-200"
+                                aria-label="Contactar por WhatsApp"
+                            >
+                                <WhatsappIcon className="size-[24px]" />
+                                <span className="text-sm font-p-footer">WhatsApp</span>
+                            </Link>
                         </div>
                     </div>
 
