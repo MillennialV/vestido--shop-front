@@ -3,6 +3,7 @@ export const revalidate = 3600; // Revalidar cada hora
 
 import PostDetailClient from "@/app/posts/[slug]/PostDetailClient";
 import { generateMetadata } from "@/app/posts/[slug]/generateMetadata";
+import { SITE_CONFIG, PUBLIC_URL } from "@/lib/metadata-constants";
 
 export { generateMetadata };
 
@@ -39,12 +40,12 @@ export default async function PostDetailPage({
     "dateModified": post.updated_at,
     "author": {
       "@type": "Organization",
-      "name": "Womanity Boutique",
-      "url": "https://vestido.shop"
+      "name": SITE_CONFIG.brandName,
+      "url": PUBLIC_URL
     },
     "publisher": {
       "@type": "Organization",
-      "name": "Womanity Boutique"
+      "name": SITE_CONFIG.brandName
     },
     "description": post.excerpt || post.title
   } : null;

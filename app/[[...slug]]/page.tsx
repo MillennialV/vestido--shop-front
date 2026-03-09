@@ -1,11 +1,11 @@
 import HomeClient from "@/components/HomeClient";
 import { Metadata } from "next";
-import { PUBLIC_URL } from "@/lib/seo";
+import { PUBLIC_URL, SITE_CONFIG } from "@/lib/metadata-constants";
 
 const INVENTARIO_BASE_API = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
 const FAQS_BASE_API = process.env.NEXT_PUBLIC_API_PREGUNTAS_BASE_URL || 'http://localhost:3005';
-const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
+const DEFAULT_OG_IMAGE = SITE_CONFIG.ogImage;
 
 async function fetchInitialData() {
     const revalidate = 60;
@@ -52,8 +52,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
 
     if (!slug || slug === "producto") {
         return {
-            title: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
-            description: "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro.",
+            title: SITE_CONFIG.defaultTitle,
+            description: SITE_CONFIG.defaultDescription,
             openGraph: {
                 url: PUBLIC_URL,
                 type: "website",
@@ -71,11 +71,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     const product = await getProduct(slug);
 
     const productTitle = product?.title
-        ? `${product.title} | Womanity Boutique`
-        : `Vestido ${slug.replace(/-/g, ' ')} | Vestido.shop`;
+        ? `${product.title} | ${SITE_CONFIG.brandName}`
+        : `Vestido ${slug.replace(/-/g, ' ')} | ${SITE_CONFIG.name}`;
 
     const productDescription = product?.description
-        || "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro.";
+        || SITE_CONFIG.defaultDescription;
 
     // Prioridad: imagen_principal → primera imagen extra → imagen por defecto
     const productImage: string =
@@ -101,8 +101,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
                     alt: product?.title || slug,
                 },
             ],
-            siteName: "Vestido.shop by Womanity",
-            locale: "es_PE",
+            siteName: SITE_CONFIG.name,
+            locale: SITE_CONFIG.locale,
         },
         twitter: {
             card: "summary_large_image",
@@ -151,7 +151,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
         "description": product.description || `Vestido elegante ${product.title} disponible en Womanity Boutique San Isidro.`,
         "brand": {
             "@type": "Brand",
-            "name": product.brand || "Womanity Boutique"
+            "name": product.brand || SITE_CONFIG.brandName
         },
         // Bug 4: agregar sku si existe
         ...(product.sku ? { "sku": product.sku } : {}),

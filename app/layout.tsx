@@ -9,6 +9,7 @@ import { AuthProvider } from "@/provider/AuthProvider";
 import { GA_TRACKING_ID } from "@/lib/analytics";
 import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { SITE_CONFIG, CONTACT_INFO, DEFAULT_FAQs } from "@/lib/metadata-constants";
 import CartModal from "@/components/CartModal";
 import { Chatbot } from "@/components/Chatbot";
 
@@ -32,41 +33,35 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Vestidos de Fiesta Importados en Lima | Womanity San Isidro",
-  description:
-    "Descubre +1000 vestidos de fiesta importados en nuestro showroom de San Isidro. Vestidos de cóctel, gala y noche. WhatsApp 956-382-746. ¡Visítanos!",
-  keywords:
-    "vestidos de fiesta lima, showroom san isidro, vestidos elegantes perú, vestidos importados, womanity boutique, vestidos de noche, vestidos de gala, vestidos de boda lima",
-  authors: [{ name: "Womanity Boutique" }],
-  metadataBase: new URL("https://www.vestido.shop/"),
+  title: SITE_CONFIG.defaultTitle,
+  description: SITE_CONFIG.defaultDescription,
+  keywords: SITE_CONFIG.keywords,
+  authors: [{ name: SITE_CONFIG.brandName }],
+  metadataBase: new URL(SITE_CONFIG.baseUrl),
   alternates: {
-    canonical: "https://www.vestido.shop/",
+    canonical: SITE_CONFIG.baseUrl,
   },
   openGraph: {
     type: "website",
-    url: "https://www.vestido.shop/",
-    title: "Vestidos de Fiesta Importados en Lima | Womanity San Isidro",
-    description:
-      "Descubre +1000 vestidos de fiesta importados en nuestro showroom de San Isidro. Diseños exclusivos para tus eventos.",
-    siteName: "Vestido.shop by Womanity",
+    url: SITE_CONFIG.baseUrl,
+    title: SITE_CONFIG.defaultTitle,
+    description: SITE_CONFIG.defaultDescription,
+    siteName: SITE_CONFIG.name,
     images: [
       {
-        url: "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
+        url: SITE_CONFIG.ogImage,
         width: 1200,
         height: 630,
       },
     ],
-    locale: "es_PE",
+    locale: SITE_CONFIG.locale,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vestidos de Fiesta Importados en Lima",
-    description:
-      "Showroom San Isidro. +1000 modelos exclusivos de marcas USA.",
-    creator: "@WomanityBoutique",
-    images: [
-      "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
-    ],
+    title: SITE_CONFIG.defaultTitle,
+    description: SITE_CONFIG.defaultDescription,
+    creator: SITE_CONFIG.twitterCreator,
+    images: [SITE_CONFIG.ogImage],
   },
   robots: "index, follow",
 };
@@ -109,27 +104,26 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
-              url: "https://www.vestido.shop/",
+              name: SITE_CONFIG.defaultTitle,
+              url: SITE_CONFIG.baseUrl,
               potentialAction: {
                 "@type": "SearchAction",
                 target: {
                   "@type": "EntryPoint",
                   urlTemplate:
-                    "https://www.vestido.shop/?q={search_term_string}",
+                    `${SITE_CONFIG.baseUrl}/?q={search_term_string}`,
                 },
                 "query-input": "required name=search_term_string",
               },
               publisher: {
                 "@type": "Organization",
-                name: "Womanity Boutique",
+                name: SITE_CONFIG.brandName,
                 logo: {
                   "@type": "ImageObject",
-                  url: "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
+                  url: SITE_CONFIG.logoUrl,
                 },
               },
-              description:
-                "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro. Diseños exclusivos para tus eventos en Lima, Perú.",
+              description: SITE_CONFIG.defaultDescription,
             }),
           }}
         />
@@ -145,7 +139,7 @@ export default function RootLayout({
                   "@type": "ListItem",
                   position: 1,
                   name: "Inicio",
-                  item: "https://www.vestido.shop/",
+                  item: SITE_CONFIG.baseUrl,
                 },
               ],
             }),
@@ -158,45 +152,38 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "ClothingStore",
-              "name": "Vestido.shop by Womanity",
-              "image": "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
-              "url": "https://www.vestido.shop/",
-              "logo": "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
-              "description": "Showroom de vestidos de fiesta importados de marcas USA en San Isidro, Lima. Más de 1000 modelos exclusivos.",
+              "name": SITE_CONFIG.name,
+              "image": SITE_CONFIG.logoUrl,
+              "url": SITE_CONFIG.baseUrl,
+              "logo": SITE_CONFIG.logoUrl,
+              "description": SITE_CONFIG.defaultDescription,
               "address": {
                 "@type": "PostalAddress",
-                "streetAddress": "Av. Paz Soldán 255 Sótano A24",
-                "addressLocality": "San Isidro",
-                "addressRegion": "Lima",
-                "postalCode": "15073",
-                "addressCountry": "PE"
+                "streetAddress": CONTACT_INFO.address.street,
+                "addressLocality": CONTACT_INFO.address.locality,
+                "addressRegion": CONTACT_INFO.address.region,
+                "postalCode": CONTACT_INFO.address.postalCode,
+                "addressCountry": CONTACT_INFO.address.country
               },
               "geo": {
                 "@type": "GeoCoordinates",
-                "latitude": -12.0954,
-                "longitude": -77.0347
+                "latitude": CONTACT_INFO.address.latitude,
+                "longitude": CONTACT_INFO.address.longitude
               },
-              "telephone": "+51956382746",
+              "telephone": CONTACT_INFO.phone,
               "priceRange": "$$",
               "openingHoursSpecification": [
                 {
                   "@type": "OpeningHoursSpecification",
-                  "dayOfWeek": [
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                    "Saturday"
-                  ],
-                  "opens": "11:00",
-                  "closes": "20:00"
+                  "dayOfWeek": CONTACT_INFO.openingHours.days,
+                  "opens": CONTACT_INFO.openingHours.opens,
+                  "closes": CONTACT_INFO.openingHours.closes
                 }
               ],
               "sameAs": [
-                "https://www.facebook.com/WomanityBoutique",
-                "https://www.instagram.com/WomanityBoutique",
-                "https://www.tiktok.com/@WomanityBoutique"
+                CONTACT_INFO.socialLinks.facebook,
+                CONTACT_INFO.socialLinks.instagram,
+                CONTACT_INFO.socialLinks.tiktok
               ]
             }),
           }}
@@ -208,40 +195,14 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "FAQPage",
-              mainEntity: [
-                {
-                  "@type": "Question",
-                  name: "¿Cómo puedo saber cuál es mi talla correcta?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Recomendamos revisar nuestra guía de tallas detallada, disponible en la descripción de cada producto. Si tienes dudas, nuestro equipo de estilistas está disponible por WhatsApp para ofrecerte una asesoría personalizada y asegurar que encuentres el ajuste perfecto.",
-                  },
+              mainEntity: DEFAULT_FAQs.map(faq => ({
+                "@type": "Question",
+                name: faq.pregunta,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: faq.respuesta,
                 },
-                {
-                  "@type": "Question",
-                  name: "¿Cuál es la política de envíos y devoluciones?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Ofrecemos envío express a todo el país, con un tiempo de entrega de 24-48 horas en ciudades principales. Aceptamos devoluciones dentro de los primeros 7 días después de la recepción, siempre que la prenda esté en su estado original y con todas las etiquetas.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "Los vestidos, ¿requieren algún cuidado especial?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Sí, al ser prendas de alta costura, recomendamos encarecidamente la limpieza en seco profesional. Evita lavar a máquina o usar secadoras. Para el almacenamiento, guárdalo en una funda para prendas en un lugar fresco y seco para preservar la calidad de los tejidos y detalles.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "¿Ofrecen arreglos o ajustes a medida?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Actualmente no ofrecemos un servicio de arreglos a medida, pero nuestros vestidos están diseñados para permitir ajustes menores por parte de un sastre profesional. Podemos recomendarte talleres de confianza si lo necesitas.",
-                  },
-                },
-              ],
+              })),
             }),
           }}
         />
@@ -251,9 +212,9 @@ export default function RootLayout({
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-              strategy="afterInteractive"
+              strategy="lazyOnload"
             />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script id="google-analytics" strategy="lazyOnload">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}

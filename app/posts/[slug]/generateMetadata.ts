@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { PUBLIC_URL } from "@/lib/seo";
+import { PUBLIC_URL, SITE_CONFIG } from "@/lib/metadata-constants";
 
-const DEFAULT_IMAGE_URL = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
+const DEFAULT_IMAGE_URL = SITE_CONFIG.ogImage;
 // Usamos la URL directa del servicio de blog para evitar llamadas a la propia API (que fallan en Vercel durante el render)
 const BLOG_API_URL = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
 
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         const url = `${PUBLIC_URL}/posts/${post.slug}`;
 
         return {
-            title: `${post.title} | Vestidos de Fiesta`,
+            title: `${post.title} | ${SITE_CONFIG.name}`,
             description,
             openGraph: {
                 title: post.title,
@@ -66,8 +66,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     } catch (error) {
         console.error("Error in generateMetadata:", error);
         return {
-            title: "Vestidos de Fiesta | Womanity Boutique",
-            description: "Vestidos de fiesta exclusivos en Lima.",
+            title: `${SITE_CONFIG.name} | ${SITE_CONFIG.brandName}`,
+            description: SITE_CONFIG.defaultDescription,
             robots: "index, follow", // Permitir indexado genérico en caso de error temporal
         };
     }

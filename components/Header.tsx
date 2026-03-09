@@ -6,6 +6,7 @@ import FilterModal from "./FilterModal";
 import MobileActionsMenu from "./MobileActionsMenu";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { useCart } from "@/context/CartContext";
+import { SITE_CONFIG } from "@/lib/metadata-constants";
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -128,7 +129,7 @@ const Header: React.FC<HeaderProps> = ({
                 WOMANITY
               </span>
               <h1 className="sr-only">
-                Vestidos de Fiesta Importados en Lima | Womanity Boutique San Isidro
+                {SITE_CONFIG.homeH1}
               </h1>
             </a>
           </div>

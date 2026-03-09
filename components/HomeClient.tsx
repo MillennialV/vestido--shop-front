@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -822,7 +822,7 @@ export default function HomeClient({
                       isSelected={selectedItems.has(garment.id)}
                       onToggleSelection={handleToggleSelection}
                       isDisabled={isProductLoading || !!selectedGarment}
-                      priority={index < 6}
+                      priority={index === 0}
                     />
                   ))}
                 </div>
