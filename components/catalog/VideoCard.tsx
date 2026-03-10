@@ -1,2 +1,2 @@
 // Re-exportar desde ubicación original
-export { default } from "../VideoCard";
+export { default } from "@/components/cards/VideoCard";

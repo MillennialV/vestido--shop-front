@@ -9,8 +9,8 @@ import { AuthProvider } from "@/provider/AuthProvider";
 import { GA_TRACKING_ID } from "@/lib/analytics";
 import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
-import CartModal from "@/components/CartModal";
-import { Chatbot } from "@/components/Chatbot";
+import CartModal from "@/components/modals/CartModal";
+import { Chatbot } from "@/components/ui/Chatbot";
 
 const inter = Inter({
   subsets: ["latin"],

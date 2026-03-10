@@ -5,7 +5,7 @@ import type { Garment } from "@/types/Garment";
 import QRCode from "qrcode";
 import { PUBLIC_URL } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
-import { SpinnerIcon } from "@/components/Icons";
+import { SpinnerIcon } from "@/components/ui/Icons";
 
 type LabelSize = "58mm" | "80mm" | "50x30mm";
 

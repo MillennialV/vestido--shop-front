@@ -2,11 +2,11 @@
 import React, { useEffect, useState, use as useReact } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Header from "@/components/Header";
-import SiteFooter from "@/components/SiteFooter";
+import Header from "@/components/layout/Header";
+import SiteFooter from "@/components/layout/SiteFooter";
 import type { Post } from "@/types/post";
-import { ArrowLeftIcon } from "@/components/Icons";
-import LoadingOverlay from "@/components/LoadingOverlay";
+import { ArrowLeftIcon } from "@/components/ui/Icons";
+import LoadingOverlay from "@/components/ui/LoadingOverlay";
 
 export default function PostDetailClient({ slug }: { slug: string }) {
   const [post, setPost] = useState<Post | null>(null);

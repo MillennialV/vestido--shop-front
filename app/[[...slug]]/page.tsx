@@ -1,4 +1,4 @@
-import HomeClient from "@/components/HomeClient";
+import HomeClient from "@/components/pages/HomeClient";
 import { Metadata } from "next";
 import { PUBLIC_URL } from "@/lib/seo";
 

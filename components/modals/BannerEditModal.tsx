@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { CloseIcon, SpinnerIcon, UploadIcon } from '@/components/Icons';
+import { CloseIcon, SpinnerIcon, UploadIcon } from '@/components/ui/Icons';
 import { Banner } from '@/hooks/useBanners';
 import { convertToWebP } from '@/lib/imageUtils';
 
