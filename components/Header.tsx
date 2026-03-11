@@ -128,9 +128,11 @@ const Header: React.FC<HeaderProps> = ({
               >
                 WOMANITY
               </span>
-              <h1 className="sr-only">
-                {SITE_CONFIG.homeH1}
-              </h1>
+              {window.location.pathname === "/" && (
+                <h1 className="sr-only">
+                  {SITE_CONFIG.homeH1}
+                </h1>
+              )}
             </a>
           </div>
 

@@ -617,12 +617,12 @@ const VideoModal: React.FC<VideoModalProps> = ({
                 <p className="font-info-product" >COD: {garment.id ? garment.id : "No disponible"} / Stock: {garment.cantidad ? garment.cantidad : "0"}</p>
               </div>
               <div className="flex-shrink-0">
-                <h2
+                <h1
                   id="modal-title"
                   className="font-title-modal-product mt-[15px]"
                 >
                   {garment.title}
-                </h2>
+                </h1>
                 {garment.price && (
                   <p className={`font-price-modal-product mt-[17px] ${(!garment.cantidad || garment.cantidad <= 0) ? 'line-through opacity-50' : ''}`}>
                     S/{" "}

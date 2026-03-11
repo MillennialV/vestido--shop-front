@@ -50,17 +50,41 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
 
 
 
-    if (!slug || slug === "producto") {
+    if (!slug || slug === "producto" || slug === "envios" || slug === "nosotros") {
+        const isEnvios = slug === "envios";
+        const isNosotros = slug === "nosotros";
+
+        const title = isEnvios 
+            ? `Políticas de Envío | ${SITE_CONFIG.name}` 
+            : isNosotros 
+                ? `Sobre Nosotros | ${SITE_CONFIG.name}`
+                : SITE_CONFIG.defaultTitle;
+
+        const description = isEnvios
+            ? "Conoce nuestras políticas de envío express a todo el Perú. Entrega segura en 24-48 horas."
+            : isNosotros
+                ? "Conoce más sobre Womanity Boutique y nuestra pasión por los vestidos de fiesta."
+                : SITE_CONFIG.defaultDescription;
+
+        const url = slug ? `${PUBLIC_URL}/${slug}` : PUBLIC_URL;
+
         return {
-            title: SITE_CONFIG.defaultTitle,
-            description: SITE_CONFIG.defaultDescription,
+            title,
+            description,
+            alternates: {
+                canonical: url,
+            },
             openGraph: {
-                url: PUBLIC_URL,
+                url: url,
                 type: "website",
+                title,
+                description,
                 images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
             },
             twitter: {
                 card: "summary_large_image",
+                title,
+                description,
                 images: [DEFAULT_OG_IMAGE],
             },
             robots: "index, follow",
@@ -88,6 +112,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     return {
         title: productTitle,
         description: productDescription,
+        alternates: {
+            canonical: productUrl,
+        },
         openGraph: {
             url: productUrl,
             type: "website",

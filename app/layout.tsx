@@ -37,9 +37,11 @@ export const metadata: Metadata = {
   description: SITE_CONFIG.defaultDescription,
   keywords: SITE_CONFIG.keywords,
   authors: [{ name: SITE_CONFIG.brandName }],
-  metadataBase: new URL(SITE_CONFIG.baseUrl),
+  verification: {
+    google: "deSXplZYRUNMOZ9Q0fleZw043FAsKmgK1jqVq9J7b2M",
+  },
   alternates: {
-    canonical: SITE_CONFIG.baseUrl,
+    canonical: "./",
   },
   openGraph: {
     type: "website",

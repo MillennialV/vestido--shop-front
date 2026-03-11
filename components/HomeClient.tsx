@@ -856,9 +856,9 @@ export default function HomeClient({
               </section>
               <section id="faq" className="mt-24 mb-[100px] max-w-4xl mx-auto">
                 <header className="flex flex-col items-center text-center mb-12 gap-[24px]">
-                  <h1 className="font-h1">
+                  <h2 className="font-h1">
                     Preguntas Frecuentes
-                  </h1>
+                  </h2>
                   <p className="mt-4 font-p max-w-2xl mx-auto">
                     Este es un espacio creado para ti. Aquí respondemos las dudas más frecuentes de nuestra comunidad con total confianza, transparencia y compromiso
                   </p>
