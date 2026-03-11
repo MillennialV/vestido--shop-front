@@ -392,6 +392,14 @@ export default function HomeClient({
     getPosts()
   }, [authenticated, fetchPosts]);
 
+  useEffect(() => {
+    // Fetch FAQs on mount to ensure we get the latest based on the domain
+    const getFaqs = async () => {
+      await fetchFaqs(true, true, { limit: FAQ_LIMIT, estado: "activa", order: "asc" });
+    }
+    getFaqs();
+  }, [authenticated, fetchFaqs, FAQ_LIMIT]);
+
   const handleOpenForm = (garment: Garment | null = null) => {
     setEditingGarment(garment);
     setIsFormModalOpen(true);

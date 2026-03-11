@@ -9,20 +9,31 @@ export async function GET(request: NextRequest) {
     const estado = searchParams.get('estado') || '';
     const order = searchParams.get('order') || '';
     const token = request.cookies.get('authToken')?.value;
-    const orgIdHeader = request.headers.get('organization-id');
+    
+    // Extraer el dominio (host) de la petición
+    let host = request.headers.get('host') || '';
+    let domain = host;
+    if (domain.includes(':')) {
+      domain = domain.split(':')[0]; // remover puerto si existe
+    }
+
+    // Si estamos en localhost para pruebas, forzamos www.vestido.shop temporalmente
+    if (domain === 'localhost') {
+        domain = 'www.vestido.shop';
+    }
 
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit);
     if (estado) params.append('estado', estado);
     if (order) params.append('order', order);
+    if (domain) params.append('domain', domain); // Añadimos el dominio al microservicio
 
     const url = `${BACKEND_URL}/api/preguntas${params.toString() ? '?' + params.toString() : ''}`;
-    
+
     const res = await fetch(url, {
       method: 'GET',
       headers: {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        ...(orgIdHeader ? { 'organization-id': orgIdHeader } : {}),
       }
     });
 

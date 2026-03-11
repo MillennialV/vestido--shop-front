@@ -62,7 +62,7 @@ export const useFaqs = (initialItems: FaqItem[] = []) => {
       // Llamar a la API route local
       const query = params ? new URLSearchParams(params as any).toString() : '';
       const orgId = organization?.name || process.env.NEXT_PUBLIC_DEFAULT_ORGANIZATION || '';
-      
+
       const res = await fetch(`/api/faqs${query ? '?' + query : ''}`, {
         headers: {
           'organization-id': orgId

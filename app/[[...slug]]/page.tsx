@@ -17,7 +17,7 @@ async function fetchInitialData() {
             fetch(`${BLOG_BASE_API}/api/blog/posts?page=1&limit=6&sort=created_at&order=desc`, {
                 next: { revalidate }
             }),
-            fetch(`${FAQS_BASE_API}/api/preguntas?limit=${process.env.NEXT_PUBLIC_FAQ_LIMIT || 5}&estado=activa&order=asc`, {
+            fetch(`${FAQS_BASE_API}/api/preguntas?limit=${process.env.NEXT_PUBLIC_FAQ_LIMIT || 5}&estado=activa&order=asc&domain=www.vestido.shop`, {
                 next: { revalidate }
             })
         ]);
