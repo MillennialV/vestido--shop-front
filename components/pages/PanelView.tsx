@@ -38,18 +38,21 @@ export default function PanelView() {
             return;
         }
 
-        // Si tiene organización y estamos en el lado del cliente (para tener window.location)
+        // Si ya tiene organización configurada
         if (organization && typeof window !== 'undefined') {
             const currentHostname = window.location.hostname;
 
-            // Si la organización tiene un dominio y NO estamos en ese dominio
+            // Si tiene dominio externo y no estamos ahí, redirigir
             if (organization.domain && currentHostname !== organization.domain) {
-                window.location.href = `https://${organization.domain}/panel`;
+                window.location.href = `https://${organization.domain}/`;
+                return;
             }
-            // Si tiene organización pero no tiene dominio, o ya está en su dominio,
-            // y no quieres que vea la vista de "Configura tu Empresa", 
-            // no lo mandamos a /dashboard, se queda en /panel 
-            // (que mostrará su dashboard o lo que tengas programado si ya tiene org).
+
+            // Si ya estamos en el sitio correcto y ya tiene organización, 
+            // no tiene sentido estar en /panel (que es el setup), lo enviamos a /
+            if (window.location.pathname === '/panel') {
+                router.push('/');
+            }
         }
     }, [authenticated, organization, router]);
 

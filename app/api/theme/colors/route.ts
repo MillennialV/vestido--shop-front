@@ -5,23 +5,32 @@ const THEME_API_URL = process.env.NEXT_PUBLIC_THEME_SERVICE_URL || 'http://local
 
 export async function GET(req: NextRequest) {
     const orgId = req.headers.get("organization-id");
-    if (!orgId) {
-        return NextResponse.json({ error: "organization-id header is required" }, { status: 400 });
+    const cookieStore = await cookies();
+    const token = cookieStore.get("authToken")?.value;
+
+    if (!token && !orgId) {
+        return NextResponse.json({ error: "organization-id header or authToken is required" }, { status: 400 });
     }
 
     try {
         const backendRes = await fetch(`${THEME_API_URL}/api/theme-colors`, {
-            headers: { "organization-id": orgId }
+            headers: {
+                ...(orgId ? { "organization-id": orgId } : {}),
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            }
         });
 
-        // Manejar el caso donde no hay contenido (por ejemplo si es la primera vez)
-        const text = await backendRes.text();
-        const data = text ? JSON.parse(text) : null;
+        if (!backendRes.ok) {
+            const errorText = await backendRes.text();
+            console.error("Backend Theme Colors GET Error:", { status: backendRes.status, body: errorText });
+            throw new Error(`Backend error: ${backendRes.status}`);
+        }
 
+        const data = await backendRes.json();
         return NextResponse.json(data, { status: backendRes.status });
-    } catch (err) {
+    } catch (err: any) {
         console.error("Error en GET /api/theme/colors:", err);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error", details: err.message }, { status: 500 });
     }
 }
 

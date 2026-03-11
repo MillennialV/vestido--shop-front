@@ -8,20 +8,35 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') || '';
     const estado = searchParams.get('estado') || '';
     const order = searchParams.get('order') || '';
+    const token = request.cookies.get('authToken')?.value;
+    const orgIdHeader = request.headers.get('organization-id');
+
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit);
     if (estado) params.append('estado', estado);
     if (order) params.append('order', order);
+
     const url = `${BACKEND_URL}/api/preguntas${params.toString() ? '?' + params.toString() : ''}`;
-    const res = await fetch(url, { method: 'GET' });
+    
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...(orgIdHeader ? { 'organization-id': orgIdHeader } : {}),
+      }
+    });
+
     if (!res.ok) {
       const errorData = await res.text();
-      throw new Error('Failed to fetch faqs');
+      console.error('Backend FAQ Fetch Error:', { status: res.status, body: errorData });
+      throw new Error(`Failed to fetch faqs: ${res.status}`);
     }
+
     const data = await res.json();
     return NextResponse.json(data?.data?.preguntas || []);
-  } catch (error) {
-    return NextResponse.json({ error: 'Error fetching faqs' }, { status: 500 });
+  } catch (error: any) {
+    console.error('API /api/faqs Error:', error);
+    return NextResponse.json({ error: 'Error fetching faqs', details: error.message }, { status: 500 });
   }
 }
 
@@ -47,6 +62,7 @@ export async function POST(request: NextRequest) {
       }
     }
     const data = await res.json();
+
     return NextResponse.json(data?.data || {});
   } catch (error) {
     return NextResponse.json({ error: 'Error creating faq' }, { status: 500 });

@@ -5,20 +5,33 @@ const BANNER_API_URL = process.env.NEXT_PUBLIC_BANNER_SERVICE_URL || 'http://loc
 
 export async function GET(req: NextRequest) {
     const orgId = req.headers.get("organization-id");
-    if (!orgId) {
-        return NextResponse.json({ error: "organization-id header is required" }, { status: 400 });
+    const token = req.cookies.get("authToken")?.value;
+
+    // Si no hay token Y no hay orgId, entonces sí necesitamos uno (para visitantes)
+    // Pero si hay token, el backend ya sabrá la organización.
+    if (!token && !orgId) {
+        return NextResponse.json({ error: "organization-id header or authToken is required" }, { status: 400 });
     }
 
     try {
         const backendRes = await fetch(`${BANNER_API_URL}/api/banners`, {
-            headers: { "organization-id": orgId }
+            headers: {
+                ...(orgId ? { "organization-id": orgId } : {}),
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            }
         });
+
+        if (!backendRes.ok) {
+            const errorData = await backendRes.text();
+            console.error("Backend Banners GET Error:", { status: backendRes.status, body: errorData });
+            throw new Error(`Backend responded with ${backendRes.status}`);
+        }
 
         const data = await backendRes.json();
         return NextResponse.json(data, { status: backendRes.status });
-    } catch (err) {
+    } catch (err: any) {
         console.error("Error en GET /api/banners:", err);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error", details: err.message }, { status: 500 });
     }
 }
 

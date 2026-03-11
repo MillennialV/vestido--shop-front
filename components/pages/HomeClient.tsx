@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,6 @@ import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import Blog from "@/components/blog/Blog";
 import VideoCard from "@/components/cards/VideoCard";
 import SiteFooter from "@/components/layout/SiteFooter";
-import { faqData } from "@/lib/faqData";
 import { PlusIcon } from "@/components/ui/Icons";
 import { useAuth } from "@/hooks/useAuth";
 import CartModal from "@/components/modals/CartModal";
@@ -953,46 +952,57 @@ export default function HomeClient({
                   }}
                 />
               </section>
-              <section id="faq" className="mt-24 mb-[100px] max-w-4xl mx-auto">
-                <header className="flex flex-col items-center text-center mb-12 gap-[24px]">
-                  <h1 className="font-h1">
-                    Preguntas Frecuentes
-                  </h1>
-                  <p className="mt-4 font-p max-w-2xl mx-auto">
-                    Este es un espacio creado para ti. Aquí respondemos las dudas más frecuentes de nuestra comunidad con total confianza, transparencia y compromiso
-                  </p>
-                  {authenticated && (
-                    <button
-                      onClick={() => {
-                        setFaqModalMode("create");
-                        setEditingFaq(null);
+              {(allFaqs.length > 0 || authenticated) && (
+                <section id="faq" className="mt-24 mb-[100px] max-w-4xl mx-auto">
+                  <header className="flex flex-col items-center text-center mb-12 gap-[24px]">
+                    <h1 className="font-h1">
+                      Preguntas Frecuentes
+                    </h1>
+                    <p className="mt-4 font-p max-w-2xl mx-auto">
+                      Este es un espacio creado para ti. Aquí respondemos las dudas más frecuentes de nuestra comunidad con total confianza, transparencia y compromiso
+                    </p>
+                    {authenticated && (
+                      <button
+                        onClick={() => {
+                          setFaqModalMode("create");
+                          setEditingFaq(null);
+                          setIsFaqModalOpen(true);
+                        }}
+                        className="inline-flex mt-8 items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
+                      >
+                        <PlusIcon className="w-4 h-4" />
+                        <span>Agregar pregunta</span>
+                      </button>
+                    )}
+                  </header>
+
+                  {allFaqs.length > 0 ? (
+                    <FaqAccordion
+                      items={allFaqs}
+                      isAdmin={authenticated}
+                      onEdit={(faq) => {
+                        const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;
+                        setEditingFaq(fullFaq);
+                        setFaqModalMode("edit");
                         setIsFaqModalOpen(true);
                       }}
-                      className="inline-flex mt-8 items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
-                    >
-                      <PlusIcon className="w-4 h-4" />
-                      <span>Agregar pregunta</span>
-                    </button>
+                      onDelete={(faq) => {
+                        const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;
+                        setEditingFaq(fullFaq);
+                        setFaqModalMode("delete");
+                        setIsFaqModalOpen(true);
+                      }}
+                      onReorder={handleReorderFaqs}
+                    />
+                  ) : (
+                    authenticated && (
+                      <div className="text-center py-12 border-2 border-dashed border-stone-200 dark:border-stone-700 rounded-2xl">
+                        <p className="text-stone-500 dark:text-stone-400">Aún no has agregado ninguna pregunta frecuente.</p>
+                      </div>
+                    )
                   )}
-                </header>
-                <FaqAccordion
-                  items={allFaqs.length > 0 ? allFaqs : faqData}
-                  isAdmin={authenticated}
-                  onEdit={(faq) => {
-                    const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;
-                    setEditingFaq(fullFaq);
-                    setFaqModalMode("edit");
-                    setIsFaqModalOpen(true);
-                  }}
-                  onDelete={(faq) => {
-                    const fullFaq = (allFaqs.find((f) => f.id === faq.id) || faq) as FaqItem;
-                    setEditingFaq(fullFaq);
-                    setFaqModalMode("delete");
-                    setIsFaqModalOpen(true);
-                  }}
-                  onReorder={handleReorderFaqs}
-                />
-              </section>
+                </section>
+              )}
             </div>
           </>
         )}

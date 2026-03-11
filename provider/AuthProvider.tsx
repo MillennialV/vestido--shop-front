@@ -63,11 +63,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!data.organization) {
       window.location.href = '/panel';
     } else {
-      // Si tiene organización, asume que continúa el login normal o 
-      // si requiere subdominio, podrías parsearlo aquí.
+      // Si ya tiene organización, lo enviamos a la tienda principal
       window.location.href = data.organization.domain
-        ? `https://${data.organization.domain}/panel`
-        : '/panel';
+        ? `https://${data.organization.domain}/`
+        : '/';
     }
   };
 
