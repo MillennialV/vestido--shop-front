@@ -10,8 +10,10 @@ import {
   ExclamationTriangleIcon,
   SparklesIcon,
   DownloadIcon,
+  ExcelIcon,
 } from "@/components/ui/Icons";
 import JSZip from "jszip";
+import * as XLSX from "xlsx";
 import { convertToWebP } from "@/lib/imageUtils";
 
 interface BulkUploadModalProps {
@@ -38,7 +40,7 @@ type UploadStatus =
 
 interface UploadableFile {
   id: string;
-  file: File;
+  file?: File;
   previewUrl: string;
   status: UploadStatus;
   progress: number;
@@ -56,6 +58,7 @@ interface UploadableFile {
     cantidad: string;
   };
   videoUrl?: string;
+  imageUrl?: string;
   videoRef: React.RefObject<HTMLVideoElement | null>;
   validationErrors?: {
     [key: string]: string;
@@ -120,6 +123,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   }, [isOpen]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const excelInputRef = useRef<HTMLInputElement>(null);
 
   if (!isRendered) return null;
 
@@ -169,6 +173,95 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     // Limpiar el valor del input para permitir volver a seleccionar el mismo archivo si se elimina
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleExcelImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const data = new Uint8Array(event.target?.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: "array" });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+      if (jsonData.length === 0) return;
+
+      setFiles((prev) => {
+        const newFiles = [...prev];
+        const rowsToCreate: any[] = [];
+
+        jsonData.forEach((row, rowIndex) => {
+          // Intentar encontrar por título (Producto) o por índice
+          const rowTitle = row["Producto"] || row["title"];
+          const rowImageUrl = row["URL Imagen"] || row["imageUrl"];
+
+          let fileIndex = -1;
+          if (rowTitle) {
+            fileIndex = newFiles.findIndex(f =>
+              f.garmentData.title === rowTitle ||
+              f.file?.name.includes(rowTitle) ||
+              rowTitle.includes(f.file?.name.replace(/\.[^/.]+$/, "") || "")
+            );
+          }
+
+          if (fileIndex !== -1) {
+            const currentFile = newFiles[fileIndex];
+            newFiles[fileIndex] = {
+              ...currentFile,
+              garmentData: {
+                ...currentFile.garmentData,
+                title: row["Producto"] || row["title"] || currentFile.garmentData.title,
+                brand: row["Marca"] || row["brand"] || currentFile.garmentData.brand,
+                description: row["Descripción"] || row["description"] || currentFile.garmentData.description,
+                size: row["Talla"] || row["size"] || currentFile.garmentData.size,
+                color: row["Color"] || row["color"] || currentFile.garmentData.color,
+                price: String(row["Precio"] || row["price"] || currentFile.garmentData.price),
+                material: row["Material"] || row["material"] || currentFile.garmentData.material,
+                occasion: row["Ocasión"] || row["occasion"] || currentFile.garmentData.occasion,
+                style_notes: row["Notas de Estilo"] || row["style_notes"] || currentFile.garmentData.style_notes,
+                cantidad: String(row["Stock"] || row["cantidad"] || currentFile.garmentData.cantidad),
+              },
+              imageUrl: row["URL Imagen"] || row["imageUrl"] || currentFile.imageUrl,
+              videoUrl: row["URL Video"] || row["videoUrl"] || currentFile.videoUrl,
+            };
+          } else if (rowImageUrl) {
+            // Si no hay coincidencia pero hay URL, creamos uno nuevo
+            rowsToCreate.push({
+              id: crypto.randomUUID(),
+              previewUrl: row["URL Imagen"] || row["imageUrl"] || row["URL Video"] || row["videoUrl"] || "",
+              imageUrl: row["URL Imagen"] || row["imageUrl"],
+              videoUrl: row["URL Video"] || row["videoUrl"],
+              status: "ready",
+              progress: 0,
+              garmentData: {
+                title: row["Producto"] || row["title"] || "Importado",
+                brand: row["Marca"] || row["brand"] || "",
+                description: row["Descripción"] || row["description"] || "",
+                size: row["Talla"] || row["size"] || "",
+                color: row["Color"] || row["color"] || "",
+                price: String(row["Precio"] || row["price"] || ""),
+                material: row["Material"] || row["material"] || "",
+                occasion: row["Ocasión"] || row["occasion"] || "",
+                style_notes: row["Notas de Estilo"] || row["style_notes"] || "",
+                cantidad: String(row["Stock"] || row["cantidad"] || "1"),
+              },
+              videoRef: React.createRef<HTMLVideoElement>(),
+            });
+          }
+        });
+
+        return [...newFiles, ...rowsToCreate];
+      });
+    };
+    reader.readAsArrayBuffer(file);
+
+    // Limpiar el input
+    if (excelInputRef.current) {
+      excelInputRef.current.value = "";
     }
   };
 
@@ -234,7 +327,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   };
 
   const handleQuoteImageEdit = async () => {
-    const imageFiles = files.filter(f => f.file.type.startsWith("image/") && f.status !== "completed");
+    const imageFiles = files.filter(f => f.file?.type?.startsWith("image/") && f.status !== "completed");
     if (imageFiles.length === 0) return;
 
     setIsQuotingImageEdit(true);
@@ -243,14 +336,13 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     let totalCost = 0;
 
     try {
-      // Tomamos una muestra o cotizamos todos dependiendo del volumen
-      // Para efectos de esta función, cotizamos todos los que se van a procesar
       const results = await Promise.all(imageFiles.map(async (file) => {
+        if (!file.file) return null;
         const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve((reader.result as string).split(",")[1]);
           reader.onerror = reject;
-          reader.readAsDataURL(file.file);
+          reader.readAsDataURL(file.file!);
         });
 
         const response = await fetch("/api/ia/count-tokens", {
@@ -306,13 +398,28 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     try {
       const results = await Promise.all(pendingFiles.map(async (file) => {
         let base64Image = "";
-        if (file.file.type.startsWith("image/")) {
+        if (file.file?.type.startsWith("image/")) {
           base64Image = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve((reader.result as string).split(",")[1]);
             reader.onerror = reject;
-            reader.readAsDataURL(file.file);
+            reader.readAsDataURL(file.file!);
           });
+        } else if (file.imageUrl) {
+          // Si tiene imageUrl pero no archivo, podemos intentar descargarla o usarla directamente para análisis si el API lo permite
+          // Por ahora, el API requiere base64, así que intentamos obtenerla
+          try {
+            const res = await fetch(file.imageUrl);
+            const blob = await res.blob();
+            base64Image = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve((reader.result as string).split(",")[1]);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          } catch (e) {
+            console.error("Error fetching image from URL for autocompletion:", e);
+          }
         } else {
           const videoElement = file.videoRef.current;
           if (videoElement) {
@@ -362,7 +469,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   };
 
   const handleMassiveImageEdit = async () => {
-    const imageFiles = files.filter(f => f.file.type.startsWith("image/") && f.status !== "completed");
+    const imageFiles = files.filter(f => f.file?.type.startsWith("image/") && f.status !== "completed");
     if (imageFiles.length === 0) return;
 
     setIsEditingMassively(true);
@@ -382,7 +489,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             const reader = new FileReader();
             reader.onload = () => resolve((reader.result as string).split(",")[1]);
             reader.onerror = reject;
-            reader.readAsDataURL(file.file);
+            reader.readAsDataURL(file.file!);
           });
 
           const response = await fetch("/api/ia/image-to-image", {
@@ -411,7 +518,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             const blob = await responseBlob.blob();
 
             // Reemplazamos el archivo original por la versión editada por IA
-            const newFileName = file.file.name.replace(/\.[^/.]+$/, "") + "_ai.png";
+            const oldName = file.file?.name || "imagen.png";
+            const newFileName = oldName.replace(/\.[^/.]+$/, "") + "_ai.png";
             const editedFile = new File([blob], newFileName, { type: 'image/png' });
 
             updateFileState(file.id, {
@@ -443,7 +551,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   };
 
   const handleRecommendPrompt = async () => {
-    const firstImage = files.find(f => f.file.type.startsWith("image/"));
+    const firstImage = files.find(f => f.file?.type.startsWith("image/") || f.imageUrl);
     if (!firstImage) return;
 
     setIsRecommendingPrompt(true);
@@ -452,11 +560,26 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       if (!abortControllerRef.current) abortControllerRef.current = new AbortController();
       const signal = abortControllerRef.current.signal;
 
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve((reader.result as string).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(firstImage.file);
+      const base64 = await new Promise<string>(async (resolve, reject) => {
+        if (firstImage.file) {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string).split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(firstImage.file);
+        } else if (firstImage.imageUrl) {
+          try {
+            const res = await fetch(firstImage.imageUrl);
+            const blob = await res.blob();
+            const reader = new FileReader();
+            reader.onload = () => resolve((reader.result as string).split(",")[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          } catch (e) {
+            reject(e);
+          }
+        } else {
+          reject(new Error("No hay imagen disponible"));
+        }
       });
 
       const response = await fetch("/api/ia/analyze-garment", {
@@ -519,13 +642,26 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         let base64Image = "";
 
         // Si es imagen, leer directamente a base64
-        if (file.file.type.startsWith("image/")) {
+        if (file.file?.type.startsWith("image/")) {
           base64Image = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve((reader.result as string).split(",")[1]);
             reader.onerror = reject;
-            reader.readAsDataURL(file.file);
+            reader.readAsDataURL(file.file!);
           });
+        } else if (file.imageUrl) {
+          try {
+            const res = await fetch(file.imageUrl);
+            const blob = await res.blob();
+            base64Image = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve((reader.result as string).split(",")[1]);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          } catch (e) {
+            console.error("Error fetching image from URL for processing:", e);
+          }
         }
         // Si es video, capturar un frame
         else {
@@ -603,12 +739,14 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
               // Update fields if they are empty or if the title is still the default (filename).
               // Strip _ai suffix to handle files renamed after AI image editing.
-              const baseFileName = file.file.name
+              const fileName = file.file?.name || "";
+              const baseFileName = fileName
                 .replace(/\.[^/.]+$/, "")  // remove extension
                 .replace(/_ai$/, "");       // remove _ai suffix added by image editing
               const isDefaultTitle =
                 !updatedData.title ||
-                updatedData.title === file.file.name ||
+                updatedData.title === "Importado" ||
+                updatedData.title === fileName ||
                 updatedData.title.replace(/_ai$/, "") === baseFileName;
 
               if (isDefaultTitle && result.title) {
@@ -658,7 +796,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     if (!folder) return;
 
     for (const f of files) {
-      if (f.file.type.startsWith("image/")) {
+      if (f.file?.type.startsWith("image/")) {
         const content = await f.file.arrayBuffer();
         folder.file(f.file.name, content);
       }
@@ -697,8 +835,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         try {
           let response;
 
-          // Si ya tenemos una videoUrl (por la IA), enviamos JSON
-          if (f.videoUrl) {
+          // Si ya tenemos una videoUrl o imageUrl (por la IA o Excel), enviamos JSON
+          if (f.videoUrl || f.imageUrl) {
             response = await fetch("/api/products", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -707,22 +845,19 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 price: f.garmentData.price ? parseFloat(f.garmentData.price) : undefined,
                 cantidad: f.garmentData.cantidad ? parseInt(f.garmentData.cantidad, 10) : 0,
                 videoUrl: f.videoUrl,
+                imagen_principal: f.imageUrl || f.garmentData.title, // Si no hay URL, intentamos con el título o algo
               }),
             });
           }
           // Si no tenemos URL, enviamos Multipart (Archivo + Datos) en una sola petición
-          else {
+          else if (f.file) {
             const isImage = f.file.type.startsWith("image/");
             const formData = new FormData();
 
             if (isImage) {
-              // El archivo f.file ya es WebP gracias al handler de selección o edición IA
               formData.append("image_principal", f.file);
             } else {
-              // Si es un video, enviamos el archivo de video
               formData.append("video", f.file);
-
-              // Y si la IA capturó un frame, lo enviamos como imagen_principal
               if ((f as any).imagen_principal_base64) {
                 const byteString = atob((f as any).imagen_principal_base64);
                 const ab = new ArrayBuffer(byteString.length);
@@ -808,7 +943,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   ).length;
 
   const imagesToEditCount = files.filter(f =>
-    f.file.type.startsWith("image/") &&
+    f.file?.type?.startsWith("image/") &&
     (f.status === "pending" || f.status === "error" || f.status === "analyzed" || f.status === "edited")
   ).length;
 
@@ -905,7 +1040,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                     )}
                     <button
                       onClick={handleRecommendPrompt}
-                      disabled={isRecommendingPrompt || files.filter(f => f.file.type.startsWith("image/")).length === 0}
+                      disabled={isRecommendingPrompt || files.filter(f => f.file?.type?.startsWith("image/") || f.imageUrl).length === 0}
                       className="text-[10px] text-sky-600 dark:text-sky-400 font-bold hover:underline flex items-center gap-1 disabled:opacity-50"
                     >
                       {isRecommendingPrompt ? <SpinnerIcon className="w-3 h-3 animate-spin" /> : <SparklesIcon className="w-3 h-3" />}
@@ -960,7 +1095,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                   </div>
                 </div>
 
-                {files.filter(f => f.file.type.startsWith("image/")).length === 0 && (
+                {files.filter(f => f.file?.type.startsWith("image/") || f.imageUrl).length === 0 && (
                   <p className="text-[10px] text-stone-500 text-center italic">
                     * Sube al menos una imagen para habilitar la edición creativa.
                   </p>
@@ -974,13 +1109,13 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                     className="bg-white dark:bg-stone-800 p-4 rounded-lg shadow-sm border border-stone-200 dark:border-stone-700 grid grid-cols-1 md:grid-cols-3 gap-4"
                   >
                     <div className="w-full aspect-[9/16] bg-black rounded-md overflow-hidden relative shadow-inner">
-                      {file.file.type.startsWith("image/") ? (
+                      {file.imageUrl || (file.file && file.file?.type?.startsWith("image/")) ? (
                         <img
                           src={file.previewUrl}
-                          alt={file.file.name}
+                          alt={file.file?.name || file.garmentData.title}
                           className="w-full h-full object-cover transition-all duration-500"
                         />
-                      ) : (
+                      ) : file.file ? (
                         <video
                           ref={file.videoRef}
                           src={file.previewUrl}
@@ -989,6 +1124,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                           className="w-full h-full object-cover transition-all duration-500"
                           crossOrigin="anonymous"
                         />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-stone-500">
+                          <UploadIcon className="w-8 h-8 opacity-20" />
+                        </div>
                       )}
 
                       {/* overlays premium */}
@@ -1192,6 +1331,13 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             onChange={(e) => handleFileSelect(e)}
             className="hidden"
           />
+          <input
+            ref={excelInputRef}
+            type="file"
+            accept=".xlsx, .xls, .csv"
+            onChange={handleExcelImport}
+            className="hidden"
+          />
         </main>
 
         <footer className="p-4 border-t border-stone-200 dark:border-stone-800 bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-2">
@@ -1204,8 +1350,17 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               + Añadir más
             </button>
             <button
+              onClick={() => excelInputRef.current?.click()}
+              disabled={isProcessing || isEditingMassively || isSaving}
+              className="flex-grow sm:flex-grow-0 bg-white dark:bg-stone-800 text-green-700 dark:text-green-400 font-medium py-2 px-4 rounded-lg border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              title="Importar datos desde Excel o CSV"
+            >
+              <ExcelIcon className="w-5 h-5" />
+              <span>Importar Excel</span>
+            </button>
+            <button
               onClick={handleDownloadZip}
-              disabled={files.filter(f => f.file.type.startsWith("image/")).length === 0}
+              disabled={files.filter(f => f.file?.type.startsWith("image/")).length === 0}
               className="p-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50"
               title="Descargar todas las imágenes editadas en ZIP"
             >

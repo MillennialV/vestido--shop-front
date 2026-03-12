@@ -4,11 +4,6 @@ import { cookies } from "next/headers";
 const BANNER_API_URL = process.env.NEXT_PUBLIC_BANNER_SERVICE_URL || 'http://localhost:3009';
 
 export async function GET(req: NextRequest) {
-    const orgId = req.headers.get("organization-id");
-    if (!orgId) {
-        return NextResponse.json({ error: "organization-id header is required" }, { status: 400 });
-    }
-
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get("authToken")?.value;
@@ -16,7 +11,6 @@ export async function GET(req: NextRequest) {
 
         const backendRes = await fetch(`${BANNER_API_URL}/api/banners/admin`, {
             headers: {
-                "organization-id": orgId,
                 "Authorization": `Bearer ${token}`
             }
         });

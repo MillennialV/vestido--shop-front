@@ -4,17 +4,32 @@ import { cookies } from "next/headers";
 const BANNER_API_URL = process.env.NEXT_PUBLIC_BANNER_SERVICE_URL || 'http://localhost:3009';
 
 export async function GET(req: NextRequest) {
-    const orgId = req.headers.get("organization-id");
+    const { searchParams } = new URL(req.url);
+    const queryParams = new URLSearchParams(searchParams);
+    
+    // Si viene domain=localhost o no viene y estamos en localhost, usamos vestido.shop
+    let currentDomain = queryParams.get("domain");
+    if (!currentDomain) {
+        let host = req.headers.get("host") || "";
+        if (host.includes(":")) host = host.split(":")[0];
+        if (host === "localhost") currentDomain = "vestido.shop";
+    } else if (currentDomain === "localhost") {
+        currentDomain = "vestido.shop";
+    }
+    
+    if (currentDomain) queryParams.set("domain", currentDomain);
+
+    const orgId = req.headers.get("organization-id") || queryParams.get("organization-id");
     const token = req.cookies.get("authToken")?.value;
 
-    // Si no hay token Y no hay orgId, entonces sí necesitamos uno (para visitantes)
-    // Pero si hay token, el backend ya sabrá la organización.
-    if (!token && !orgId) {
-        return NextResponse.json({ error: "organization-id header or authToken is required" }, { status: 400 });
+    // Con el nuevo backend, si hay token no necesitamos orgId.
+    // Si no hay token, intentamos usar domain o el orgId manual (fallback).
+    if (!token && !orgId && !currentDomain) {
+        return NextResponse.json({ error: "organization-id, domain or authToken is required" }, { status: 400 });
     }
 
     try {
-        const backendRes = await fetch(`${BANNER_API_URL}/api/banners`, {
+        const backendRes = await fetch(`${BANNER_API_URL}/api/banners?${queryParams.toString()}`, {
             headers: {
                 ...(orgId ? { "organization-id": orgId } : {}),
                 ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -97,13 +112,10 @@ export async function DELETE(req: NextRequest) {
 
         const { searchParams } = new URL(req.url);
         const id = searchParams.get("id");
-        const orgId = searchParams.get("organization_id");
 
         if (!id) return NextResponse.json({ error: "Se requiere el ID como search param '?id='" }, { status: 400 });
 
-        const targetUrl = orgId
-            ? `${BANNER_API_URL}/api/banners/${id}?organization_id=${orgId}`
-            : `${BANNER_API_URL}/api/banners/${id}`;
+        const targetUrl = `${BANNER_API_URL}/api/banners/${id}`;
 
         const backendRes = await fetch(targetUrl, {
             method: "DELETE",

@@ -14,7 +14,6 @@ import FilterBar from "@/components/catalog/FilterBar";
 import VideoModal from "@/components/modals/VideoModal";
 import ImageCarousel from "@/components/product/ImageCarousel";
 import { useBanners, Banner } from "@/hooks/useBanners";
-import { convertToWebP } from "@/lib/imageUtils";
 
 
 const AdminFormModal = dynamic(() => import("@/components/modals/AdminFormModal"), { ssr: false });

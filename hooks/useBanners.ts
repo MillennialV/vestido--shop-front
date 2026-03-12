@@ -22,12 +22,15 @@ export const useBanners = () => {
             // Si está autenticado, jala todos (activos e inactivos). Si no, solo activos.
             const endpoint = authenticated ? '/api/banners/admin' : '/api/banners';
             const headers: Record<string, string> = {};
-            const orgId = organization?.name || process.env.NEXT_PUBLIC_DEFAULT_ORGANIZATION || '';
-            if (orgId) {
-                headers['organization-id'] = orgId;
+            
+            let url = endpoint;
+            if (!authenticated) {
+                // Para usuarios públicos, enviamos el dominio actual
+                const domain = window.location.hostname;
+                url += `?domain=${domain}`;
             }
 
-            const response = await fetch(endpoint, { headers });
+            const response = await fetch(url, { headers });
             if (!response.ok) throw new Error('Error al cargar los banners');
 
             const result = await response.json();
@@ -39,7 +42,7 @@ export const useBanners = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [authenticated, organization]);
+    }, [authenticated]);
 
     const uploadBanner = async (file: File, title: string) => {
         try {
@@ -47,10 +50,7 @@ export const useBanners = () => {
             formData.append('image', file);
             formData.append('title', title);
             formData.append('is_active', 'true');
-            const orgId = organization?.name || process.env.NEXT_PUBLIC_DEFAULT_ORGANIZATION || '';
-            if (orgId) {
-                formData.append('organization_id', orgId);
-            }
+            // Ya no enviamos organization_id manualmente, el backend lo saca del token
 
             const response = await fetch('/api/banners', {
                 method: 'POST',
@@ -69,8 +69,8 @@ export const useBanners = () => {
 
     const deleteBanner = async (id: string) => {
         try {
-            const orgId = organization?.name || process.env.NEXT_PUBLIC_DEFAULT_ORGANIZATION || '';
-            const response = await fetch(`/api/banners?id=${id}&organization_id=${orgId}`, {
+            // Ya no enviamos organization_id manualmente
+            const response = await fetch(`/api/banners?id=${id}`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error('Error eliminando banner');
@@ -90,8 +90,7 @@ export const useBanners = () => {
             if (updates.title !== undefined) formData.append('title', updates.title);
             if (updates.is_active !== undefined) formData.append('is_active', String(updates.is_active));
             if (updates.order_index !== undefined) formData.append('order_index', String(updates.order_index));
-            const orgId = organization?.name || process.env.NEXT_PUBLIC_DEFAULT_ORGANIZATION || '';
-            if (orgId) formData.append('organization_id', orgId);
+            // Ya no enviamos organization_id manualmente
             if (file) formData.append('image', file);
 
             const response = await fetch(`/api/banners`, {

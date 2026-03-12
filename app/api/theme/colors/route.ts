@@ -4,16 +4,31 @@ import { cookies } from "next/headers";
 const THEME_API_URL = process.env.NEXT_PUBLIC_THEME_SERVICE_URL || 'http://localhost:3008';
 
 export async function GET(req: NextRequest) {
-    const orgId = req.headers.get("organization-id");
+    const { searchParams } = new URL(req.url);
+    const queryParams = new URLSearchParams(searchParams);
+
+    // Si viene domain=localhost o no viene y estamos en localhost, usamos vestido.shop
+    let currentDomain = queryParams.get("domain");
+    if (!currentDomain) {
+        let host = req.headers.get("host") || "";
+        if (host.includes(":")) host = host.split(":")[0];
+        if (host === "localhost") currentDomain = "vestido.shop";
+    } else if (currentDomain === "localhost") {
+        currentDomain = "vestido.shop";
+    }
+
+    if (currentDomain) queryParams.set("domain", currentDomain);
+
+    const orgId = req.headers.get("organization-id") || queryParams.get("organization-id");
     const cookieStore = await cookies();
     const token = cookieStore.get("authToken")?.value;
 
-    if (!token && !orgId) {
-        return NextResponse.json({ error: "organization-id header or authToken is required" }, { status: 400 });
+    if (!token && !orgId && !currentDomain) {
+        return NextResponse.json({ error: "organization-id, domain or authToken is required" }, { status: 400 });
     }
 
     try {
-        const backendRes = await fetch(`${THEME_API_URL}/api/theme-colors`, {
+        const backendRes = await fetch(`${THEME_API_URL}/api/theme-colors?${queryParams.toString()}`, {
             headers: {
                 ...(orgId ? { "organization-id": orgId } : {}),
                 ...(token ? { "Authorization": `Bearer ${token}` } : {})

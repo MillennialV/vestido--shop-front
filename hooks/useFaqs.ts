@@ -60,14 +60,15 @@ export const useFaqs = (initialItems: FaqItem[] = []) => {
 
     try {
       // Llamar a la API route local
-      const query = params ? new URLSearchParams(params as any).toString() : '';
-      const orgId = organization?.name || process.env.NEXT_PUBLIC_DEFAULT_ORGANIZATION || '';
+      let url = `/api/faqs`;
+      const domain = window.location.hostname;
+      
+      const searchParams = new URLSearchParams(params as any);
+      searchParams.append('domain', domain);
+      
+      url += `?${searchParams.toString()}`;
 
-      const res = await fetch(`/api/faqs${query ? '?' + query : ''}`, {
-        headers: {
-          'organization-id': orgId
-        }
-      });
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Error al cargar preguntas frecuentes');
       const data = await res.json();
       const fetchedFaqs = Array.isArray(data) ? data : data.faqs || data.preguntas || [];
@@ -83,7 +84,7 @@ export const useFaqs = (initialItems: FaqItem[] = []) => {
     } finally {
       setIsLoading(false);
     }
-  }, [hasFetched, faqsForComponent.length, organization]);
+  }, [hasFetched, faqsForComponent.length]);
 
   return {
     faqs,

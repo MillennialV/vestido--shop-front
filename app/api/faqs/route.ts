@@ -5,30 +5,18 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_PREGUNTAS_BASE_URL || 'http://lo
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = searchParams.get('limit') || '';
-    const estado = searchParams.get('estado') || '';
-    const order = searchParams.get('order') || '';
     const token = request.cookies.get('authToken')?.value;
     
-    // Extraer el dominio (host) de la petición
-    let host = request.headers.get('host') || '';
-    let domain = host;
-    if (domain.includes(':')) {
-      domain = domain.split(':')[0]; // remover puerto si existe
+    if (!searchParams.has('domain')) {
+        let host = request.headers.get('host') || '';
+        if (host.includes(':')) host = host.split(':')[0];
+        if (host === 'localhost') host = 'vestido.shop';
+        searchParams.append('domain', host);
+    } else if (searchParams.get('domain') === 'localhost') {
+        searchParams.set('domain', 'vestido.shop');
     }
 
-    // Si estamos en localhost para pruebas, forzamos www.vestido.shop temporalmente
-    if (domain === 'localhost') {
-        domain = 'www.vestido.shop';
-    }
-
-    const params = new URLSearchParams();
-    if (limit) params.append('limit', limit);
-    if (estado) params.append('estado', estado);
-    if (order) params.append('order', order);
-    if (domain) params.append('domain', domain); // Añadimos el dominio al microservicio
-
-    const url = `${BACKEND_URL}/api/preguntas${params.toString() ? '?' + params.toString() : ''}`;
+    const url = `${BACKEND_URL}/api/preguntas?${searchParams.toString()}`;
 
     const res = await fetch(url, {
       method: 'GET',
