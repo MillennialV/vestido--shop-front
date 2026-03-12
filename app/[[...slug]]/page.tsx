@@ -1,6 +1,7 @@
 import HomeClient from "@/components/pages/HomeClient";
 import { Metadata } from "next";
 import { PUBLIC_URL } from "@/lib/seo";
+import { getDomain } from "@/lib/get-domain";
 
 const INVENTARIO_BASE_API = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
@@ -9,15 +10,16 @@ const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/aistudio-hosting/VENICE
 
 async function fetchInitialData() {
     const revalidate = 60;
+    const domain = await getDomain();
     try {
         const [garmentsRes, postsRes, faqsRes] = await Promise.all([
-            fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?page=1&limit=15&sort=created_at&order=desc`, {
+            fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?page=1&limit=15&sort=created_at&order=desc&domain=${domain}`, {
                 next: { revalidate }
             }),
-            fetch(`${BLOG_BASE_API}/api/blog/posts?page=1&limit=6&sort=created_at&order=desc`, {
+            fetch(`${BLOG_BASE_API}/api/blog/posts?page=1&limit=6&sort=created_at&order=desc&domain=${domain}`, {
                 next: { revalidate }
             }),
-            fetch(`${FAQS_BASE_API}/api/preguntas?limit=${process.env.NEXT_PUBLIC_FAQ_LIMIT || 5}&estado=activa&order=asc&domain=www.vestido.shop`, {
+            fetch(`${FAQS_BASE_API}/api/preguntas?limit=${process.env.NEXT_PUBLIC_FAQ_LIMIT || 5}&estado=activa&order=asc&domain=${domain}`, {
                 next: { revalidate }
             })
         ]);
@@ -114,8 +116,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
 }
 
 async function getProduct(slug: string) {
+    const domain = await getDomain();
     try {
-        const res = await fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?q=${slug}&limit=1`);
+        const res = await fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?q=${slug}&limit=1&domain=${domain}`);
         if (res.ok) {
             const data = await res.json();
             const products = data?.data?.products || [];

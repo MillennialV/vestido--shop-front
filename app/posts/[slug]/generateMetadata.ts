@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PUBLIC_URL } from "@/lib/seo";
+import { getDomain } from "@/lib/get-domain";
 
 const DEFAULT_IMAGE_URL = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
 // Usamos la URL directa del servicio de blog para evitar llamadas a la propia API (que fallan en Vercel durante el render)
@@ -10,8 +11,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         // Await params to comply with Next.js 15+ async routing
         const { slug } = await params;
 
+        const domain = await getDomain();
         // Fetch directo al backend externo
-        const res = await fetch(`${BLOG_API_URL}/api/blog/posts?limit=100`, {
+        const res = await fetch(`${BLOG_API_URL}/api/blog/posts?limit=100&domain=${domain}`, {
             next: { revalidate: 3600 } // Cache por 1 hora
         });
 
@@ -26,10 +28,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
         const result = await res.json();
         // La estructura directa del backend es { data: { posts: [...] } }
-        // (Basado en como lo maneja route.ts)
         const postsArray = result.data?.posts || [];
 
-        // Ahora sí podemos usar .find() sobre el array
         const post = postsArray.find((p: any) => p.slug === slug);
 
         if (!post) {
@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         return {
             title: "Vestidos de Fiesta | Womanity Boutique",
             description: "Vestidos de fiesta exclusivos en Lima.",
-            robots: "index, follow", // Permitir indexado genérico en caso de error temporal
+            robots: "index, follow",
         };
     }
 }

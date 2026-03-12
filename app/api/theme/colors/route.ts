@@ -1,39 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { getDomain } from "@/lib/get-domain";
 
 const THEME_API_URL = process.env.NEXT_PUBLIC_THEME_SERVICE_URL || 'http://localhost:3008';
 
 export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-    const queryParams = new URLSearchParams(searchParams);
-
-    // Si viene domain=localhost o no viene y estamos en localhost, usamos vestido.shop
-    let currentDomain = queryParams.get("domain");
-    if (!currentDomain) {
-        let host = req.headers.get("host") || "";
-        if (host.includes(":")) host = host.split(":")[0];
-        if (host === "localhost") currentDomain = "vestido.shop";
-    } else if (currentDomain === "localhost") {
-        currentDomain = "vestido.shop";
-    }
-
-    if (currentDomain) queryParams.set("domain", currentDomain);
-
-    const orgId = req.headers.get("organization-id") || queryParams.get("organization-id");
-    const cookieStore = await cookies();
-    const token = cookieStore.get("authToken")?.value;
-
-    if (!token && !orgId && !currentDomain) {
-        return NextResponse.json({ error: "organization-id, domain or authToken is required" }, { status: 400 });
-    }
+    const orgId = req.headers.get("organization-id");
+    const domain = await getDomain();
 
     try {
-        const backendRes = await fetch(`${THEME_API_URL}/api/theme-colors?${queryParams.toString()}`, {
-            headers: {
-                ...(orgId ? { "organization-id": orgId } : {}),
-                ...(token ? { "Authorization": `Bearer ${token}` } : {})
-            }
-        });
+        const url = new URL(`${THEME_API_URL}/api/theme-colors`);
+        const reqHeaders: Record<string, string> = {};
+
+        if (orgId) {
+            reqHeaders["organization-id"] = orgId;
+        } else {
+            url.searchParams.append("domain", domain);
+        }
+
+        const cookieStore = await cookies();
+        const token = cookieStore.get("authToken")?.value;
+        if (token) reqHeaders["Authorization"] = `Bearer ${token}`;
+
+        const backendRes = await fetch(url.toString(), { headers: reqHeaders });
 
         if (!backendRes.ok) {
             const errorText = await backendRes.text();
@@ -41,7 +30,8 @@ export async function GET(req: NextRequest) {
             throw new Error(`Backend error: ${backendRes.status}`);
         }
 
-        const data = await backendRes.json();
+        const text = await backendRes.text();
+        const data = text ? JSON.parse(text) : null;
         return NextResponse.json(data, { status: backendRes.status });
     } catch (err: any) {
         console.error("Error en GET /api/theme/colors:", err);

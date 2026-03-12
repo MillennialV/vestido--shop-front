@@ -3,14 +3,17 @@ export const revalidate = 3600; // Revalidar cada hora
 
 import PostDetailClient from "@/app/posts/[slug]/PostDetailClient";
 import { generateMetadata } from "@/app/posts/[slug]/generateMetadata";
+import { PUBLIC_URL } from "@/lib/seo";
+import { getDomain } from "@/lib/get-domain";
 
 export { generateMetadata };
 
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
 
 async function getPost(slug: string) {
+  const domain = await getDomain();
   try {
-    const res = await fetch(`${BLOG_BASE_API}/api/blog/posts?limit=100`);
+    const res = await fetch(`${BLOG_BASE_API}/api/blog/posts?limit=100&domain=${domain}`);
     if (res.ok) {
       const data = await res.json();
       const postsArray = data.posts || [];
@@ -40,7 +43,7 @@ export default async function PostDetailPage({
     "author": {
       "@type": "Organization",
       "name": "Womanity Boutique",
-      "url": "https://vestido.shop"
+      "url": PUBLIC_URL
     },
     "publisher": {
       "@type": "Organization",

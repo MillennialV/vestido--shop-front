@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getDomain } from '@/lib/get-domain';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_PREGUNTAS_BASE_URL || 'http://localhost:3005';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const limit = searchParams.get('limit') || '';
+    const estado = searchParams.get('estado') || '';
+    const order = searchParams.get('order') || '';
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit);
+    if (estado) params.append('estado', estado);
+    if (order) params.append('order', order);
+    const domain = await getDomain();
+    params.append('domain', domain);
     const token = request.cookies.get('authToken')?.value;
-    
-    if (!searchParams.has('domain')) {
-        let host = request.headers.get('host') || '';
-        if (host.includes(':')) host = host.split(':')[0];
-        if (host === 'localhost') host = 'vestido.shop';
-        searchParams.append('domain', host);
-    } else if (searchParams.get('domain') === 'localhost') {
-        searchParams.set('domain', 'vestido.shop');
-    }
-
-    const url = `${BACKEND_URL}/api/preguntas?${searchParams.toString()}`;
+    const url = `${BACKEND_URL}/api/preguntas${params.toString() ? '?' + params.toString() : ''}`;
 
     const res = await fetch(url, {
       method: 'GET',
@@ -26,16 +26,18 @@ export async function GET(request: NextRequest) {
     });
 
     if (!res.ok) {
-      const errorData = await res.text();
-      console.error('Backend FAQ Fetch Error:', { status: res.status, body: errorData });
-      throw new Error(`Failed to fetch faqs: ${res.status}`);
+      return NextResponse.json([]);
+    }
+
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return NextResponse.json([]);
     }
 
     const data = await res.json();
     return NextResponse.json(data?.data?.preguntas || []);
-  } catch (error: any) {
-    console.error('API /api/faqs Error:', error);
-    return NextResponse.json({ error: 'Error fetching faqs', details: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Error fetching faqs' }, { status: 500 });
   }
 }
 

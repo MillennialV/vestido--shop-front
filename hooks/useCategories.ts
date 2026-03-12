@@ -11,7 +11,10 @@ export const useCategories = () => {
         setError(null);
         try {
             const res = await fetch("/api/posts/categories");
-            if (!res.ok) throw new Error("Error al cargar categorías");
+            if (!res.ok) {
+                setCategories([]);
+                return;
+            }
             const data = await res.json();
             const categoriesArray = Array.isArray(data) ? data : (data.categories || []);
             setCategories(categoriesArray);

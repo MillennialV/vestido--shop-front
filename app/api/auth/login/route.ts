@@ -23,13 +23,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: (data as any).error || 'Credenciales inválidas' }, { status: 401 });
     }
 
+    const token = (data as any).data?.token;
+    let organization = (data as any).data?.organization;
+
+    if (token && !organization) {
+      try {
+        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+        organization = payload.organization || null;
+      } catch (e) {
+        console.error('Error decoding token for organization:', e);
+      }
+    }
+
     const response = NextResponse.json({
       success: true,
       user: (data as any).data?.user,
-      organization: (data as any).data?.organization,
-      token: (data as any).data?.token
+      organization: organization,
+      token: token
     });
-    response.cookies.set('authToken', (data as any).data?.token, {
+    response.cookies.set('authToken', token, {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',

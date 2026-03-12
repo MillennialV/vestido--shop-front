@@ -17,11 +17,22 @@ export async function GET(req: NextRequest) {
 
     if (backendRes.ok) {
       const data = await backendRes.json();
+      let organization = data.data?.organization || null;
+
+      if (token && !organization) {
+        try {
+          const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+          organization = payload.organization || null;
+        } catch (e) {
+          console.error('Error decoding token for organization in session:', e);
+        }
+      }
+
       return NextResponse.json({
         authenticated: true,
         token,
         user: data.data?.user || null,
-        organization: data.data?.organization || null
+        organization: organization
       });
     }
   } catch (error) {
