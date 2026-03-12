@@ -21,23 +21,38 @@ export const RemoteThemeProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const applyColors = useCallback((colors: ThemeColors) => {
         const root = document.documentElement;
-        if (colors.color_one) root.style.setProperty('--color-one', colors.color_one);
-        if (colors.color_two) root.style.setProperty('--color-two', colors.color_two);
-        if (colors.color_three) root.style.setProperty('--color-three', colors.color_three);
-        if (colors.color_four) root.style.setProperty('--color-four', colors.color_four);
+        const colorMap = {
+            '--color-one': colors.color_one,
+            '--color-two': colors.color_two,
+            '--color-three': colors.color_three,
+            '--color-four': colors.color_four,
+            // También establecemos las de Tailwind directamente por si acaso
+            '--color-color-one': colors.color_one,
+            '--color-color-two': colors.color_two,
+            '--color-color-three': colors.color_three,
+            '--color-color-four': colors.color_four,
+        };
+
+        Object.entries(colorMap).forEach(([key, value]) => {
+            if (value) {
+                root.style.setProperty(key, value);
+            }
+        });
     }, []);
 
     const fetchTheme = useCallback(async () => {
         try {
             setIsLoading(true);
+            const t = Date.now();
             const [colorsRes, infoRes] = await Promise.all([
-                fetch('/api/theme/colors'),
-                fetch('/api/theme/store-info')
+                fetch(`/api/theme/colors?t=${t}`, { cache: 'no-store' }),
+                fetch(`/api/theme/store-info?t=${t}`, { cache: 'no-store' })
             ]);
 
             if (colorsRes.ok) {
                 const colorsData = await colorsRes.json();
                 if (colorsData.success && colorsData.data) {
+                    console.log("[Theme] Aplicando colores:", colorsData.data);
                     setColors(colorsData.data);
                     applyColors(colorsData.data);
                 }

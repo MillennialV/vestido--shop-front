@@ -551,19 +551,19 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       aria-labelledby="form-modal-title"
     >
       <div
-        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative bg-color-four dark:bg-color-three rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8">
           <h2
             id="form-modal-title"
-            className="text-3xl font-semibold text-stone-900 dark:text-stone-100 mb-6"
+            className="text-3xl font-semibold text-color-three dark:text-color-four mb-6 font-serif"
           >
             {garment ? "Editar Prenda" : "Añadir Nueva Prenda"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="bg-stone-100 dark:bg-stone-700/30 p-4 rounded-lg border border-stone-200 dark:border-stone-700 space-y-4">
-              <label className="block text-sm font-semibold text-stone-700 dark:text-stone-200 mb-2">
+              <label className="block text-sm font-semibold text-color-three dark:text-color-four mb-2">
                 Medios y Contenido Visual
               </label>
 
@@ -600,7 +600,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                       value={formData.videoUrl}
                       onChange={handleVideoUrlChange}
                       placeholder="https://..."
-                      className="w-full p-2 text-sm border border-stone-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                      className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
                     />
                   </div>
                 )}
@@ -639,7 +639,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                           value={formData.imagen_principal}
                           onChange={handleImagePrincipalUrlChange}
                           placeholder="https://..."
-                          className="w-full p-2 text-sm border border-stone-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                          className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
                         />
                       </div>
                     )}
@@ -648,7 +648,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
               </div>
 
               <div className="pt-4 border-t border-stone-200 dark:border-stone-700">
-                <label className="block text-sm font-semibold text-stone-700 dark:text-stone-200 mb-2">
+                <label className="block text-sm font-semibold text-color-three dark:text-color-four mb-2">
                   Imágenes Adicionales (Opcional - Máx 3)
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -722,7 +722,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                     ? "Sube un video para activar la IA."
                     : "Autocompletar datos con IA"
                 }
-                className="w-full flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-lg border border-stone-500 dark:border-stone-400 text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-lg border border-stone-300 dark:border-stone-700 text-color-three dark:text-color-four hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isAiLoading ? (
                   <>
@@ -751,7 +751,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 id="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
               />
               {formErrors.title && <p className="text-red-500 text-xs mt-1">{formErrors.title}</p>}
             </div>
@@ -768,7 +768,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 id="brand"
                 value={formData.brand}
                 onChange={handleChange}
-                className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
               />
               {formErrors.brand && <p className="text-red-500 text-xs mt-1">{formErrors.brand}</p>}
             </div>
@@ -803,7 +803,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   id="color"
                   value={formData.color}
                   onChange={handleChange}
-                  className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                  className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
                 />
                 {formErrors.color && <p className="text-red-500 text-xs mt-1">{formErrors.color}</p>}
               </div>
@@ -830,7 +830,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   placeholder="99.99"
                   min="0"
                   step="0.01"
-                  className="w-full p-2 pl-8 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                  className="input-primary w-full p-2 pl-8 border border-stone-300 dark:border-stone-600 rounded-md"
                 />
               </div>
               {formErrors.price && <p className="text-red-500 text-xs mt-1">{formErrors.price}</p>}
@@ -849,7 +849,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 value={formData.cantidad}
                 onChange={handleChange}
                 placeholder="10"
-                className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
               />
               {formErrors.cantidad && <p className="text-red-500 text-xs mt-1">{formErrors.cantidad}</p>}
             </div>
@@ -867,7 +867,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 value={formData.description}
                 onChange={handleChange}
                 rows={3}
-                className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
               />
               {formErrors.description && <p className="text-red-500 text-xs mt-1">{formErrors.description}</p>}
             </div>
@@ -886,7 +886,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   value={formData.material}
                   onChange={handleChange}
                   placeholder="Ej: Seda, Lino"
-                  className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                  className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
                 />
               </div>
               <div>
@@ -903,7 +903,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                   value={formData.occasion}
                   onChange={handleChange}
                   placeholder="Ej: Boda de día, Gala"
-                  className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                  className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
                 />
               </div>
             </div>
@@ -921,7 +921,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 value={formData.style_notes}
                 onChange={handleChange}
                 placeholder="Ej: Corte sirena, Espalda descubierta"
-                className="w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
+                className="input-primary w-full p-2 border border-stone-300 dark:border-stone-600 rounded-md"
               />
               {formErrors.style_notes && <p className="text-red-500 text-xs mt-1">{formErrors.style_notes}</p>}
             </div>
@@ -934,14 +934,14 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2 px-4 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors"
+                className="bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 font-medium py-2 px-4 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isProductLoading}
-                className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2 px-6 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="buttom-shop font-bold py-2 px-6 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isProductLoading ? (
                   <>

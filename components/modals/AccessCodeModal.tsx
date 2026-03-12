@@ -74,7 +74,7 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
       aria-labelledby="access-code-modal-title"
     >
       <div
-        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-sm transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative bg-color-four dark:bg-color-three rounded-lg shadow-2xl w-full max-w-sm transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -82,11 +82,11 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
         >
           <h2
             id="access-code-modal-title"
-            className="text-2xl font-semibold text-stone-900 dark:text-stone-100 mb-4 text-center"
+            className="text-2xl font-semibold text-color-three dark:text-color-four mb-4 text-center font-serif"
           >
             Iniciar sesión
           </h2>
-          <p className="text-stone-600 dark:text-stone-300 mb-6 text-center">
+          <p className="text-stone-500 dark:text-stone-400 mb-6 text-center text-sm">
             Inicia sesión con tu correo y contraseña para continuar.
           </p>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,7 +105,7 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-stone-600"}`}
+                className={`input-primary w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-stone-600"}`}
                 aria-invalid={!!error}
                 placeholder="tu@correo.com"
               />
@@ -125,7 +125,7 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className={`w-full p-3 pr-10 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-stone-600"}`}
+                  className={`input-primary w-full p-3 pr-10 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-stone-600"}`}
                   aria-invalid={!!error}
                   aria-describedby="code-error"
                   placeholder="••••••••"
@@ -159,14 +159,14 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2 px-6 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 font-medium py-2 px-6 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2 px-8 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="buttom-shop font-bold py-2 px-8 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Entrar
               </button>
@@ -179,15 +179,15 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
             className="absolute top-4 right-4 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400"
             aria-label="Cerrar"
           >
-            <CloseIcon className="w-6 h-6" />
+            <CloseIcon className="w-6 h-6 text-color-three dark:text-color-four" />
           </button>
         )}
 
         {isLoading && (
-          <div className="absolute inset-0 bg-stone-50/95 dark:bg-stone-800/95 rounded-lg flex items-center justify-center z-20">
+          <div className="absolute inset-0 bg-color-four/95 dark:bg-color-three/95 rounded-lg flex items-center justify-center z-20">
             <div className="flex flex-col items-center gap-4">
-              <SpinnerIcon className="w-12 h-12 text-stone-800 dark:text-stone-200 animate-spin" />
-              <p className="text-stone-700 dark:text-stone-200 font-medium text-lg">
+              <SpinnerIcon className="w-12 h-12 text-color-three dark:text-color-four animate-spin" />
+              <p className="text-color-three dark:text-color-four font-bold text-lg">
                 Iniciando sesión...
               </p>
             </div>
