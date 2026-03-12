@@ -15,6 +15,7 @@ import {
   PlayIcon,
 } from "@/components/ui/Icons";
 import { trackWhatsAppClick } from "@/lib/analytics";
+import { useRemoteTheme } from "@/context/RemoteThemeContext";
 
 const isExternalVideo = (url: string) => {
   if (!url) return false;
@@ -50,6 +51,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   isDisabled = false,
   priority = false,
 }) => {
+  const { storeInfo } = useRemoteTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -146,7 +148,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   const handleWhatsappClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const phoneNumber = "51956382746";
+    const phoneNumber = storeInfo?.whatsapp || "51956382746";
     let message = `Hola, me interesa la siguiente prenda:\n\n`;
     message += `*Producto:* ${garment.title}\n`;
     if (garment.brand && garment.brand !== "No identificable") {

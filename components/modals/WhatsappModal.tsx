@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { WhatsappIcon, CloseIcon } from "@/components/ui/Icons";
+import { WhatsappIcon, CloseIcon, SpinnerIcon } from "@/components/ui/Icons";
+import { useRemoteTheme } from "@/context/RemoteThemeContext";
 
 interface WhatsappModalProps {
   isOpen: boolean;
@@ -9,36 +10,29 @@ interface WhatsappModalProps {
 }
 
 const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
+  const { storeInfo, updateStoreInfo } = useRemoteTheme();
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [whatsappNumber, setWhatsappNumber] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setIsRendered(true);
       setTimeout(() => setIsVisible(true), 10);
+      
+      // Inicializar con el número del storeInfo o localStorage
+      const currentNumber = storeInfo?.whatsapp || localStorage.getItem("whatsappNumber") || "956382746";
+      // Limpiar prefijo +51 si existe para el input
+      const localPart = currentNumber.startsWith("51") ? currentNumber.substring(2) : currentNumber;
+      // Solo dejar dígitos
+      setWhatsappNumber(localPart.replace(/\D/g, "").slice(0, 9));
     } else {
       setIsVisible(false);
       const timer = setTimeout(() => setIsRendered(false), 300);
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
-
-  const [whatsappNumber, setWhatsappNumber] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("whatsappNumber");
-      const fullNumber = saved || "51956382746";
-      // Si el número guardado empieza con 51, extraer solo la parte local
-      return fullNumber.startsWith("51") ? fullNumber.substring(2) : fullNumber;
-    }
-    return "956382746"; // Default local number without prefix
-  });
-
-  useEffect(() => {
-    const storedNumber = localStorage.getItem("whatsappNumber");
-    if (storedNumber) {
-      setWhatsappNumber(storedNumber);
-    }
-  }, [isOpen]);
+  }, [isOpen, storeInfo]);
 
   if (!isRendered) return null;
 
@@ -51,15 +45,32 @@ const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleSaveWhatsappNumber = () => {
-    localStorage.setItem("whatsappNumber", whatsappNumber);
-    onClose();
-    // Opcional: Mostrar una notificación de éxito o recargar el contexto si es necesario
+  const handleSaveWhatsappNumber = async () => {
+    setIsSaving(true);
+    try {
+      // Guardar con prefijo para consistencia si es necesario, o solo el número
+      // El backend/contexto maneja la persistencia
+      const fullNumber = whatsappNumber.length === 9 ? `51${whatsappNumber}` : whatsappNumber;
+      
+      await updateStoreInfo({ 
+        whatsapp: fullNumber,
+        title: storeInfo?.title || "Womanity Boutique" // El title es requerido por la API
+      });
+      
+      // También guardar en localStorage para compatibilidad con código antiguo
+      localStorage.setItem("whatsappNumber", fullNumber);
+      onClose();
+    } catch (error) {
+      console.error("Error saving whatsapp number:", error);
+      alert("Error al guardar el número de WhatsApp");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div
-      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 bg-black/80 flex items-center justify-center z-[110] p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -124,9 +135,10 @@ const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
               </button>
               <button
                 onClick={handleSaveWhatsappNumber}
-                disabled={whatsappNumber.trim().length < 9}
-                className="flex-1 bg-[#25D366] text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-[#20BA5A] active:bg-[#1DA851] transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={whatsappNumber.trim().length < 9 || isSaving}
+                className="flex-1 bg-[#25D366] text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-[#20BA5A] active:bg-[#1DA851] transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isSaving && <SpinnerIcon className="w-4 h-4 animate-spin text-white" />}
                 Guardar
               </button>
             </div>

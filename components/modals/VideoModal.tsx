@@ -2,12 +2,14 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import type { Garment } from "@/types/Garment";
 import ThumbnailStrip from "@/components/product/ThumbnailStrip";
 import QrCodeModal from "@/components/modals/QrCodeModal";
 import { PUBLIC_URL } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
 import AccordionItem from "@/components/faq/AccordionItem";
+import { useRemoteTheme } from "@/context/RemoteThemeContext";
 import {
   CloseIcon,
   SpinnerIcon,
@@ -55,9 +57,10 @@ const VideoModal: React.FC<VideoModalProps> = ({
   isOpen,
   garment,
   onClose,
-  garmentList,
+  garmentList = [],
   onChangeGarment,
 }) => {
+  const { storeInfo } = useRemoteTheme();
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -378,7 +381,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     }
   };
 
-  const phoneNumber = "51956382746";
+  const phoneNumber = storeInfo?.whatsapp || "51956382746";
   let message = `Hola, me interesa la siguiente prenda:\n\n`;
   if (garment) {
     message += `*Producto:* ${garment.title}\n`;
@@ -428,6 +431,10 @@ const VideoModal: React.FC<VideoModalProps> = ({
       "url": `${PUBLIC_URL}/producto/${garment.slug || slugify(garment.title, garment.id)}`
     }
   };
+
+  const pathname = usePathname();
+  const isHome = pathname === "/" || pathname === "";
+  const TitleTag = isHome ? "h2" : "h1";
 
   return (
     <>
@@ -617,12 +624,12 @@ const VideoModal: React.FC<VideoModalProps> = ({
                 <p className="font-info-product" >COD: {garment.id ? garment.id : "No disponible"} / Stock: {garment.cantidad ? garment.cantidad : "0"}</p>
               </div>
               <div className="flex-shrink-0">
-                <h2
+                <TitleTag
                   id="modal-title"
                   className="font-title-modal-product mt-[15px]"
                 >
                   {garment.title}
-                </h2>
+                </TitleTag>
                 {garment.price && (
                   <p className={`font-price-modal-product mt-[17px] ${(!garment.cantidad || garment.cantidad <= 0) ? 'line-through opacity-50' : ''}`}>
                     S/{" "}

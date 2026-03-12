@@ -9,8 +9,37 @@ import { AuthProvider } from "@/provider/AuthProvider";
 import { GA_TRACKING_ID } from "@/lib/analytics";
 import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { RemoteThemeProvider } from "@/context/RemoteThemeContext";
 import CartModal from "@/components/modals/CartModal";
 import { Chatbot } from "@/components/ui/Chatbot";
+import { getRemoteThemeData } from "@/lib/theme-data";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { storeInfo } = await getRemoteThemeData();
+
+  const title = storeInfo?.title || "Vestidos de Fiesta Importados en Lima | Womanity San Isidro";
+  const description = storeInfo?.description || "Descubre +1000 vestidos de fiesta importados en nuestro showroom de San Isidro. Vestidos de cóctel, gala y noche.";
+
+  return {
+    title,
+    description,
+    metadataBase: new URL("https://www.vestido.shop/"),
+    keywords: "vestidos de fiesta lima, showroom san isidro, vestidos elegantes perú, vestidos importados, womanity boutique",
+    authors: [{ name: storeInfo?.title || "Womanity Boutique" }],
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      siteName: storeInfo?.title || "Vestido.shop by Womanity",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+    robots: "index, follow",
+  };
+}
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,57 +60,25 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export const metadata: Metadata = {
-  title: "Vestidos de Fiesta Importados en Lima | Womanity San Isidro",
-  description:
-    "Descubre +1000 vestidos de fiesta importados en nuestro showroom de San Isidro. Vestidos de cóctel, gala y noche. WhatsApp 956-382-746. ¡Visítanos!",
-  keywords:
-    "vestidos de fiesta lima, showroom san isidro, vestidos elegantes perú, vestidos importados, womanity boutique, vestidos de noche, vestidos de gala, vestidos de boda lima",
-  authors: [{ name: "Womanity Boutique" }],
-  metadataBase: new URL("https://www.vestido.shop/"),
-  alternates: {
-    canonical: "https://www.vestido.shop/",
-  },
-  openGraph: {
-    type: "website",
-    url: "https://www.vestido.shop/",
-    title: "Vestidos de Fiesta Importados en Lima | Womanity San Isidro",
-    description:
-      "Descubre +1000 vestidos de fiesta importados en nuestro showroom de San Isidro. Diseños exclusivos para tus eventos.",
-    siteName: "Vestido.shop by Womanity",
-    images: [
-      {
-        url: "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
-        width: 1200,
-        height: 630,
-      },
-    ],
-    locale: "es_PE",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Vestidos de Fiesta Importados en Lima",
-    description:
-      "Showroom San Isidro. +1000 modelos exclusivos de marcas USA.",
-    creator: "@WomanityBoutique",
-    images: [
-      "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
-    ],
-  },
-  robots: "index, follow",
-};
+// La constante metadata estática se elimina para usar generateMetadata
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { storeInfo } = await getRemoteThemeData();
+  const siteTitle = storeInfo?.title || "Vestidos de Fiesta en Lima";
+  const siteDesc = storeInfo?.description || "Showroom de vestidos de fiesta importados";
+  const siteAddress = storeInfo?.address || "Av. Paz Soldán 255 Sótano A24, San Isidro, Lima";
+  const sitePhone = storeInfo?.whatsapp || "51956382746";
+
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+        <meta name="google-site-verification" content="deSXplZYRUNMOZ9Q0fleZw043FAsKmgK1jqVq9J7b2M" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -109,7 +106,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
+              name: siteTitle,
               url: "https://www.vestido.shop/",
               potentialAction: {
                 "@type": "SearchAction",
@@ -122,14 +119,13 @@ export default function RootLayout({
               },
               publisher: {
                 "@type": "Organization",
-                name: "Womanity Boutique",
+                name: siteTitle,
                 logo: {
                   "@type": "ImageObject",
                   url: "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
                 },
               },
-              description:
-                "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro. Diseños exclusivos para tus eventos en Lima, Perú.",
+              description: siteDesc,
             }),
           }}
         />
@@ -158,45 +154,34 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "ClothingStore",
-              "name": "Vestido.shop by Womanity",
+              "name": siteTitle,
               "image": "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
               "url": "https://www.vestido.shop/",
               "logo": "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
-              "description": "Showroom de vestidos de fiesta importados de marcas USA en San Isidro, Lima. Más de 1000 modelos exclusivos.",
+              "description": siteDesc,
               "address": {
                 "@type": "PostalAddress",
-                "streetAddress": "Av. Paz Soldán 255 Sótano A24",
+                "streetAddress": siteAddress,
                 "addressLocality": "San Isidro",
                 "addressRegion": "Lima",
                 "postalCode": "15073",
                 "addressCountry": "PE"
               },
-              "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": -12.0954,
-                "longitude": -77.0347
-              },
-              "telephone": "+51956382746",
+              "telephone": `+${sitePhone}`,
               "priceRange": "$$",
               "openingHoursSpecification": [
                 {
                   "@type": "OpeningHoursSpecification",
                   "dayOfWeek": [
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                    "Saturday"
+                    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
                   ],
                   "opens": "11:00",
                   "closes": "20:00"
                 }
               ],
               "sameAs": [
-                "https://www.facebook.com/WomanityBoutique",
-                "https://www.instagram.com/WomanityBoutique",
-                "https://www.tiktok.com/@WomanityBoutique"
+                storeInfo?.facebook_url || "https://www.facebook.com/WomanityBoutique",
+                storeInfo?.instagram_url || "https://www.instagram.com/WomanityBoutique",
               ]
             }),
           }}
@@ -266,13 +251,15 @@ export default function RootLayout({
           </>
         )}
         <AuthProvider>
-          <ThemeProvider>
-            <CartProvider>
-              <div id="root">{children}</div>
-              <CartModal />
-              <Chatbot />
-            </CartProvider>
-          </ThemeProvider>
+          <RemoteThemeProvider>
+            <ThemeProvider>
+              <CartProvider>
+                <div id="root">{children}</div>
+                <CartModal />
+                <Chatbot />
+              </CartProvider>
+            </ThemeProvider>
+          </RemoteThemeProvider>
         </AuthProvider>
       </body>
     </html>

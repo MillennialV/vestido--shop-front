@@ -39,6 +39,9 @@ import { PlusIcon } from "@/components/ui/Icons";
 import { useAuth } from "@/hooks/useAuth";
 import CartModal from "@/components/modals/CartModal";
 
+// Ref persistente fuera del componente para evitar doble ejecución en StrictMode (desarrollo)
+const globalProcessedSlugRef = { current: null as string | null };
+
 // Recibe los datos iniciales como props
 export default function HomeClient({
   initialGarments,
@@ -51,7 +54,7 @@ export default function HomeClient({
   initialPosts: Post[];
   initialFaqs: FaqItem[];
 }) {
-  const processedSlugRef = useRef<string | null>(null);
+  // const processedSlugRef = useRef<string | null>(null); // Movido a global
   const prevGarmentRef = useRef<Garment | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [faqsLocal, setFaqsLocal] = useState<FaqItem[]>(initialFaqs);
@@ -143,13 +146,13 @@ export default function HomeClient({
       const newPath = `/producto/${slug}`;
       if (window.location.pathname !== newPath) {
         window.history.pushState(null, "", newPath);
-        processedSlugRef.current = slug;
+        globalProcessedSlugRef.current = slug;
       }
     } else if (prevGarmentRef.current) {
       // Only clean the URL if we are closing a previously selected garment
       if (window.location.pathname !== "/" && !window.location.pathname.startsWith("/blog")) {
         window.history.pushState(null, "", "/");
-        processedSlugRef.current = null;
+        globalProcessedSlugRef.current = null;
       }
     }
     prevGarmentRef.current = selectedGarment;
@@ -343,10 +346,7 @@ export default function HomeClient({
     const handleUrlChange = async (isPopState = false) => {
       const path = window.location.pathname;
       if (!path || path === "/") {
-        if (isPopState) {
-          processedSlugRef.current = null;
-          setSelectedGarment(null);
-        }
+          globalProcessedSlugRef.current = null;
         return;
       }
       let slug = path.replace(/^\//, "");
@@ -355,17 +355,18 @@ export default function HomeClient({
       }
 
       if (!slug || slug === "blog" || slug.startsWith("blog/") || slug === "producto") {
-        processedSlugRef.current = null;
+        globalProcessedSlugRef.current = null;
         return;
       }
-      if (processedSlugRef.current === slug) return;
-      processedSlugRef.current = slug;
+      if (globalProcessedSlugRef.current === slug) return;
+      globalProcessedSlugRef.current = slug;
       const foundInList = garments.find(g => g.slug === slug || slugify(g.title, g.id) === slug);
       if (foundInList) {
         handleSelectGarmentWrapper(foundInList, true);
         return;
       }
-      const idMatch = slug.match(/-(\d+)$/);
+      // Intentar extraer UUID (36 caracteres con guiones) o número al final del slug
+      const idMatch = slug.match(/-([a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12})$/i) || slug.match(/-(\d+)$/);
       if (idMatch) {
         const id = idMatch[1];
         try {
@@ -742,20 +743,21 @@ export default function HomeClient({
   const handleReorderFaqs = useCallback(
     async (newOrder: FaqItem[]) => {
       try {
-        const updatePromises = newOrder
-          .filter((item) => {
-            const original = allFaqs.find((f: FaqItem) => f.id === item.id);
-            return original && original.orden !== item.orden;
-          })
-          .map((item) =>
-            fetch('/api/faqs', {
+        const itemsToUpdate = newOrder.filter((item) => {
+          const original = allFaqs.find((f: FaqItem) => f.id === item.id);
+          return original && original.orden !== item.orden;
+        });
+
+        if (itemsToUpdate.length > 0) {
+          // Actualizar secuencialmente para evitar conflictos de orden en el backend
+          for (const item of itemsToUpdate) {
+            await fetch('/api/faqs', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ id: item.id, orden: item.orden }),
-            })
-          );
-        if (updatePromises.length > 0) {
-          await Promise.all(updatePromises);
+            });
+          }
+
           await fetchFaqs(true, true, {
             limit: FAQ_LIMIT,
             estado: "activa",
@@ -962,9 +964,9 @@ export default function HomeClient({
               {(allFaqs.length > 0 || authenticated) && (
                 <section id="faq" className="mt-24 mb-[100px] max-w-4xl mx-auto">
                   <header className="flex flex-col items-center text-center mb-12 gap-[24px]">
-                    <h1 className="font-h1">
+                    <h2 className="font-h1">
                       Preguntas Frecuentes
-                    </h1>
+                    </h2>
                     <p className="mt-4 font-p max-w-2xl mx-auto">
                       Este es un espacio creado para ti. Aquí respondemos las dudas más frecuentes de nuestra comunidad con total confianza, transparencia y compromiso
                     </p>

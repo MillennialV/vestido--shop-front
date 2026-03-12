@@ -3,9 +3,17 @@
 import React from "react";
 import Link from "next/link";
 import { FacebookIcon, InstagramIcon, WhatsappIcon } from "@/components/ui/Icons";
+import { useRemoteTheme } from "@/context/RemoteThemeContext";
 
 const SiteFooter: React.FC = () => {
+    const { storeInfo } = useRemoteTheme();
     const currentYear = new Date().getFullYear();
+
+    const facebookUrl = storeInfo?.facebook_url || "#";
+    const instagramUrl = storeInfo?.instagram_url || "#";
+    const whatsappNumber = storeInfo?.whatsapp || "+51 956 382 746";
+    const whatsappUrl = whatsappNumber.startsWith('http') ? whatsappNumber : `https://wa.me/${whatsappNumber.replace(/\D/g, '')}`;
+
 
     return (
         <footer className="bg-color-one text-color-three pt-[45px] pb-[25px] transition-colors duration-300">
@@ -20,9 +28,9 @@ const SiteFooter: React.FC = () => {
                             Tu destino premium en Lima para vestidos importados de USA. Calidad, estilo y exclusividad en San Isidro.
                         </p>
                         <div className="flex gap-[16px] mt-[24px]">
-                            <Link href="#" className="hover:underline"><FacebookIcon className="size-[24px]" /></Link>
-                            <Link href="#" className="hover:underline"><InstagramIcon className="size-[24px]" /></Link>
-                            <Link href="#" className="hover:underline"><WhatsappIcon className="size-[24px]" /></Link>
+                            <Link href={facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:underline"><FacebookIcon className="size-[24px]" /></Link>
+                            <Link href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:underline"><InstagramIcon className="size-[24px]" /></Link>
+                            <Link href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:underline"><WhatsappIcon className="size-[24px]" /></Link>
                         </div>
                     </div>
 
@@ -71,15 +79,15 @@ const SiteFooter: React.FC = () => {
                             <div className="flex flex-col gap-[16px]">
                                 <div>
                                     <p>Dirección</p>
-                                    <p>Av. Paz Soldán 255 Sótano A24, San Isidro</p>
+                                    <p>{storeInfo?.address || 'Av. Paz Soldán 255 Sótano A24, San Isidro'}</p>
                                 </div>
                                 <div>
                                     <p>WhatsApp</p>
-                                    <p>+51 956 382 746</p>
+                                    <p>{whatsappNumber}</p>
                                 </div>
                                 <div>
                                     <p>Horario</p>
-                                    <p>Lun - Sáb: 10:00 AM - 8:00 PM</p>
+                                    <p>{storeInfo?.schedule || 'Lun - Sáb: 10:00 AM - 8:00 PM'}</p>
                                 </div>
                             </div>
                         </div>

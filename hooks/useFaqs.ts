@@ -84,7 +84,8 @@ export const useFaqs = (initialItems: FaqItem[] = []) => {
     } finally {
       setIsLoading(false);
     }
-  }, [hasFetched, faqsForComponent.length]);
+  }, []);
+
 
   return {
     faqs,
