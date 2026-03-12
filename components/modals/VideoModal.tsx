@@ -2,12 +2,14 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import type { Garment } from "@/types/Garment";
 import ThumbnailStrip from "@/components/product/ThumbnailStrip";
 import QrCodeModal from "@/components/modals/QrCodeModal";
 import { PUBLIC_URL } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
 import AccordionItem from "@/components/faq/AccordionItem";
+import { useRemoteTheme } from "@/context/RemoteThemeContext";
 import {
   CloseIcon,
   SpinnerIcon,
@@ -55,9 +57,11 @@ const VideoModal: React.FC<VideoModalProps> = ({
   isOpen,
   garment,
   onClose,
-  garmentList,
+  garmentList = [],
   onChangeGarment,
 }) => {
+  const { storeInfo } = useRemoteTheme();
+  const pathname = usePathname();
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -378,37 +382,50 @@ const VideoModal: React.FC<VideoModalProps> = ({
     }
   };
 
-  const phoneNumber = "51956382746";
+  const isHome = pathname === "/" || pathname === "";
+  const TitleTag = isHome ? "h2" : "h1";
+
+  if (!garment) return null;
+
   let message = `Hola, me interesa la siguiente prenda:\n\n`;
-  if (garment) {
-    message += `*Producto:* ${garment.title}\n`;
-    if (garment.brand && garment.brand !== "No identificable") {
-      message += `*Marca:* ${garment.brand}\n`;
+  message += `*Producto:* ${garment.title}\n`;
+  if (garment.brand && garment.brand !== "No identificable") {
+    message += `*Marca:* ${garment.brand}\n`;
+  }
+  message += `*ID de Producto:* ${garment.id}\n`;
+  message += `*Talla:* ${garment.size}\n`;
+  message += `*Color:* ${garment.color}\n`;
+  if (garment.price) {
+    const priceValue =
+      typeof garment.price === "string"
+        ? parseFloat(garment.price)
+        : garment.price;
+    if (!isNaN(priceValue)) {
+      message += `*Precio:* S/ ${priceValue.toFixed(2)}\n`;
+    } else {
+      message += `*Precio:* S/ ${garment.price}\n`;
     }
-    message += `*ID de Producto:* ${garment.id}\n`;
-    message += `*Talla:* ${garment.size}\n`;
-    message += `*Color:* ${garment.color}\n`;
-    if (garment.price) {
-      const priceValue =
-        typeof garment.price === "string"
-          ? parseFloat(garment.price)
-          : garment.price;
-      if (!isNaN(priceValue)) {
-        message += `*Precio:* S/ ${priceValue.toFixed(2)}\n`;
-      } else {
-        message += `*Precio:* S/ ${garment.price}\n`;
-      }
-    }
-    if (garment.slug) {
-      const productUrl = `${PUBLIC_URL}/producto/${garment.slug}`;
-      message += `*Enlace:* ${productUrl}\n`;
-    }
+  }
+  if (garment.slug) {
+    const productUrl = `${PUBLIC_URL}/producto/${garment.slug}`;
+    message += `*Enlace:* ${productUrl}\n`;
   }
   message += `\n¿Podrían darme más información sobre la disponibilidad?`;
 
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  const phoneNumber = storeInfo?.whatsapp;
+  const whatsappUrl = phoneNumber
+    ? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
+    : "#";
 
-  if (!garment) return null;
+  const handleWhatsappClick = (e: React.MouseEvent) => {
+    if (!phoneNumber) {
+      e.preventDefault();
+      setToastMessage("Debe configurar un número primero");
+      setTimeout(() => setToastMessage(null), 3000);
+    } else {
+      trackWhatsAppClick(garment.title, garment.id);
+    }
+  };
 
   const productSchema = {
     "@context": "https://schema.org/",
@@ -428,6 +445,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
       "url": `${PUBLIC_URL}/producto/${garment.slug || slugify(garment.title, garment.id)}`
     }
   };
+
 
   return (
     <>
@@ -617,12 +635,12 @@ const VideoModal: React.FC<VideoModalProps> = ({
                 <p className="font-info-product" >COD: {garment.id ? garment.id : "No disponible"} / Stock: {garment.cantidad ? garment.cantidad : "0"}</p>
               </div>
               <div className="flex-shrink-0">
-                <h2
+                <TitleTag
                   id="modal-title"
                   className="font-title-modal-product mt-[15px]"
                 >
                   {garment.title}
-                </h2>
+                </TitleTag>
                 {garment.price && (
                   <p className={`font-price-modal-product mt-[17px] ${(!garment.cantidad || garment.cantidad <= 0) ? 'line-through opacity-50' : ''}`}>
                     S/{" "}
@@ -641,30 +659,44 @@ const VideoModal: React.FC<VideoModalProps> = ({
                     Comprar
                   </button>
 
-                  <div className="flex md:grid md:grid-cols-[1fr_auto] gap-3">
-                    <a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => trackWhatsAppClick(garment.title, garment.id)}
-                      className="flex-grow inline-flex items-center buttom-whatsapp justify-center px-6 py-3 bg-green-500 shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/50"
-                    >
-                      <WhatsappIcon className="w-5 h-5 mr-2" />
-                      WhatsApp
-                    </a>
-                    <button
-                      onClick={handleShare}
-                      className="w-[70px] md:w-14 inline-flex items-center buttom-shared justify-center shadow-md border border-stone-200 transition-colors focus:outline-none focus:ring-4 focus:ring-stone-200 dark:focus:ring-stone-500"
-                      aria-label="Copiar enlace"
-                      title="Copiar enlace"
-                    >
-                      <ShareIcon className="w-5 h-5" />
-                    </button>
-                  </div>
+                  {storeInfo?.whatsapp && (
+                    <div className="flex md:grid md:grid-cols-[1fr_auto] gap-3">
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={handleWhatsappClick}
+                        className="flex-grow inline-flex items-center buttom-whatsapp justify-center px-6 py-3 bg-green-500 shadow-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/50"
+                      >
+                        <WhatsappIcon className="w-5 h-5 mr-2" />
+                        WhatsApp
+                      </a>
+                      <button
+                        onClick={handleShare}
+                        className="w-[70px] md:w-14 inline-flex items-center buttom-shared justify-center shadow-md border border-stone-200 transition-colors focus:outline-none focus:ring-4 focus:ring-stone-200 dark:focus:ring-stone-500"
+                        aria-label="Copiar enlace"
+                        title="Copiar enlace"
+                      >
+                        <ShareIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  )}
+                  {!storeInfo?.whatsapp && (
+                    <div className="flex md:grid md:grid-cols-[1fr] gap-3">
+                      <button
+                        onClick={handleShare}
+                        className="w-full inline-flex items-center buttom-shared justify-center py-3 shadow-md border border-stone-200 transition-colors focus:outline-none focus:ring-4 focus:ring-stone-200 dark:focus:ring-stone-500"
+                        aria-label="Copiar enlace"
+                      >
+                        <ShareIcon className="w-5 h-5 mr-2" />
+                        Compartir Producto
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="flex-grow hidden md:flex flex-col mt-8">
+              <div className="flex-grow flex flex-col mt-8">
                 <AccordionItem
                   title="Descripción"
                   isOpen={openAccordion === "description"}

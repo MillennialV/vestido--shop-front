@@ -15,6 +15,7 @@ import {
   PlayIcon,
 } from "@/components/ui/Icons";
 import { trackWhatsAppClick } from "@/lib/analytics";
+import { useRemoteTheme } from "@/context/RemoteThemeContext";
 
 const isExternalVideo = (url: string) => {
   if (!url) return false;
@@ -50,11 +51,13 @@ const VideoCard: React.FC<VideoCardProps> = ({
   isDisabled = false,
   priority = false,
 }) => {
+  const { storeInfo } = useRemoteTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isMediaLoading, setIsMediaLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   // isLoadingDetails removido para apertura instantánea
 
   useEffect(() => {
@@ -146,7 +149,13 @@ const VideoCard: React.FC<VideoCardProps> = ({
   const handleWhatsappClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const phoneNumber = "51956382746";
+    const phoneNumber = storeInfo?.whatsapp;
+    if (!phoneNumber) {
+      setToastMessage("Debe configurar un número primero");
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
+    }
+
     let message = `Hola, me interesa la siguiente prenda:\n\n`;
     message += `*Producto:* ${garment.title}\n`;
     if (garment.brand && garment.brand !== "No identificable") {
@@ -207,6 +216,12 @@ const VideoCard: React.FC<VideoCardProps> = ({
           aria-hidden="true"
         >
           <SpinnerIcon className="w-10 h-10 text-stone-400 animate-spin" />
+        </div>
+      )}
+
+      {toastMessage && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-cyan-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full z-[100] animate-fade-in-out whitespace-nowrap shadow-lg">
+          {toastMessage}
         </div>
       )}
       {isVisible && hasError && garment.videoUrl && (
@@ -275,15 +290,17 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
       {!isSelectionMode && (
         <>
-          <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-            <button
-              onClick={handleWhatsappClick}
-              className="p-2 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black/50 focus:ring-white"
-              aria-label={`Consultar sobre ${garment.title} por WhatsApp`}
-            >
-              <WhatsappIcon className="w-5 h-5" />
-            </button>
-          </div>
+          {storeInfo?.whatsapp && (
+            <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+              <button
+                onClick={handleWhatsappClick}
+                className="p-2 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black/50 focus:ring-white"
+                aria-label={`Consultar sobre ${garment.title} por WhatsApp`}
+              >
+                <WhatsappIcon className="w-5 h-5" />
+              </button>
+            </div>
+          )}
 
           {isAdmin && (
             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">

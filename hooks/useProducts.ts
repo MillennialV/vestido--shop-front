@@ -17,6 +17,7 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const detailAbortControllerRef = useRef<AbortController | null>(null);
 
   const fetchProducts = useCallback(async (params: { page?: number; limit?: number; brand?: string; size?: string; color?: string; q?: string } = {}) => {
     if (abortControllerRef.current) {
@@ -75,32 +76,55 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
   }, []);
 
   useEffect(() => {
-    fetchProducts();
+    // Solo hacemos el fetch automático si no tenemos datos iniciales
+    if (!initialData || initialData.length === 0) {
+      fetchProducts();
+    }
     return () => {
+
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+      }
+      if (detailAbortControllerRef.current) {
+        detailAbortControllerRef.current.abort();
       }
     };
   }, [fetchProducts]);
 
   const fetchProductById = useCallback(async (id: number | string): Promise<Garment | null> => {
+    // Cancelar peticiones previas de detalle si las hay
+    if (detailAbortControllerRef.current) {
+        detailAbortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    detailAbortControllerRef.current = controller;
+
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/products/${id}`);
-      if (!res.ok) throw new Error('Error al cargar el detalle del producto');
+      const res = await fetch(`/api/products/${id}`, {
+          signal: controller.signal
+      });
+      if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw errorData;
+      }
       const product = await res.json();
       setSelectedProduct(product);
       return product;
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') return null;
       const msg = err instanceof Error ? err.message : 'Error al cargar el detalle del producto';
       setError(msg);
       console.error('[useProducts] Error al obtener detalle:', err);
       return null;
     } finally {
-      setIsLoading(false);
+      if (detailAbortControllerRef.current === controller) {
+        setIsLoading(false);
+      }
     }
   }, []);
+
 
   const createProduct = async (
     productData: Record<string, any>,

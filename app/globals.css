@@ -57,19 +57,23 @@
     --font-allrounder-monument-test-medium: var(--font-allrounder-monument-test-medium), sans-serif;
     --font-allrounder-monument-test-regular: var(--font-allrounder-monument-test-regular), sans-serif;
 
-    --color-color-one: #D5B46E;
-
-    --color-color-two: #1B1B1B;
-
-    --color-color-three: #000000;
-
-    --color-color-four: #FFFFFF;
+    --color-color-one: var(--color-one);
+    --color-color-two: var(--color-two);
+    --color-color-three: var(--color-three);
+    --color-color-four: var(--color-four);
     --color-color-disable: #878787;
 
-    --color-color-background: rgba(248, 248, 243, 1);
+    --color-color-background: var(--color-four);
     --color-color-background-dark: #0f0f0f;
     --color-color-button-icon: #EAEAEA;
     --breakpoint-fd: 1290px;
+}
+
+:root {
+    --color-one: #D5B46E;
+    --color-two: #1B1B1B;
+    --color-three: #000000;
+    --color-four: #FFFFFF;
 }
 
 /*Color de titulo header*/
@@ -550,4 +554,45 @@
     color: #78716c !important;
     /* stone-500 */
     font-style: italic;
+}
+
+/* Circular color inputs */
+input[type="color"].rounded-full::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-radius: 50%;
+}
+input[type="color"].rounded-full::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+input[type="color"].rounded-full::-moz-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+/* Forced Circular color inputs */
+input[type="color"].rounded-full {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+}
+
+input[type="color"].rounded-full::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-radius: 50%;
+}
+
+input[type="color"].rounded-full::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+
+input[type="color"].rounded-full::-moz-color-swatch {
+    border: none;
+    border-radius: 50%;
 }

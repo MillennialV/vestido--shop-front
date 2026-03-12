@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to create faq', details: errorData }, { status: res.status });
       }
     }
-    const data = await res.json();
-
-    return NextResponse.json(data?.data || {});
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : {};
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: 'Error creating faq' }, { status: 500 });
   }
@@ -92,8 +92,9 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to update faq', details: errorData }, { status: res.status });
       }
     }
-    const data = await res.json();
-    return NextResponse.json(data?.data || {});
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : {};
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: 'Error updating faq' }, { status: 500 });
   }

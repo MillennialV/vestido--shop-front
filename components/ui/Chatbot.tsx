@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { ChatBubbleIcon, CloseIcon, ChevronLeftIcon, WhatsappIcon } from "@/components/ui/Icons";
+import { useRemoteTheme } from "@/context/RemoteThemeContext";
 
 interface Question {
     id: string;
@@ -9,59 +10,64 @@ interface Question {
     answer: React.ReactNode;
 }
 
-const QUESTIONS: Question[] = [
-    {
-        id: "location",
-        text: "¿Dónde están ubicados?",
-        answer: (
-            <span>
-                Estamos en <strong>Av. Paz Soldán 255 Oficina A24, San Isidro, Lima</strong>.
-                <br />
-                <a
-                    href="https://maps.google.com/?q=Av.+Paz+Soldán+255+San+Isidro+Lima"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-stone-600 underline text-sm mt-1 block hover:text-stone-900"
-                >
-                    Ver en mapa
-                </a>
-            </span>
-        ),
-    },
-    {
-        id: "hours",
-        text: "¿Cuál es el horario de atención?",
-        answer: "Atendemos de Lunes a Sábado de 10am a 8pm.",
-    },
-    {
-        id: "sizes",
-        text: "¿Tienen vestidos en talla grande?",
-        answer: "Sí, tenemos TODAS las tallas desde XS hasta XXXL en stock.",
-    },
-    {
-        id: "prices",
-        text: "¿Cuánto cuestan?",
-        answer: "Desde S/160 según marca y diseño.",
-    },
-    {
-        id: "brands",
-        text: "¿Qué marcas y modelos tienen?",
-        answer: "Contamos con más de 2000 vestidos importados de Los Ángeles, incluyendo marcas como Tommy Hilfiger, Calvin Klein y Ralph Lauren.",
-    },
-    {
-        id: "contact",
-        text: "¿Cuál es su número de WhatsApp?",
-        answer: (
-            <span>
-                Puedes escribirnos al <strong>+51 956 382 746</strong> para consultas o pedidos.
-            </span>
-        )
-    }
-];
-
 export const Chatbot: React.FC = () => {
+    const { storeInfo } = useRemoteTheme();
     const [isOpen, setIsOpen] = useState(false);
     const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+
+    const whatsappNumber = storeInfo?.whatsapp || "51956382746";
+    const address = storeInfo?.address || "Av. Paz Soldán 255 Oficina A24, San Isidro, Lima";
+    const schedule = storeInfo?.schedule || "Lunes a Sábado de 10am a 8pm";
+
+    const questions = useMemo<Question[]>(() => [
+        {
+            id: "location",
+            text: "¿Dónde están ubicados?",
+            answer: (
+                <span>
+                    Estamos en <strong>{address}</strong>.
+                    <br />
+                    <a
+                        href={`https://maps.google.com/?q=${encodeURIComponent(address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-stone-600 underline text-sm mt-1 block hover:text-stone-900"
+                    >
+                        Ver en mapa
+                    </a>
+                </span>
+            ),
+        },
+        {
+            id: "hours",
+            text: "¿Cuál es el horario de atención?",
+            answer: `Atendemos de ${schedule}.`,
+        },
+        {
+            id: "sizes",
+            text: "¿Tienen vestidos en talla grande?",
+            answer: "Sí, tenemos TODAS las tallas desde XS hasta XXXL en stock.",
+        },
+        {
+            id: "prices",
+            text: "¿Cuánto cuestan?",
+            answer: "Desde S/160 según marca y diseño.",
+        },
+        {
+            id: "brands",
+            text: "¿Qué marcas y modelos tienen?",
+            answer: "Contamos con más de 2000 vestidos importados de Los Ángeles, incluyendo marcas como Tommy Hilfiger, Calvin Klein y Ralph Lauren.",
+        },
+        {
+            id: "contact",
+            text: "¿Cuál es su número de WhatsApp?",
+            answer: (
+                <span>
+                    Puedes escribirnos al <strong>{whatsappNumber.startsWith('51') ? `+51 ${whatsappNumber.substring(2)}` : whatsappNumber}</strong> para consultas o pedidos.
+                </span>
+            )
+        }
+    ], [address, schedule, whatsappNumber]);
 
     const handleClose = () => {
         setIsOpen(false);
@@ -81,6 +87,8 @@ export const Chatbot: React.FC = () => {
     const handleBack = () => {
         setSelectedQuestion(null);
     };
+
+    const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}`;
 
     return (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none font-sans">
@@ -117,7 +125,7 @@ export const Chatbot: React.FC = () => {
                             </div>
 
                             <div className="flex flex-col gap-2 pl-2">
-                                {QUESTIONS.map((q) => (
+                                {questions.map((q) => (
                                     <button
                                         key={q.id}
                                         onClick={() => handleSelectQuestion(q)}
@@ -131,7 +139,7 @@ export const Chatbot: React.FC = () => {
                             <div className="pt-2 mt-2 border-t border-stone-200/50">
                                 <p className="text-xs text-center text-stone-400 mb-2">¿Prefieres hablar con una persona?</p>
                                 <a
-                                    href="https://wa.me/51956382746"
+                                    href={whatsappUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-2 justify-center bg-green-500 text-white p-3 rounded-lg text-sm hover:bg-green-600 transition-all shadow-md active:scale-[0.98] font-medium w-full"
@@ -170,7 +178,7 @@ export const Chatbot: React.FC = () => {
                                 <div className="bg-stone-100 rounded-lg p-3 border border-stone-200">
                                     <p className="text-xs text-stone-500 mb-2 font-medium text-center">¿Necesitas coordinar una cita?</p>
                                     <a
-                                        href="https://wa.me/51956382746"
+                                        href={whatsappUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="flex items-center justify-center gap-2 w-full bg-stone-900 text-white p-2.5 rounded-lg text-sm hover:bg-stone-800 transition-colors shadow-sm"

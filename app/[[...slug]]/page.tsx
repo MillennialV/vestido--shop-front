@@ -42,20 +42,44 @@ async function fetchInitialData() {
     }
 }
 
+const STATIC_PAGES: Record<string, { title: string, description: string }> = {
+    'envios': {
+        title: 'Envíos y Devoluciones | Womanity Boutique',
+        description: 'Información sobre plazos de entrega, costos de envío y nuestra política de cambios y devoluciones.'
+    },
+    'privacidad': {
+        title: 'Política de Privacidad | Womanity Boutique',
+        description: 'Conoce cómo protegemos tus datos personales y tu privacidad en Womanity.'
+    },
+    'terminos': {
+        title: 'Términos y Condiciones | Womanity Boutique',
+        description: 'Términos Legales y condiciones de uso de nuestro sitio web y servicios.'
+    }
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string[] }> }): Promise<Metadata> {
     const resolvedParams = await params;
     const slugArray = resolvedParams.slug;
     let slug: string | null = null;
+    let isProductPath = false;
+
     if (slugArray && slugArray.length > 0) {
-        slug = slugArray[0] === "producto" && slugArray.length > 1 ? slugArray[1] : slugArray[0];
+        if (slugArray[0] === "producto" && slugArray.length > 1) {
+            slug = slugArray[1];
+            isProductPath = true;
+        } else {
+            slug = slugArray[0];
+        }
     }
 
-
-
+    // 1. Home Page o fallback
     if (!slug || slug === "producto") {
         return {
             title: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
             description: "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro.",
+            alternates: {
+                canonical: PUBLIC_URL,
+            },
             openGraph: {
                 url: PUBLIC_URL,
                 type: "website",
@@ -69,7 +93,29 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
         };
     }
 
-    // Buscar el producto para obtener su imagen real
+    // 2. Páginas Estáticas
+    if (STATIC_PAGES[slug]) {
+        const page = STATIC_PAGES[slug];
+        const pageUrl = `${PUBLIC_URL}/${slug}`;
+        return {
+            title: page.title,
+            description: page.description,
+            alternates: {
+                canonical: pageUrl,
+            },
+            openGraph: {
+                url: pageUrl,
+                type: "website",
+                title: page.title,
+                description: page.description,
+                images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
+            },
+            robots: "index, follow",
+        };
+    }
+
+    // 3. Productos
+    // Solo buscamos producto si el slug no es una página estática
     const product = await getProduct(slug);
 
     const productTitle = product?.title
@@ -79,7 +125,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     const productDescription = product?.description
         || "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro.";
 
-    // Prioridad: imagen_principal → primera imagen extra → imagen por defecto
     const productImage: string =
         product?.imagen_principal ||
         (product?.imagenes && product.imagenes.length > 0 ? product.imagenes[0] : null) ||
@@ -90,6 +135,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     return {
         title: productTitle,
         description: productDescription,
+        alternates: {
+            canonical: productUrl,
+        },
         openGraph: {
             url: productUrl,
             type: "website",

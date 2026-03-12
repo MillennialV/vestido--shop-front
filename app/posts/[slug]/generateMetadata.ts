@@ -47,6 +47,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         return {
             title: `${post.title} | Vestidos de Fiesta`,
             description,
+            alternates: {
+                canonical: url,
+            },
             openGraph: {
                 title: post.title,
                 description,

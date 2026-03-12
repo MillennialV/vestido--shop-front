@@ -1,11 +1,15 @@
 "use client";
 
 import React from "react";
-import { AdminIcon, ExitIcon, SunIcon, MoonIcon, ShoppingCartIcon } from "@/components/ui/Icons";
+import { usePathname } from "next/navigation";
+import { SettingsIcon, AdminIcon, ExitIcon, SunIcon, MoonIcon, ShoppingCartIcon } from "@/components/ui/Icons";
 import FilterModal from "@/components/catalog/FilterModal";
+import { ConfigModal } from "@/components/modals/ConfigModal";
 import MobileActionsMenu from "@/components/ui/MobileActionsMenu";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { useCart } from "@/context/CartContext";
+
+import { useRemoteTheme } from "@/context/RemoteThemeContext";
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -36,7 +40,9 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const { isDark, toggleDarkMode } = useDarkMode();
   const { totalItems, toggleCart, isCartOpen } = useCart();
+  const { storeInfo } = useRemoteTheme();
   const [mounted, setMounted] = React.useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
@@ -58,6 +64,9 @@ const Header: React.FC<HeaderProps> = ({
       window.location.href = `/#${id}`;
     }
   };
+
+  const pathname = usePathname();
+  const isHome = pathname === "/" || pathname === "";
 
   return (
 
@@ -123,13 +132,19 @@ const Header: React.FC<HeaderProps> = ({
             >
               <span
                 aria-hidden="true"
-                className="text-2xl md:text-3xl tracking-[0.2em] font-medium"
+                className="text-2xl md:text-3xl tracking-[0.2em] font-medium uppercase"
               >
-                WOMANITY
+                {storeInfo?.title || "WOMANITY"}
               </span>
-              <h1 className="sr-only">
-                Vestidos de Fiesta Importados en Lima | Womanity Boutique San Isidro
-              </h1>
+              {isHome ? (
+                <h1 className="sr-only">
+                  {storeInfo?.title || "Vestidos de Fiesta Importados en Lima | Womanity Boutique San Isidro"}
+                </h1>
+              ) : (
+                <span className="sr-only">
+                  {storeInfo?.title || "Womanity Boutique"}
+                </span>
+              )}
             </a>
           </div>
 
@@ -164,6 +179,16 @@ const Header: React.FC<HeaderProps> = ({
                 )}
               </button>
 
+              {isAdmin && (
+                <button
+                  onClick={() => setIsConfigModalOpen(true)}
+                  className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                  aria-label="Abrir configuración"
+                >
+                  <SettingsIcon className="w-6 h-6" />
+                </button>
+              )}
+
               <button
                 onClick={onToggleAdmin}
                 className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
@@ -190,6 +215,7 @@ const Header: React.FC<HeaderProps> = ({
 
 
       </div>
+      <ConfigModal isOpen={isConfigModalOpen} onClose={() => setIsConfigModalOpen(false)} />
     </header>
   );
 };

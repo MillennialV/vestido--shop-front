@@ -1,17 +1,20 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ShoppingCartIcon, SunIcon, MoonIcon, AdminIcon, ExitIcon } from "@/components/ui/Icons";
+import { ShoppingCartIcon, SunIcon, MoonIcon, AdminIcon, ExitIcon, SettingsIcon } from "@/components/ui/Icons";
+import { ConfigModal } from "@/components/modals/ConfigModal";
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { useCart } from '@/context/CartContext';
 
 interface MobileActionsMenuProps {
     isAdmin: boolean;
     onToggleAdmin: () => void;
+    onOpenConfig?: () => void;
 }
 
-const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggleAdmin }) => {
+const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggleAdmin, onOpenConfig }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
     const { isDark, toggleDarkMode } = useDarkMode();
     const { totalItems, toggleCart, isCartOpen } = useCart();
 
@@ -83,6 +86,24 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                     {isDark ? <SunIcon className="size-[24px]" /> : <MoonIcon className="size-[24px]" />}
                 </button>
 
+                {/* Config Action (Mobile Admin) */}
+                {isAdmin && (
+                    <button
+                        onClick={() => {
+                            if (onOpenConfig) {
+                                onOpenConfig();
+                            } else {
+                                setIsConfigModalOpen(true);
+                            }
+                            setIsOpen(false);
+                        }}
+                        className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                        aria-label="Configuración"
+                    >
+                        <SettingsIcon className="size-[24px]" />
+                    </button>
+                )}
+
                 {/* Profile/Admin Action */}
                 <button
                     onClick={() => {
@@ -94,7 +115,14 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                 >
                     {isAdmin ? <ExitIcon className="size-[24px]" /> : <AdminIcon className="size-[24px]" />}
                 </button>
+
+
             </div>
+
+            {/* Modal for internal control if onOpenConfig is not provided */}
+            {!onOpenConfig && (
+                <ConfigModal isOpen={isConfigModalOpen} onClose={() => setIsConfigModalOpen(false)} />
+            )}
         </div>
     );
 };
