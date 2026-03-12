@@ -9,6 +9,7 @@ import { AuthProvider } from "@/provider/AuthProvider";
 import { GA_TRACKING_ID } from "@/lib/analytics";
 import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { CategoryProvider } from "@/context/CategoryContext";
 import CartModal from "@/components/modals/CartModal";
 import { Chatbot } from "@/components/ui/Chatbot";
 
@@ -267,11 +268,13 @@ export default function RootLayout({
         )}
         <AuthProvider>
           <ThemeProvider>
-            <CartProvider>
-              <div id="root">{children}</div>
-              <CartModal />
-              <Chatbot />
-            </CartProvider>
+            <CategoryProvider>
+              <CartProvider>
+                <div id="root">{children}</div>
+                <CartModal />
+                <Chatbot />
+              </CartProvider>
+            </CategoryProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>

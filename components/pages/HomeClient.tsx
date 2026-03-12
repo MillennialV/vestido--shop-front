@@ -26,6 +26,7 @@ const QrBatchConfigModal = dynamic(() => import("@/components/modals/QrBatchConf
 const DownloadAllModal = dynamic(() => import("@/components/modals/DownloadAllModal"), { ssr: false });
 const BannerUploadModal = dynamic(() => import("@/components/modals/BannerUploadModal"), { ssr: false });
 const BannerEditModal = dynamic(() => import("@/components/modals/BannerEditModal"), { ssr: false });
+const CategoryManagerModal = dynamic(() => import("@/components/blog/CategoryManagerModal"), { ssr: false });
 import { BannerUploadItem } from "@/components/modals/BannerUploadModal";
 
 import Pagination from "@/components/ui/Pagination";
@@ -84,6 +85,7 @@ export default function HomeClient({
   const [faqModalMode, setFaqModalMode] = useState<"create" | "edit" | "delete">("create");
   const [editingFaq, setEditingFaq] = useState<FaqItem | null>(null);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
@@ -949,6 +951,7 @@ export default function HomeClient({
                   posts={posts}
                   navigate={() => window.location.href = "/"}
                   onAddPost={() => handleOpenPostModal(null)}
+                  onManageCategories={() => setIsCategoryModalOpen(true)}
                   onEditPost={handleOpenPostModal}
                   onDeletePost={handleDeletePost}
                   isLoading={isPostLoading}
@@ -1137,6 +1140,11 @@ export default function HomeClient({
         post={editingPost}
         onClose={() => setIsPostModalOpen(false)}
         onSubmit={handleSavePost}
+      />
+
+      <CategoryManagerModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
       />
       <FaqModal
         isOpen={isFaqModalOpen}

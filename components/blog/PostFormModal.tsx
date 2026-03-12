@@ -125,7 +125,11 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
 
     // Validaciones
     const newErrors: Record<string, string> = {};
-    if (!formData.title.trim()) newErrors.title = "Título obligatorio";
+    if (!formData.title.trim()) {
+      newErrors.title = "El título es obligatorio";
+    } else if (formData.title.trim().length < 5) {
+      newErrors.title = "El título debe tener al menos 5 caracteres";
+    }
     if (!formData.categoryId) newErrors.categoryId = "Selecciona categoría";
     if (formData.content.length < 50) newErrors.content = "Contenido muy corto";
     if (parseInt(formData.reading_time) < 1) newErrors.reading_time = "Mínimo 1 minuto de lectura";

@@ -55,13 +55,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
     return (
         <div
-            className={`fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+            className={`fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[110] p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
             onClick={!isProcessing ? onClose : undefined}
             role="dialog"
             aria-modal="true"
         >
             <div
-                className={`relative bg-color-four dark:bg-color-three rounded-lg shadow-2xl w-full max-w-md overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+                className={`relative bg-white dark:bg-[#262626] border border-stone-200 dark:border-stone-400 rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.7)] w-full max-w-md overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6">
