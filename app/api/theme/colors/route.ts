@@ -22,7 +22,16 @@ export async function GET(req: NextRequest) {
         const token = cookieStore.get("authToken")?.value;
         if (token) reqHeaders["Authorization"] = `Bearer ${token}`;
 
-        const backendRes = await fetch(url.toString(), { headers: reqHeaders });
+        let backendRes = await fetch(url.toString(), { headers: reqHeaders });
+
+        // Si falla (404) y el dominio tiene www, intentar con el dominio limpio
+        const cleanDomain = domain.replace(/^www\./, '');
+        if (!backendRes.ok && backendRes.status === 404 && domain !== cleanDomain && !orgId) {
+            console.log(`[api/theme/colors] 404 with ${domain}, trying with ${cleanDomain}`);
+            const fallbackUrl = new URL(url.toString());
+            fallbackUrl.searchParams.set("domain", cleanDomain);
+            backendRes = await fetch(fallbackUrl.toString(), { headers: reqHeaders });
+        }
 
         if (!backendRes.ok) {
             const errorText = await backendRes.text();
