@@ -19,7 +19,7 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
   const abortControllerRef = useRef<AbortController | null>(null);
   const detailAbortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchProducts = useCallback(async (params: { page?: number; limit?: number; brand?: string; size?: string; color?: string; q?: string } = {}) => {
+  const fetchProducts = useCallback(async (params: { page?: number; limit?: number; brand?: string; size?: string; color?: string; occasion?: string; q?: string } = {}) => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -42,6 +42,7 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
       if (params.brand && params.brand !== 'all') queryParams.append('brand', params.brand);
       if (params.size && params.size !== 'all') queryParams.append('size', params.size);
       if (params.color && params.color !== 'all') queryParams.append('color', params.color);
+      if (params.occasion && params.occasion !== 'all') queryParams.append('occasion', params.occasion);
       if (params.q) queryParams.append('q', params.q);
 
       const res = await fetch(`/api/products?${queryParams.toString()}`, {
