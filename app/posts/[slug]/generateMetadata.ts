@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { PUBLIC_URL, SITE_CONFIG } from "@/lib/metadata-constants";
+import { PUBLIC_URL } from "@/lib/seo";
+import { getDomain } from "@/lib/get-domain";
 
-const DEFAULT_IMAGE_URL = SITE_CONFIG.ogImage;
+const DEFAULT_IMAGE_URL = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
 // Usamos la URL directa del servicio de blog para evitar llamadas a la propia API (que fallan en Vercel durante el render)
 const BLOG_API_URL = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
 
@@ -10,15 +11,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         // Await params to comply with Next.js 15+ async routing
         const { slug } = await params;
 
+        const domain = await getDomain();
         // Fetch directo al backend externo
-        const res = await fetch(`${BLOG_API_URL}/api/blog/posts?limit=100`, {
+        const res = await fetch(`${BLOG_API_URL}/api/blog/posts?limit=100&domain=${domain}`, {
             next: { revalidate: 3600 } // Cache por 1 hora
         });
 
         if (!res.ok) {
             console.warn(`Error fetching metadata posts: ${res.status}`);
             return {
-                title: "Post no encontrado | Vestidos de Fiesta",
+                title: "Post no encontrado | Mi tienda",
                 description: "No se encontró el post solicitado.",
                 robots: "noindex, nofollow",
             };
@@ -26,26 +28,24 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
         const result = await res.json();
         // La estructura directa del backend es { data: { posts: [...] } }
-        // (Basado en como lo maneja route.ts)
         const postsArray = result.data?.posts || [];
 
-        // Ahora sí podemos usar .find() sobre el array
         const post = postsArray.find((p: any) => p.slug === slug);
 
         if (!post) {
             return {
-                title: "Post no encontrado | Vestidos de Fiesta",
+                title: "Post no encontrado | Mi tienda",
                 description: "No se encontró el post solicitado.",
                 robots: "noindex, nofollow",
             };
         }
 
-        const description = post.seo_description || post.content?.replace(/<[^>]*>?/gm, '').slice(0, 160) || "Post de blog de vestidos de fiesta.";
+        const description = post.seo_description || post.content?.replace(/<[^>]*>?/gm, '').slice(0, 160) || "Post de blog de nuestra tienda online.";
         const image = post.featured_image_url || DEFAULT_IMAGE_URL;
         const url = `${PUBLIC_URL}/posts/${post.slug}`;
 
         return {
-            title: `${post.title} | ${SITE_CONFIG.name}`,
+            title: `${post.title} | Mi tienda`,
             description,
             alternates: {
                 canonical: url,
@@ -69,9 +69,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     } catch (error) {
         console.error("Error in generateMetadata:", error);
         return {
-            title: `${SITE_CONFIG.name} | ${SITE_CONFIG.brandName}`,
-            description: SITE_CONFIG.defaultDescription,
-            robots: "index, follow", // Permitir indexado genérico en caso de error temporal
+            title: "Mi tienda",
+            description: "Productos exclusivos en nuestra tienda online.",
+            robots: "index, follow",
         };
     }
 }

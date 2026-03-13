@@ -1,5 +1,5 @@
 import React from 'react';
-import ConfirmationModal from '../ConfirmationModal';
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 
 interface DownloadAllModalProps {
     isOpen: boolean;

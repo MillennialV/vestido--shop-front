@@ -1,23 +1,25 @@
-import HomeClient from "@/components/HomeClient";
+import HomeClient from "@/components/pages/HomeClient";
 import { Metadata } from "next";
-import { PUBLIC_URL, SITE_CONFIG } from "@/lib/metadata-constants";
+import { PUBLIC_URL } from "@/lib/seo";
+import { getDomain } from "@/lib/get-domain";
 
 const INVENTARIO_BASE_API = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
 const FAQS_BASE_API = process.env.NEXT_PUBLIC_API_PREGUNTAS_BASE_URL || 'http://localhost:3005';
-const DEFAULT_OG_IMAGE = SITE_CONFIG.ogImage;
+const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
 
 async function fetchInitialData() {
     const revalidate = 60;
+    const domain = await getDomain();
     try {
         const [garmentsRes, postsRes, faqsRes] = await Promise.all([
-            fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?page=1&limit=15&sort=created_at&order=desc`, {
+            fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?page=1&limit=15&sort=created_at&order=desc&domain=${domain}`, {
                 next: { revalidate }
             }),
-            fetch(`${BLOG_BASE_API}/api/blog/posts?page=1&limit=6&sort=created_at&order=desc`, {
+            fetch(`${BLOG_BASE_API}/api/blog/posts?page=1&limit=6&sort=created_at&order=desc&domain=${domain}`, {
                 next: { revalidate }
             }),
-            fetch(`${FAQS_BASE_API}/api/preguntas?limit=${process.env.NEXT_PUBLIC_FAQ_LIMIT || 5}&estado=activa&order=asc`, {
+            fetch(`${FAQS_BASE_API}/api/preguntas?limit=${process.env.NEXT_PUBLIC_FAQ_LIMIT || 5}&estado=activa&order=asc&domain=${domain}`, {
                 next: { revalidate }
             })
         ]);
@@ -40,68 +42,89 @@ async function fetchInitialData() {
     }
 }
 
+const STATIC_PAGES: Record<string, { title: string, description: string }> = {
+    'envios': {
+        title: 'Envíos y Devoluciones | Mi tienda',
+        description: 'Información sobre plazos de entrega, costos de envío y nuestra política de cambios y devoluciones.'
+    },
+    'privacidad': {
+        title: 'Política de Privacidad | Mi tienda',
+        description: 'Conoce cómo protegemos tus datos personales y tu privacidad.'
+    },
+    'terminos': {
+        title: 'Términos y Condiciones | Mi tienda',
+        description: 'Términos Legales y condiciones de uso de nuestro sitio web y servicios.'
+    }
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string[] }> }): Promise<Metadata> {
     const resolvedParams = await params;
     const slugArray = resolvedParams.slug;
     let slug: string | null = null;
+    let isProductPath = false;
+
     if (slugArray && slugArray.length > 0) {
-        slug = slugArray[0] === "producto" && slugArray.length > 1 ? slugArray[1] : slugArray[0];
+        if (slugArray[0] === "producto" && slugArray.length > 1) {
+            slug = slugArray[1];
+            isProductPath = true;
+        } else {
+            slug = slugArray[0];
+        }
     }
 
-
-
-    if (!slug || slug === "producto" || slug === "envios" || slug === "nosotros") {
-        const isEnvios = slug === "envios";
-        const isNosotros = slug === "nosotros";
-
-        const title = isEnvios 
-            ? `Políticas de Envío | ${SITE_CONFIG.name}` 
-            : isNosotros 
-                ? `Sobre Nosotros | ${SITE_CONFIG.name}`
-                : SITE_CONFIG.defaultTitle;
-
-        const description = isEnvios
-            ? "Conoce nuestras políticas de envío express a todo el Perú. Entrega segura en 24-48 horas."
-            : isNosotros
-                ? "Conoce más sobre Womanity Boutique y nuestra pasión por los vestidos de fiesta."
-                : SITE_CONFIG.defaultDescription;
-
-        const url = slug ? `${PUBLIC_URL}/${slug}` : PUBLIC_URL;
-
+    // 1. Home Page o fallback
+    if (!slug || slug === "producto") {
         return {
-            title,
-            description,
+            title: "Mi tienda | Tienda online",
+            description: "Encuentra productos exclusivos en nuestra tienda online.",
             alternates: {
-                canonical: url,
+                canonical: PUBLIC_URL,
             },
             openGraph: {
-                url: url,
+                url: PUBLIC_URL,
                 type: "website",
-                title,
-                description,
                 images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
             },
             twitter: {
                 card: "summary_large_image",
-                title,
-                description,
                 images: [DEFAULT_OG_IMAGE],
             },
             robots: "index, follow",
         };
     }
 
-    // Buscar el producto para obtener su imagen real
+    // 2. Páginas Estáticas
+    if (STATIC_PAGES[slug]) {
+        const page = STATIC_PAGES[slug];
+        const pageUrl = `${PUBLIC_URL}/${slug}`;
+        return {
+            title: page.title,
+            description: page.description,
+            alternates: {
+                canonical: pageUrl,
+            },
+            openGraph: {
+                url: pageUrl,
+                type: "website",
+                title: page.title,
+                description: page.description,
+                images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
+            },
+            robots: "index, follow",
+        };
+    }
+
+    // 3. Productos
+    // Solo buscamos producto si el slug no es una página estática
     const product = await getProduct(slug);
 
     const productTitle = product?.title
-        ? `${product.title} | ${SITE_CONFIG.brandName}`
-        : `Vestido ${slug.replace(/-/g, ' ')} | ${SITE_CONFIG.name}`;
+        ? `${product.title} | Mi tienda`
+        : `${slug.replace(/-/g, ' ')} | Tienda online`;
 
     const productDescription = product?.description
-        || SITE_CONFIG.defaultDescription;
+        || "Encuentra productos elegantes e importados en nuestra tienda online.";
 
-    // Prioridad: imagen_principal → primera imagen extra → imagen por defecto
     const productImage: string =
         product?.imagen_principal ||
         (product?.imagenes && product.imagenes.length > 0 ? product.imagenes[0] : null) ||
@@ -128,8 +151,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
                     alt: product?.title || slug,
                 },
             ],
-            siteName: SITE_CONFIG.name,
-            locale: SITE_CONFIG.locale,
+            siteName: "Mi tienda",
+            locale: "es_PE",
         },
         twitter: {
             card: "summary_large_image",
@@ -141,8 +164,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
 }
 
 async function getProduct(slug: string) {
+    const domain = await getDomain();
     try {
-        const res = await fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?q=${slug}&limit=1`);
+        const res = await fetch(`${INVENTARIO_BASE_API}/api/producto/obtener-listado-productos?q=${slug}&limit=1&domain=${domain}`);
         if (res.ok) {
             const data = await res.json();
             const products = data?.data?.products || [];
@@ -175,10 +199,10 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
         "name": product.title,
         // Bug 2: usar imagen real del producto, no la URL del video
         "image": product.imagen_principal || product.imagenes?.[0] || DEFAULT_OG_IMAGE,
-        "description": product.description || `Vestido elegante ${product.title} disponible en Womanity Boutique San Isidro.`,
+        "description": product.description || `${product.title} disponible en nuestra tienda online.`,
         "brand": {
             "@type": "Brand",
-            "name": product.brand || SITE_CONFIG.brandName
+            "name": product.brand || "Mi tienda"
         },
         // Bug 4: agregar sku si existe
         ...(product.sku ? { "sku": product.sku } : {}),

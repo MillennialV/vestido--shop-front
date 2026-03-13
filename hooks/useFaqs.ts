@@ -11,7 +11,7 @@
 
 import { useState, useCallback } from 'react';
 import { mapFaqItemToComponent } from '../lib/faqData';
-import { faqData } from '../lib/faqData';
+import { useAuth } from './useAuth';
 import type { FaqItem } from '@/types/FaqItem';
 
 export interface FaqComponentItem {
@@ -31,6 +31,7 @@ export interface FaqComponentItem {
  * - fetchFaqs: Función para cargar las preguntas desde el servicio
  */
 export const useFaqs = (initialItems: FaqItem[] = []) => {
+  const { organization } = useAuth();
   const [faqs, setFaqs] = useState<FaqItem[]>(initialItems);
   const [faqsForComponent, setFaqsForComponent] = useState<FaqComponentItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,8 +60,15 @@ export const useFaqs = (initialItems: FaqItem[] = []) => {
 
     try {
       // Llamar a la API route local
-      const query = params ? new URLSearchParams(params as any).toString() : '';
-      const res = await fetch(`/api/faqs${query ? '?' + query : ''}`);
+      let url = `/api/faqs`;
+      const domain = window.location.hostname;
+      
+      const searchParams = new URLSearchParams(params as any);
+      searchParams.append('domain', domain);
+      
+      url += `?${searchParams.toString()}`;
+
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Error al cargar preguntas frecuentes');
       const data = await res.json();
       const fetchedFaqs = Array.isArray(data) ? data : data.faqs || data.preguntas || [];
@@ -72,25 +80,12 @@ export const useFaqs = (initialItems: FaqItem[] = []) => {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al cargar preguntas frecuentes';
       setError(msg);
-      console.error('[useFaqs] Error:', err);
-
-      if (useFallback) {
-        console.warn('[useFaqs] Usando datos por defecto debido a error');
-        const fallbackFaqs = faqData.map(item => ({
-          id: item.id,
-          pregunta: item.pregunta,
-          respuesta: item.respuesta,
-        }));
-        setFaqsForComponent(fallbackFaqs);
-        setHasFetched(true);
-        return fallbackFaqs;
-      }
-
       return [];
     } finally {
       setIsLoading(false);
     }
-  }, [hasFetched, faqsForComponent.length]);
+  }, []);
+
 
   return {
     faqs,

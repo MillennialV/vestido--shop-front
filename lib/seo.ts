@@ -1,17 +1,15 @@
 import type { Garment } from '@/types/Garment';
 import type { Post } from '@/types/post';
 
-import { SITE_CONFIG } from './metadata-constants';
-
 const PRODUCT_SCHEMA_ID = 'product-schema';
 const ARTICLE_SCHEMA_ID = 'article-schema';
 const BREADCRUMB_SCHEMA_ID = 'breadcrumb-schema';
 
-export const PUBLIC_URL = SITE_CONFIG.baseUrl;
+export const PUBLIC_URL = 'https://www.vestido.shop';
 
-const DEFAULT_TITLE = SITE_CONFIG.defaultTitle;
-const DEFAULT_DESCRIPTION = SITE_CONFIG.defaultDescription;
-const DEFAULT_IMAGE_URL = SITE_CONFIG.ogImage;
+const DEFAULT_TITLE = 'Mi tienda | Tienda online';
+const DEFAULT_DESCRIPTION = 'Descubre nuestra colección exclusiva de productos en nuestra tienda online.';
+const DEFAULT_IMAGE_URL = 'https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg';
 
 const getCanonicalUrl = (path: string = ''): string => {
     return new URL(path, PUBLIC_URL).toString();
@@ -125,7 +123,7 @@ export const setGarmentPageSeo = (garment: Garment) => {
     }
 
     const url = getCanonicalUrl(`/#/${garment.slug}`);
-    const title = `${garment.title} | ${garment.brand} - ${SITE_CONFIG.brandName}`;
+    const title = `${garment.title} | ${garment.brand} - Mi tienda`;
 
     setCoreMetaTags(title, garment.description, url);
 
@@ -160,8 +158,8 @@ export const setGarmentPageSeo = (garment: Garment) => {
 export const setBlogIndexPageSeo = () => {
     clearPageSpecificSchemas();
     const url = getCanonicalUrl('/#/blog');
-    const title = `Blog | Inspiración y Estilo - ${SITE_CONFIG.brandName}`;
-    const description = `Descubre las historias detrás de nuestros diseños, consejos de moda y las últimas tendencias en el blog oficial de ${SITE_CONFIG.brandName}.`;
+    const title = 'Blog | Inspiración y Estilo - Mi tienda';
+    const description = 'Descubre las historias detrás de nuestros productos, consejos y las últimas tendencias en nuestro blog oficial.';
 
     setCoreMetaTags(title, description, url);
     injectBreadcrumbSchema([
@@ -178,7 +176,7 @@ export const setPostPageSeo = (post: Post) => {
     }
 
     const url = getCanonicalUrl(`/#/blog/${post.slug}`);
-    const title = `${post.title} | Blog - ${SITE_CONFIG.brandName}`;
+    const title = `${post.title} | Blog - Mi tienda`;
 
     setCoreMetaTags(title, post.seo_description || post.content.substring(0, 160), url);
 
@@ -191,15 +189,15 @@ export const setPostPageSeo = (post: Post) => {
         'datePublished': post.updated_at || post.created_at,
         'author': {
             '@type': 'Organization',
-            'name': SITE_CONFIG.brandName,
+            'name': 'Mi tienda',
             'url': getCanonicalUrl('/')
         },
         'publisher': {
             '@type': 'Organization',
-            'name': SITE_CONFIG.brandName,
+            'name': 'Mi tienda',
             'logo': {
                 '@type': 'ImageObject',
-                'url': SITE_CONFIG.logoUrl
+                'url': 'https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png'
             }
         },
         'mainEntityOfPage': {

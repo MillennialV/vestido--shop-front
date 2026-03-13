@@ -1,5 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getDomain } from '@/lib/get-domain';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
 
@@ -19,8 +20,10 @@ export async function GET(request: NextRequest) {
 
         const hasActiveFilters = isRealFilter('brand') || isRealFilter('size') || isRealFilter('color') || isRealFilter('q');
 
+        const domain = await getDomain();
         let endpoint = hasActiveFilters ? '/api/producto/filtrar-busqueda' : '/api/producto/obtener-listado-productos';
         const backendUrl = new URL(`${BACKEND_URL}${endpoint}`);
+        backendUrl.searchParams.append('domain', domain);
 
         searchParams.forEach((value, key) => {
             if (value === 'all' || !value) return;
@@ -38,7 +41,16 @@ export async function GET(request: NextRequest) {
             headers: headers,
             cache: 'no-store'
         });
-        if (!res.ok) throw new Error('Failed to fetch products');
+        
+        if (!res.ok) {
+            return NextResponse.json({ products: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } });
+        }
+
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            return NextResponse.json({ products: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } });
+        }
+
         const data = await res.json();
 
         return NextResponse.json(data?.data || { products: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } });

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getDomain } from '@/lib/get-domain';
 
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'http://localhost:3000';
 
@@ -19,11 +20,13 @@ export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
 
+        const domain = await getDomain();
         const queryParams = new URLSearchParams({
             page: searchParams.get('page') || '1',
             limit: searchParams.get('limit') || '100',
             sort: searchParams.get('sort') || 'title',
             order: searchParams.get('order') || 'desc',
+            domain: domain,
         });
 
         const headers = getAuthHeaders(req);
@@ -34,7 +37,14 @@ export async function GET(req: NextRequest) {
             cache: 'no-store',
         });
 
-        if (!res.ok) throw new Error('Error al obtener los posts desde el servidor');
+        if (!res.ok) {
+            return NextResponse.json({ posts: [], pagination: null });
+        }
+
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            return NextResponse.json({ posts: [], pagination: null });
+        }
 
         const result = await res.json();
 

@@ -1,17 +1,75 @@
-
-
 import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import React from "react";
 import Script from "next/script";
 import { AuthProvider } from "@/provider/AuthProvider";
-import { GA_TRACKING_ID } from "@/lib/analytics";
 import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
-import { SITE_CONFIG, CONTACT_INFO, DEFAULT_FAQs } from "@/lib/metadata-constants";
-import CartModal from "@/components/CartModal";
-import { Chatbot } from "@/components/Chatbot";
+import { CategoryProvider } from "@/context/CategoryContext";
+import { RemoteThemeProvider } from "@/context/RemoteThemeContext";
+import CartModal from "@/components/modals/CartModal";
+import { Chatbot } from "@/components/ui/Chatbot";
+import { getRemoteThemeData } from "@/lib/theme-data";
+
+const allrounder = localFont({
+  src: [
+    {
+      path: "../fonts/AllrounderMonumentTest-Regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/AllrounderMonumentTest-Medium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/AllrounderMonumentTest-Book.otf",
+      weight: "300",
+      style: "normal",
+    },
+  ],
+  variable: "--font-allrounder",
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { storeInfo, metadata } = await getRemoteThemeData();
+
+  const title = storeInfo?.title || "Mi tienda";
+  const description = storeInfo?.description || "Descripción de mi tienda";
+
+  return {
+    title,
+    description,
+    metadataBase: new URL(metadata?.metadata_base || "https://www.vestido.shop/"),
+    keywords: metadata?.keywords || "palabras clave de mi tienda",
+    authors: [{ name: storeInfo?.title || "Mi tienda" }],
+    alternates: {
+      canonical: "/",
+    },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      siteName: storeInfo?.title || "Mi tienda",
+      images: metadata?.og_image_default ? [{ url: metadata.og_image_default }] : [{ url: "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      site: metadata?.twitter_site || "@womanityboutique",
+      creator: metadata?.twitter_creator || "@womanityboutique",
+      images: metadata?.og_image_default ? [metadata.og_image_default] : ["https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg"],
+    },
+    robots: "index, follow",
+    verification: {
+      google: metadata?.google_site_verification,
+    }
+  };
+}
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,52 +90,55 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export const metadata: Metadata = {
-  title: SITE_CONFIG.defaultTitle,
-  description: SITE_CONFIG.defaultDescription,
-  keywords: SITE_CONFIG.keywords,
-  authors: [{ name: SITE_CONFIG.brandName }],
-  verification: {
-    google: "deSXplZYRUNMOZ9Q0fleZw043FAsKmgK1jqVq9J7b2M",
-  },
-  alternates: {
-    canonical: "./",
-  },
-  openGraph: {
-    type: "website",
-    url: SITE_CONFIG.baseUrl,
-    title: SITE_CONFIG.defaultTitle,
-    description: SITE_CONFIG.defaultDescription,
-    siteName: SITE_CONFIG.name,
-    images: [
-      {
-        url: SITE_CONFIG.ogImage,
-        width: 1200,
-        height: 630,
-      },
-    ],
-    locale: SITE_CONFIG.locale,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_CONFIG.defaultTitle,
-    description: SITE_CONFIG.defaultDescription,
-    creator: SITE_CONFIG.twitterCreator,
-    images: [SITE_CONFIG.ogImage],
-  },
-  robots: "index, follow",
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { storeInfo, metadata, colors } = await getRemoteThemeData();
+  const domain = await import('@/lib/get-domain').then(m => m.getDomain());
+  const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'https://auth.vestido.shop';
+
+  // Obtener organización en el servidor para evitar parpadeo en el Header
+  let organization = null;
+  try {
+    const orgRes = await fetch(`${AUTH_SERVICE_URL}/api/organizations/domain/${domain}`, { cache: 'no-store' });
+    if (orgRes.ok) {
+      const orgData = await orgRes.json();
+      organization = orgData.data?.organization || null;
+    }
+  } catch (e) {
+    console.error("Error fetching org in layout:", e);
+  }
+
+  const siteTitle = storeInfo?.title || "Mi tienda";
+  const siteDesc = storeInfo?.description || "Tienda online";
+  const siteAddress = storeInfo?.address || "Dirección de la tienda";
+  const sitePhone = storeInfo?.whatsapp || "51999888777";
+
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" className={`${allrounder.variable}`} suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        {/* Inyección de colores de tema desde el servidor para evitar FOUC */}
+        {colors && colors.color_one && (
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              :root {
+                --color-one: ${colors.color_one};
+                --color-two: ${colors.color_two};
+                --color-three: ${colors.color_three};
+                --color-four: ${colors.color_four};
+                --color-color-one: ${colors.color_one};
+                --color-color-two: ${colors.color_two};
+                --color-color-three: ${colors.color_three};
+                --color-color-four: ${colors.color_four};
+              }
+            `
+          }} />
+        )}
 
         <script
           dangerouslySetInnerHTML={{
@@ -96,9 +157,6 @@ export default function RootLayout({
           }}
         />
 
-
-
-
         {/* JSON-LD Structured Data for SEO & AI Understanding */}
         <script
           type="application/ld+json"
@@ -106,26 +164,26 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: SITE_CONFIG.defaultTitle,
-              url: SITE_CONFIG.baseUrl,
+              name: siteTitle,
+              url: "https://www.vestido.shop/",
               potentialAction: {
                 "@type": "SearchAction",
                 target: {
                   "@type": "EntryPoint",
                   urlTemplate:
-                    `${SITE_CONFIG.baseUrl}/?q={search_term_string}`,
+                    "https://www.vestido.shop/?q={search_term_string}",
                 },
                 "query-input": "required name=search_term_string",
               },
               publisher: {
                 "@type": "Organization",
-                name: SITE_CONFIG.brandName,
+                name: siteTitle,
                 logo: {
                   "@type": "ImageObject",
-                  url: SITE_CONFIG.logoUrl,
+                  url: metadata?.json_ld_logo || "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
                 },
               },
-              description: SITE_CONFIG.defaultDescription,
+              description: siteDesc,
             }),
           }}
         />
@@ -141,7 +199,7 @@ export default function RootLayout({
                   "@type": "ListItem",
                   position: 1,
                   name: "Inicio",
-                  item: SITE_CONFIG.baseUrl,
+                  item: "https://www.vestido.shop/",
                 },
               ],
             }),
@@ -154,39 +212,36 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "ClothingStore",
-              "name": SITE_CONFIG.name,
-              "image": SITE_CONFIG.logoUrl,
-              "url": SITE_CONFIG.baseUrl,
-              "logo": SITE_CONFIG.logoUrl,
-              "description": SITE_CONFIG.defaultDescription,
+              "name": siteTitle,
+              "image": metadata?.og_image_default || "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
+              "url": "https://www.vestido.shop/",
+              "logo": metadata?.json_ld_logo || "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
+              "description": siteDesc,
               "address": {
                 "@type": "PostalAddress",
-                "streetAddress": CONTACT_INFO.address.street,
-                "addressLocality": CONTACT_INFO.address.locality,
-                "addressRegion": CONTACT_INFO.address.region,
-                "postalCode": CONTACT_INFO.address.postalCode,
-                "addressCountry": CONTACT_INFO.address.country
+                "streetAddress": siteAddress,
+                "addressLocality": metadata?.address_locality || "San Isidro",
+                "addressRegion": metadata?.address_region || "Lima",
+                "postalCode": metadata?.postal_code || "15073",
+                "addressCountry": metadata?.address_country || "PE"
               },
-              "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": CONTACT_INFO.address.latitude,
-                "longitude": CONTACT_INFO.address.longitude
-              },
-              "telephone": CONTACT_INFO.phone,
-              "priceRange": "$$",
+              "email": storeInfo?.email,
+              "telephone": sitePhone ? `+${sitePhone.replace(/\D/g, '')}` : undefined,
+              "priceRange": metadata?.json_ld_price_range || "$$",
               "openingHoursSpecification": [
                 {
                   "@type": "OpeningHoursSpecification",
-                  "dayOfWeek": CONTACT_INFO.openingHours.days,
-                  "opens": CONTACT_INFO.openingHours.opens,
-                  "closes": CONTACT_INFO.openingHours.closes
+                  "dayOfWeek": [
+                    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+                  ],
+                  "opens": "11:00",
+                  "closes": "20:00"
                 }
               ],
               "sameAs": [
-                CONTACT_INFO.socialLinks.facebook,
-                CONTACT_INFO.socialLinks.instagram,
-                CONTACT_INFO.socialLinks.tiktok
-              ]
+                storeInfo?.facebook_url,
+                storeInfo?.instagram_url,
+              ].filter(Boolean)
             }),
           }}
         />
@@ -197,14 +252,40 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "FAQPage",
-              mainEntity: DEFAULT_FAQs.map(faq => ({
-                "@type": "Question",
-                name: faq.pregunta,
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: faq.respuesta,
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: "¿Cómo puedo saber cuál es mi talla correcta?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Recomendamos revisar nuestra guía de tallas detallada, disponible en la descripción de cada product. Si tienes dudas, nuestro equipo de estilistas está disponible por WhatsApp para ofrecerte una asesoría personalizada y asegurar que encuentres el ajuste perfecto.",
+                  },
                 },
-              })),
+                {
+                  "@type": "Question",
+                  name: "¿Cuál es la política de envíos y devoluciones?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Ofrecemos envío express a todo el país, con un tiempo de entrega de 24-48 horas en ciudades principales. Aceptamos devoluciones dentro de los primeros 7 días después de la recepción, siempre que la prenda esté en su estado original y con todas las etiquetas.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Los vestidos, ¿requieren algún cuidado especial?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Sí, al ser prendas de alta costura, recomendamos encarecidamente la limpieza en seco profesional. Evita lavar a máquina o usar secadoras. Para el almacenamiento, guárdalo en una funda para prendas en un lugar fresco y seco para preservar la calidad de los tejidos y detalles.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "¿Ofrecen arreglos o ajustes a medida?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Actualmente no ofrecemos un servicio de arreglos a medida, pero nuestros vestidos están diseñados para permitir ajustes menores por parte de un sastre profesional. Podemos recomendarte talleres de confianza si lo necesitas.",
+                  },
+                },
+              ],
             }),
           }}
         />
@@ -214,9 +295,9 @@ export default function RootLayout({
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-              strategy="lazyOnload"
+              strategy="afterInteractive"
             />
-            <Script id="google-analytics" strategy="lazyOnload">
+            <Script id="google-analytics" strategy="afterInteractive">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
@@ -229,13 +310,22 @@ export default function RootLayout({
           </>
         )}
         <AuthProvider>
-          <ThemeProvider>
-            <CartProvider>
-              <div id="root">{children}</div>
-              <CartModal />
-              <Chatbot />
-            </CartProvider>
-          </ThemeProvider>
+          <RemoteThemeProvider
+            initialColors={colors}
+            initialStoreInfo={storeInfo}
+            initialMetadata={metadata}
+            initialOrganization={organization}
+          >
+            <ThemeProvider>
+              <CategoryProvider>
+                <CartProvider>
+                  <div id="root">{children}</div>
+                  <CartModal />
+                  <Chatbot />
+                </CartProvider>
+              </CategoryProvider>
+            </ThemeProvider>
+          </RemoteThemeProvider>
         </AuthProvider>
       </body>
     </html>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getDomain } from '@/lib/get-domain';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_PREGUNTAS_BASE_URL || 'http://localhost:3005';
 
@@ -12,12 +13,27 @@ export async function GET(request: NextRequest) {
     if (limit) params.append('limit', limit);
     if (estado) params.append('estado', estado);
     if (order) params.append('order', order);
+    const domain = await getDomain();
+    params.append('domain', domain);
+    const token = request.cookies.get('authToken')?.value;
     const url = `${BACKEND_URL}/api/preguntas${params.toString() ? '?' + params.toString() : ''}`;
-    const res = await fetch(url, { method: 'GET' });
+
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      }
+    });
+
     if (!res.ok) {
-      const errorData = await res.text();
-      throw new Error('Failed to fetch faqs');
+      return NextResponse.json([]);
     }
+
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return NextResponse.json([]);
+    }
+
     const data = await res.json();
     return NextResponse.json(data?.data?.preguntas || []);
   } catch (error) {
@@ -46,8 +62,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to create faq', details: errorData }, { status: res.status });
       }
     }
-    const data = await res.json();
-    return NextResponse.json(data?.data || {});
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : {};
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: 'Error creating faq' }, { status: 500 });
   }
@@ -75,8 +92,9 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to update faq', details: errorData }, { status: res.status });
       }
     }
-    const data = await res.json();
-    return NextResponse.json(data?.data || {});
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : {};
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: 'Error updating faq' }, { status: 500 });
   }
