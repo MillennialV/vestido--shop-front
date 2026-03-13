@@ -102,6 +102,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
     const [localLinks, setLocalLinks] = useState<Partial<StoreInfo>>({});
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [tempKeyword, setTempKeyword] = useState('');
+    const [isExpanded, setIsExpanded] = useState(false);
 
 
     useEffect(() => {
@@ -235,6 +237,24 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const addKeyword = () => {
+        const val = tempKeyword.trim();
+        if (!val) return;
+        
+        const currentKeywords = (localSEO.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
+        if (!currentKeywords.includes(val)) {
+            const newList = [...currentKeywords, val].join(', ');
+            setLocalSEO({ ...localSEO, keywords: newList });
+        }
+        setTempKeyword('');
+    };
+
+    const removeKeyword = (keywordToRemove: string) => {
+        const currentKeywords = (localSEO.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
+        const newList = currentKeywords.filter(k => k !== keywordToRemove).join(', ');
+        setLocalSEO({ ...localSEO, keywords: newList });
     };
 
     return (
@@ -564,18 +584,78 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                             <div>
                                 <LabelWithInfo 
                                     htmlFor="keywords" 
-                                    label="Keywords (separadas por coma)" 
-                                    info="Palabras clave relevantes para tu negocio. Ejemplo: moda, accesorios, estilo, tienda online."
+                                    label="Keywords (etiquetas)" 
+                                    info="Presiona Enter o haz clic en + para añadir una palabra clave. Haz clic en la x de cada etiqueta para eliminarla."
                                 />
-                                <input
-                                    id="keywords"
-                                    name="keywords"
-                                    type="text"
-                                    value={localSEO.keywords || ''}
-                                    placeholder="Palabras clave"
-                                    onChange={(e) => setLocalSEO({ ...localSEO, keywords: e.target.value })}
-                                    className="input-primary w-full border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-3 text-sm"
-                                />
+                                <div className="space-y-3">
+                                    <div className="flex gap-2">
+                                        <input
+                                            id="keywords_input"
+                                            name="keywords_input"
+                                            type="text"
+                                            value={tempKeyword}
+                                            placeholder="Nueva palabra clave..."
+                                            onChange={(e) => setTempKeyword(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    addKeyword();
+                                                }
+                                            }}
+                                            className="input-primary flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-3 text-sm"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={addKeyword}
+                                            className="px-4 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 rounded-lg transition-colors font-bold text-xl leading-none flex items-center justify-center"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-stone-50 dark:bg-stone-900/50 rounded-xl border border-dashed border-stone-200 dark:border-stone-800">
+                                        {(() => {
+                                            const keywords = (localSEO.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
+                                            if (keywords.length === 0) {
+                                                return <span className="text-[11px] text-stone-400 italic p-1">No hay palabras clave añadidas.</span>;
+                                            }
+                                            
+                                            const displayedKeywords = isExpanded ? keywords : keywords.slice(0, 4);
+                                            
+                                            return (
+                                                <>
+                                                    {displayedKeywords.map((kw, i) => (
+                                                        <div 
+                                                            key={i} 
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-full text-[11px] font-medium text-stone-600 dark:text-stone-300 shadow-sm animate-fade-in"
+                                                        >
+                                                            <span>{kw}</span>
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => removeKeyword(kw)}
+                                                                className="w-4 h-4 flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-700 rounded-full text-stone-400 hover:text-red-500 transition-colors"
+                                                            >
+                                                                <CloseIcon className="w-2.5 h-2.5" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                    {keywords.length > 4 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                setIsExpanded(!isExpanded);
+                                                            }}
+                                                            className="text-[11px] font-bold text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 transition-colors px-2 py-1.5"
+                                                        >
+                                                            {isExpanded ? 'Ver menos' : `Ver más (${keywords.length - 4})`}
+                                                        </button>
+                                                    )}
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
                             </div>
                             <div className="pt-4 border-t border-stone-100 dark:border-stone-800">
                                 <h3 className="text-xs font-bold text-stone-400 uppercase mb-4">Información de Contacto</h3>
