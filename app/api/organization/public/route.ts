@@ -22,7 +22,18 @@ export async function GET(req: NextRequest) {
         if (!backendRes.ok) {
             const errorText = await backendRes.text();
             console.error("Backend Auth Public Org GET Error:", { status: backendRes.status, body: errorText });
-            return NextResponse.json({ error: "Error fetching organization info" }, { status: backendRes.status });
+            
+            try {
+                // Intentar parsear como JSON para devolver el error exacto del backend
+                const errorData = JSON.parse(errorText);
+                return NextResponse.json(errorData, { status: backendRes.status });
+            } catch {
+                // Si no es JSON, devolver el texto plano o un error genérico con el mensaje
+                return NextResponse.json(
+                    { error: errorText || "Error fetching organization info" }, 
+                    { status: backendRes.status }
+                );
+            }
         }
 
         const data = await backendRes.json();
