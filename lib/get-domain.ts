@@ -8,14 +8,11 @@ export async function getDomain() {
     try {
         const headersList = await headers();
         const host = headersList.get('host');
-        
+
         if (!host) return process.env.NEXT_PUBLIC_DEFAULT_DOMAIN || 'vestido.shop';
-        
-        // Remover el puerto si existe (ej: localhost:3000 -> localhost)
-        // Y remover el prefijo 'www.'
+
         const domain = host.split(':')[0].replace(/^www\./, '');
 
-        // Si es localhost o una IP local, retornar el dominio por defecto
         if (domain === 'localhost' || domain === '127.0.0.1' || domain.includes('.local')) {
             return process.env.NEXT_PUBLIC_DEFAULT_DOMAIN || 'vestido.shop';
         }
