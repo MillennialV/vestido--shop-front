@@ -154,7 +154,7 @@ const Header: React.FC<HeaderProps> = ({
 
           <div className="flex items-center justify-end gap-4 md:gap-[41px]">
             {/* Desktop Icons */}
-            <div className="hidden md:flex items-center gap-4 md:gap-[41px]">
+            <div className="hidden lg:flex items-center gap-4 md:gap-[41px]">
               <button
                 onClick={toggleCart}
                 className={`relative p-2 rounded-full transition-all duration-300 ${isCartOpen
@@ -211,7 +211,7 @@ const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Mobile Actions Menu */}
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <MobileActionsMenu isAdmin={isAdmin} onToggleAdmin={onToggleAdmin} />
             </div>
           </div>
