@@ -75,11 +75,31 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
                             alt={slide.altText || slide.title || `Slide ${index}`}
                             fill
                             unoptimized
-                            className="object-cover"
+                            className="object-cover object-top"
                             priority={index === 0}
                         />
 
                         {/* Overlay Gradiente Oscuro para mejor lectura de texto */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 z-10" />
+
+                        {/* Título Centrado con Estilos Premium */}
+                        {slide.title && (
+                            <div className="absolute inset-0 z-20 flex items-center justify-center px-6 pointer-events-none">
+                                <h2 
+                                    className="text-white text-center animate-fade-in-up"
+                                    style={{
+                                        fontFamily: "var(--font-allrounder), sans-serif",
+                                        fontWeight: 400,
+                                        fontSize: 'min(42.8px, 8vw)',
+                                        lineHeight: '120%',
+                                        letterSpacing: '-0.03em',
+                                        textTransform: 'none',
+                                    }}
+                                >
+                                    {slide.title}
+                                </h2>
+                            </div>
+                        )}
 
 
                         {/* Botones de Administrador superpuestos (Esquina Superior Derecha) */}

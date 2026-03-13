@@ -10,6 +10,7 @@ import { useDarkMode } from "@/hooks/useDarkMode";
 import { useCart } from "@/context/CartContext";
 
 import { useRemoteTheme } from "@/context/RemoteThemeContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -40,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const { isDark, toggleDarkMode } = useDarkMode();
   const { totalItems, toggleCart, isCartOpen } = useCart();
-  const { storeInfo } = useRemoteTheme();
+  const { storeInfo, organization } = useRemoteTheme();
   const [mounted, setMounted] = React.useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = React.useState(false);
 
@@ -134,7 +135,7 @@ const Header: React.FC<HeaderProps> = ({
                 aria-hidden="true"
                 className="text-2xl md:text-3xl tracking-[0.2em] font-medium uppercase"
               >
-                {storeInfo?.title || "WOMANITY"}
+                {organization?.organization_display_name || organization?.organization_name}
               </span>
               {isHome ? (
                 <h1 className="sr-only">

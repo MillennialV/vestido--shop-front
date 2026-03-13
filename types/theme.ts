@@ -28,3 +28,22 @@ export interface StoreInfo {
     created_at?: string;
     updated_at?: string;
 }
+export interface StoreMetadata {
+    id?: string;
+    organization_id: string;
+    keywords?: string;
+    google_site_verification?: string;
+    metadata_base?: string;
+    og_image_default?: string;
+    twitter_site?: string;
+    twitter_creator?: string;
+    json_ld_logo?: string;
+    json_ld_price_range?: string;
+    address_locality?: string;
+    address_region?: string;
+    postal_code?: string;
+    address_country?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+

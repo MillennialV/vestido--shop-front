@@ -70,15 +70,21 @@ const SiteFooter: React.FC = () => {
                                 Soporte
                             </p>
                             <ul className="flex flex-col gap-[16px]">
-                                <li>
-                                    <Link href="/terminos" className="hover:underline">Términos y condiciones</Link>
-                                </li>
-                                <li>
-                                    <Link href="/privacidad" className="hover:underline">Política de privacidad</Link>
-                                </li>
-                                <li>
-                                    <Link href="/envios" className="hover:underline">Envío y devoluciones</Link>
-                                </li>
+                                {storeInfo?.terms_url && (
+                                    <li>
+                                        <Link href={storeInfo.terms_url} className="hover:underline">Términos y condiciones</Link>
+                                    </li>
+                                )}
+                                {storeInfo?.privacy_url && (
+                                    <li>
+                                        <Link href={storeInfo.privacy_url} className="hover:underline">Política de privacidad</Link>
+                                    </li>
+                                )}
+                                {storeInfo?.shipping_url && (
+                                    <li>
+                                        <Link href={storeInfo.shipping_url} className="hover:underline">Envío y devoluciones</Link>
+                                    </li>
+                                )}
                             </ul>
                         </div>
 
@@ -109,7 +115,7 @@ const SiteFooter: React.FC = () => {
 
                 <div className="text-center w-full pt-8 border-t border-color-three/10">
                     <p className="font-p-footer uppercase text-[10px] tracking-widest">
-                        {currentYear} {storeInfo?.title || 'WOMANITY BOUTIQUE'}. TODOS LOS DERECHOS RESERVADOS
+                        {storeInfo?.footer_license || `${currentYear} ${storeInfo?.title || 'WOMANITY BOUTIQUE'}. TODOS LOS DERECHOS RESERVADOS`}
                     </p>
                 </div>
             </div>

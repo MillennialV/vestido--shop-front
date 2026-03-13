@@ -53,9 +53,10 @@
 @theme {
     --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
-    --font-allrounder-monument-test-book: var(--font-allrounder-monument-test-book), sans-serif;
-    --font-allrounder-monument-test-medium: var(--font-allrounder-monument-test-medium), sans-serif;
-    --font-allrounder-monument-test-regular: var(--font-allrounder-monument-test-regular), sans-serif;
+        --font-allrounder: var(--font-allrounder), sans-serif;
+    --font-allrounder-monument-test-book: var(--font-allrounder), sans-serif;
+        --font-allrounder-monument-test-medium: var(--font-allrounder), sans-serif;
+        --font-allrounder-monument-test-regular: var(--font-allrounder), sans-serif;
 
     --color-color-one: var(--color-one);
     --color-color-two: var(--color-two);

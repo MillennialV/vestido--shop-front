@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         if (!res.ok) {
             console.warn(`Error fetching metadata posts: ${res.status}`);
             return {
-                title: "Post no encontrado | Vestidos de Fiesta",
+                title: "Post no encontrado | Mi tienda",
                 description: "No se encontró el post solicitado.",
                 robots: "noindex, nofollow",
             };
@@ -34,18 +34,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
         if (!post) {
             return {
-                title: "Post no encontrado | Vestidos de Fiesta",
+                title: "Post no encontrado | Mi tienda",
                 description: "No se encontró el post solicitado.",
                 robots: "noindex, nofollow",
             };
         }
 
-        const description = post.seo_description || post.content?.replace(/<[^>]*>?/gm, '').slice(0, 160) || "Post de blog de vestidos de fiesta.";
+        const description = post.seo_description || post.content?.replace(/<[^>]*>?/gm, '').slice(0, 160) || "Post de blog de nuestra tienda online.";
         const image = post.featured_image_url || DEFAULT_IMAGE_URL;
         const url = `${PUBLIC_URL}/posts/${post.slug}`;
 
         return {
-            title: `${post.title} | Vestidos de Fiesta`,
+            title: `${post.title} | Mi tienda`,
             description,
             alternates: {
                 canonical: url,
@@ -69,8 +69,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     } catch (error) {
         console.error("Error in generateMetadata:", error);
         return {
-            title: "Vestidos de Fiesta | Womanity Boutique",
-            description: "Vestidos de fiesta exclusivos en Lima.",
+            title: "Mi tienda",
+            description: "Productos exclusivos en nuestra tienda online.",
             robots: "index, follow",
         };
     }

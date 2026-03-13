@@ -44,15 +44,15 @@ async function fetchInitialData() {
 
 const STATIC_PAGES: Record<string, { title: string, description: string }> = {
     'envios': {
-        title: 'Envíos y Devoluciones | Womanity Boutique',
+        title: 'Envíos y Devoluciones | Mi tienda',
         description: 'Información sobre plazos de entrega, costos de envío y nuestra política de cambios y devoluciones.'
     },
     'privacidad': {
-        title: 'Política de Privacidad | Womanity Boutique',
-        description: 'Conoce cómo protegemos tus datos personales y tu privacidad en Womanity.'
+        title: 'Política de Privacidad | Mi tienda',
+        description: 'Conoce cómo protegemos tus datos personales y tu privacidad.'
     },
     'terminos': {
-        title: 'Términos y Condiciones | Womanity Boutique',
+        title: 'Términos y Condiciones | Mi tienda',
         description: 'Términos Legales y condiciones de uso de nuestro sitio web y servicios.'
     }
 };
@@ -75,8 +75,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     // 1. Home Page o fallback
     if (!slug || slug === "producto") {
         return {
-            title: "Vestidos de Fiesta en Lima | Showroom en San Isidro",
-            description: "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro.",
+            title: "Mi tienda | Tienda online",
+            description: "Encuentra productos exclusivos en nuestra tienda online.",
             alternates: {
                 canonical: PUBLIC_URL,
             },
@@ -119,11 +119,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     const product = await getProduct(slug);
 
     const productTitle = product?.title
-        ? `${product.title} | Womanity Boutique`
-        : `Vestido ${slug.replace(/-/g, ' ')} | Vestido.shop`;
+        ? `${product.title} | Mi tienda`
+        : `${slug.replace(/-/g, ' ')} | Tienda online`;
 
     const productDescription = product?.description
-        || "Encuentra vestidos elegantes e importados en nuestro showroom de San Isidro.";
+        || "Encuentra productos elegantes e importados en nuestra tienda online.";
 
     const productImage: string =
         product?.imagen_principal ||
@@ -151,7 +151,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
                     alt: product?.title || slug,
                 },
             ],
-            siteName: "Vestido.shop by Womanity",
+            siteName: "Mi tienda",
             locale: "es_PE",
         },
         twitter: {
@@ -199,10 +199,10 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
         "name": product.title,
         // Bug 2: usar imagen real del producto, no la URL del video
         "image": product.imagen_principal || product.imagenes?.[0] || DEFAULT_OG_IMAGE,
-        "description": product.description || `Vestido elegante ${product.title} disponible en Womanity Boutique San Isidro.`,
+        "description": product.description || `${product.title} disponible en nuestra tienda online.`,
         "brand": {
             "@type": "Brand",
-            "name": product.brand || "Womanity Boutique"
+            "name": product.brand || "Mi tienda"
         },
         // Bug 4: agregar sku si existe
         ...(product.sku ? { "sku": product.sku } : {}),

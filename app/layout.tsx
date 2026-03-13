@@ -1,12 +1,10 @@
-
-
 import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import React from "react";
 import Script from "next/script";
 import { AuthProvider } from "@/provider/AuthProvider";
-import { GA_TRACKING_ID } from "@/lib/analytics";
 import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { CategoryProvider } from "@/context/CategoryContext";
@@ -15,30 +13,61 @@ import CartModal from "@/components/modals/CartModal";
 import { Chatbot } from "@/components/ui/Chatbot";
 import { getRemoteThemeData } from "@/lib/theme-data";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const { storeInfo } = await getRemoteThemeData();
+const allrounder = localFont({
+  src: [
+    {
+      path: "../fonts/AllrounderMonumentTest-Regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/AllrounderMonumentTest-Medium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/AllrounderMonumentTest-Book.otf",
+      weight: "300",
+      style: "normal",
+    },
+  ],
+  variable: "--font-allrounder",
+});
 
-  const title = storeInfo?.title || "Vestidos de Fiesta Importados en Lima | Womanity San Isidro";
-  const description = storeInfo?.description || "Descubre +1000 vestidos de fiesta importados en nuestro showroom de San Isidro. Vestidos de cóctel, gala y noche.";
+export async function generateMetadata(): Promise<Metadata> {
+  const { storeInfo, metadata } = await getRemoteThemeData();
+
+  const title = storeInfo?.title || "Mi tienda";
+  const description = storeInfo?.description || "Descripción de mi tienda";
 
   return {
     title,
     description,
-    metadataBase: new URL("https://www.vestido.shop/"),
-    keywords: "vestidos de fiesta lima, showroom san isidro, vestidos elegantes perú, vestidos importados, womanity boutique",
-    authors: [{ name: storeInfo?.title || "Womanity Boutique" }],
+    metadataBase: new URL(metadata?.metadata_base || "https://www.vestido.shop/"),
+    keywords: metadata?.keywords || "palabras clave de mi tienda",
+    authors: [{ name: storeInfo?.title || "Mi tienda" }],
+    alternates: {
+      canonical: "/",
+    },
     openGraph: {
       type: "website",
       title,
       description,
-      siteName: storeInfo?.title || "Vestido.shop by Womanity",
+      siteName: storeInfo?.title || "Mi tienda",
+      images: metadata?.og_image_default ? [{ url: metadata.og_image_default }] : [{ url: "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg" }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      site: metadata?.twitter_site || "@womanityboutique",
+      creator: metadata?.twitter_creator || "@womanityboutique",
+      images: metadata?.og_image_default ? [metadata.og_image_default] : ["https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg"],
     },
     robots: "index, follow",
+    verification: {
+      google: metadata?.google_site_verification,
+    }
   };
 }
 
@@ -61,25 +90,56 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// La constante metadata estática se elimina para usar generateMetadata
-
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { storeInfo } = await getRemoteThemeData();
-  const siteTitle = storeInfo?.title || "Vestidos de Fiesta en Lima";
-  const siteDesc = storeInfo?.description || "Showroom de vestidos de fiesta importados";
-  const siteAddress = storeInfo?.address || "Av. Paz Soldán 255 Sótano A24, San Isidro, Lima";
-  const sitePhone = storeInfo?.whatsapp || "51956382746";
+  const { storeInfo, metadata, colors } = await getRemoteThemeData();
+  const domain = await import('@/lib/get-domain').then(m => m.getDomain());
+  const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'https://auth.vestido.shop';
+
+  // Obtener organización en el servidor para evitar parpadeo en el Header
+  let organization = null;
+  try {
+    const orgRes = await fetch(`${AUTH_SERVICE_URL}/api/organizations/domain/${domain}`, { cache: 'no-store' });
+    if (orgRes.ok) {
+      const orgData = await orgRes.json();
+      organization = orgData.data?.organization || null;
+    }
+  } catch (e) {
+    console.error("Error fetching org in layout:", e);
+  }
+
+  const siteTitle = storeInfo?.title || "Mi tienda";
+  const siteDesc = storeInfo?.description || "Tienda online";
+  const siteAddress = storeInfo?.address || "Dirección de la tienda";
+  const sitePhone = storeInfo?.whatsapp || "51999888777";
 
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" className={`${allrounder.variable}`} suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="google-site-verification" content="deSXplZYRUNMOZ9Q0fleZw043FAsKmgK1jqVq9J7b2M" />
+
+        {/* Inyección de colores de tema desde el servidor para evitar FOUC */}
+        {colors && colors.color_one && (
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              :root {
+                --color-one: ${colors.color_one};
+                --color-two: ${colors.color_two};
+                --color-three: ${colors.color_three};
+                --color-four: ${colors.color_four};
+                --color-color-one: ${colors.color_one};
+                --color-color-two: ${colors.color_two};
+                --color-color-three: ${colors.color_three};
+                --color-color-four: ${colors.color_four};
+              }
+            `
+          }} />
+        )}
+
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -96,9 +156,6 @@ export default async function RootLayout({
             `,
           }}
         />
-
-
-
 
         {/* JSON-LD Structured Data for SEO & AI Understanding */}
         <script
@@ -123,7 +180,7 @@ export default async function RootLayout({
                 name: siteTitle,
                 logo: {
                   "@type": "ImageObject",
-                  url: "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
+                  url: metadata?.json_ld_logo || "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
                 },
               },
               description: siteDesc,
@@ -156,20 +213,21 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": "ClothingStore",
               "name": siteTitle,
-              "image": "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
+              "image": metadata?.og_image_default || "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
               "url": "https://www.vestido.shop/",
-              "logo": "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
+              "logo": metadata?.json_ld_logo || "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
               "description": siteDesc,
               "address": {
                 "@type": "PostalAddress",
                 "streetAddress": siteAddress,
-                "addressLocality": "San Isidro",
-                "addressRegion": "Lima",
-                "postalCode": "15073",
-                "addressCountry": "PE"
+                "addressLocality": metadata?.address_locality || "San Isidro",
+                "addressRegion": metadata?.address_region || "Lima",
+                "postalCode": metadata?.postal_code || "15073",
+                "addressCountry": metadata?.address_country || "PE"
               },
-              "telephone": `+${sitePhone}`,
-              "priceRange": "$$",
+              "email": storeInfo?.email,
+              "telephone": sitePhone ? `+${sitePhone.replace(/\D/g, '')}` : undefined,
+              "priceRange": metadata?.json_ld_price_range || "$$",
               "openingHoursSpecification": [
                 {
                   "@type": "OpeningHoursSpecification",
@@ -181,9 +239,9 @@ export default async function RootLayout({
                 }
               ],
               "sameAs": [
-                storeInfo?.facebook_url || "https://www.facebook.com/WomanityBoutique",
-                storeInfo?.instagram_url || "https://www.instagram.com/WomanityBoutique",
-              ]
+                storeInfo?.facebook_url,
+                storeInfo?.instagram_url,
+              ].filter(Boolean)
             }),
           }}
         />
@@ -200,7 +258,7 @@ export default async function RootLayout({
                   name: "¿Cómo puedo saber cuál es mi talla correcta?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Recomendamos revisar nuestra guía de tallas detallada, disponible en la descripción de cada producto. Si tienes dudas, nuestro equipo de estilistas está disponible por WhatsApp para ofrecerte una asesoría personalizada y asegurar que encuentres el ajuste perfecto.",
+                    text: "Recomendamos revisar nuestra guía de tallas detallada, disponible en la descripción de cada product. Si tienes dudas, nuestro equipo de estilistas está disponible por WhatsApp para ofrecerte una asesoría personalizada y asegurar que encuentres el ajuste perfecto.",
                   },
                 },
                 {
@@ -252,7 +310,12 @@ export default async function RootLayout({
           </>
         )}
         <AuthProvider>
-          <RemoteThemeProvider>
+          <RemoteThemeProvider
+            initialColors={colors}
+            initialStoreInfo={storeInfo}
+            initialMetadata={metadata}
+            initialOrganization={organization}
+          >
             <ThemeProvider>
               <CategoryProvider>
                 <CartProvider>

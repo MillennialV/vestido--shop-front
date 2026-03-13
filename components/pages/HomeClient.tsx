@@ -9,6 +9,7 @@ import type { Post } from "@/types/post";
 import { useProducts } from "@/hooks/useProducts";
 import { usePosts } from "@/hooks/usePosts";
 import { useFaqs } from "@/hooks/useFaqs";
+import { useRemoteTheme } from "@/context/RemoteThemeContext";
 import Header from "@/components/layout/Header";
 import FilterBar from "@/components/catalog/FilterBar";
 import VideoModal from "@/components/modals/VideoModal";
@@ -126,8 +127,9 @@ export default function HomeClient({
   const POSTS_PER_PAGE = 6;
   const FAQ_LIMIT = Number(process.env.NEXT_PUBLIC_FAQ_LIMIT) || 5;
 
-  // Toggle for showing the Image Carousel
-  const SHOW_CAROUSEL = true;
+  // Dynamic check for showing the Image Carousel
+  const { storeInfo } = useRemoteTheme();
+  const SHOW_CAROUSEL = storeInfo?.is_carousel_enabled !== false; 
 
   useEffect(() => {
     fetchBanners();

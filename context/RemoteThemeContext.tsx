@@ -1,32 +1,49 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { ThemeColors, StoreInfo } from '@/types/theme';
+import { ThemeColors, StoreInfo, StoreMetadata } from '@/types/theme';
 
 interface RemoteThemeContextType {
     colors: ThemeColors | null;
     storeInfo: StoreInfo | null;
+    metadata: StoreMetadata | null;
     isLoading: boolean;
     refreshTheme: () => Promise<void>;
     updateColors: (newColors: Partial<ThemeColors>) => Promise<void>;
     updateStoreInfo: (newInfo: Partial<StoreInfo>) => Promise<void>;
+    updateMetadata: (newMetadata: Partial<StoreMetadata>) => Promise<void>;
+    organization: any | null;
 }
 
 const RemoteThemeContext = createContext<RemoteThemeContextType | undefined>(undefined);
 
-export const RemoteThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [colors, setColors] = useState<ThemeColors | null>(null);
-    const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+export const RemoteThemeProvider: React.FC<{ 
+    children: React.ReactNode,
+    initialColors?: ThemeColors | null,
+    initialStoreInfo?: StoreInfo | null,
+    initialMetadata?: StoreMetadata | null,
+    initialOrganization?: any | null
+}> = ({ 
+    children, 
+    initialColors = null, 
+    initialStoreInfo = null, 
+    initialMetadata = null, 
+    initialOrganization = null 
+}) => {
+    const [colors, setColors] = useState<ThemeColors | null>(initialColors);
+    const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(initialStoreInfo);
+    const [metadata, setMetadata] = useState<StoreMetadata | null>(initialMetadata);
+    const [organization, setOrganization] = useState<any | null>(initialOrganization);
+    const [isLoading, setIsLoading] = useState(!initialColors && !initialStoreInfo);
 
     const applyColors = useCallback((colors: ThemeColors) => {
+        if (typeof window === 'undefined') return;
         const root = document.documentElement;
         const colorMap = {
             '--color-one': colors.color_one,
             '--color-two': colors.color_two,
             '--color-three': colors.color_three,
             '--color-four': colors.color_four,
-            // También establecemos las de Tailwind directamente por si acaso
             '--color-color-one': colors.color_one,
             '--color-color-two': colors.color_two,
             '--color-color-three': colors.color_three,
@@ -42,17 +59,18 @@ export const RemoteThemeProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const fetchTheme = useCallback(async () => {
         try {
-            setIsLoading(true);
+            // La carga inicial ya está manejada por el estado de useState
             const t = Date.now();
-            const [colorsRes, infoRes] = await Promise.all([
+            const [colorsRes, infoRes, metaRes, orgRes] = await Promise.all([
                 fetch(`/api/theme/colors?t=${t}`, { cache: 'no-store' }),
-                fetch(`/api/theme/store-info?t=${t}`, { cache: 'no-store' })
+                fetch(`/api/theme/store-info?t=${t}`, { cache: 'no-store' }),
+                fetch(`/api/theme/metadata?t=${t}`, { cache: 'no-store' }),
+                fetch(`/api/organization/public?t=${t}`, { cache: 'no-store' })
             ]);
 
             if (colorsRes.ok) {
                 const colorsData = await colorsRes.json();
                 if (colorsData.success && colorsData.data) {
-                    console.log("[Theme] Aplicando colores:", colorsData.data);
                     setColors(colorsData.data);
                     applyColors(colorsData.data);
                 }
@@ -64,6 +82,20 @@ export const RemoteThemeProvider: React.FC<{ children: React.ReactNode }> = ({ c
                     setStoreInfo(infoData.data);
                 }
             }
+
+            if (metaRes.ok) {
+                const metaData = await metaRes.json();
+                if (metaData.success && metaData.data) {
+                    setMetadata(metaData.data);
+                }
+            }
+
+            if (orgRes && orgRes.ok) {
+                const orgData = await orgRes.json();
+                if (orgData.success && orgData.data?.organization) {
+                    setOrganization(orgData.data.organization);
+                }
+            }
         } catch (error) {
             console.error('Error fetching theme data:', error);
         } finally {
@@ -72,8 +104,16 @@ export const RemoteThemeProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }, [applyColors]);
 
     useEffect(() => {
+        // Si ya tenemos datos iniciales, no es estrictamente necesario el fetch inmediato
+        // pero lo dejamos para asegurar que el cliente esté sincronizado si hubo cambios rápidos
         fetchTheme();
     }, [fetchTheme]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && storeInfo?.title) {
+            document.title = storeInfo.title;
+        }
+    }, [storeInfo?.title]);
 
     const updateColors = async (newColors: Partial<ThemeColors>) => {
         try {
@@ -121,14 +161,40 @@ export const RemoteThemeProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
     };
 
+    const updateMetadata = async (newMetadata: Partial<StoreMetadata>) => {
+        try {
+            const method = metadata?.id ? 'PUT' : 'POST';
+            const body = metadata?.id ? { id: metadata.id, ...newMetadata } : newMetadata;
+
+            const res = await fetch('/api/theme/metadata', {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                await fetchTheme();
+            } else {
+                const errData = await res.json();
+                throw new Error(errData.message || 'Error updating metadata');
+            }
+        } catch (error) {
+            console.error('Error updating metadata:', error);
+            throw error;
+        }
+    };
+
     return (
         <RemoteThemeContext.Provider value={{
             colors,
             storeInfo,
+            metadata,
             isLoading,
             refreshTheme: fetchTheme,
             updateColors,
-            updateStoreInfo
+            updateStoreInfo,
+            updateMetadata,
+            organization
         }}>
             {children}
         </RemoteThemeContext.Provider>
