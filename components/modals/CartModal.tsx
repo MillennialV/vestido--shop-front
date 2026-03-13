@@ -64,7 +64,7 @@ const CartModal: React.FC = () => {
         <div
             id="cart-modal"
             ref={modalRef}
-            className="fixed top-16  xl:top-24 right-[85px] sm:right-[120px] fd:right-6 xl:right-6  2xl:right-12  w-[calc(100vw-100px)] sm:w-full max-w-[420px] z-50 pointer-events-auto"
+            className="fixed top-16  xl:top-24 right-[85px] sm:right-[120px] md:right-6 xl:right-6  2xl:right-12  w-[calc(100vw-100px)] sm:w-full max-w-[420px] z-50 pointer-events-auto"
         >
             <div className="relative w-full max-h-[calc(100vh-100px)] bg-color-four/70 dark:bg-color-three/70 backdrop-blur-lg rounded-[20px] shadow-2xl flex flex-col overflow-hidden animate-fade-in-down z-10 transition-all">
 

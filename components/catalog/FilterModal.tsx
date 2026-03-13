@@ -33,7 +33,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
     useEffect(() => {
         if (isVisible) {
             setLocalFilters(filters);
-            document.body.style.overflow = 'hidden';
+            // Only hide scroll on mobile/tablet (less than md: 768px)
+            if (window.innerWidth < 768) {
+                document.body.style.overflow = 'hidden';
+            }
         } else {
             document.body.style.overflow = 'auto';
         }

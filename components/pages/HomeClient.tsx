@@ -798,7 +798,7 @@ export default function HomeClient({
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
       />
-      <main className="mx-[12px] fd:mx-[23px] fd:mx-auto fd:max-w-[1290px] bg-color-background dark:bg-color-background-dark rounded-[21px] my-5 px-[26px] py-[30px]">
+      <main className="mx-[12px] md:mx-[23px] md:mx-auto md:max-w-[1290px] bg-color-background dark:bg-color-background-dark rounded-[21px] my-5 px-[26px] py-[30px]">
         {SHOW_CAROUSEL && (
           <div className="mb-5 relative">
             {authenticated && (
