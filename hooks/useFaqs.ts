@@ -61,7 +61,7 @@ export const useFaqs = (initialItems: FaqItem[] = []) => {
     try {
       // Llamar a la API route local
       let url = `/api/faqs`;
-      const domain = window.location.hostname.replace(/^www\./, '');
+      const domain = window.location.hostname;
       
       const searchParams = new URLSearchParams(params as any);
       searchParams.append('domain', domain);

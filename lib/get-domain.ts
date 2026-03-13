@@ -1,8 +1,8 @@
 import { headers } from 'next/headers';
 
 /**
- * Obtiene el dominio actual de la petición, removiendo 'www.' y el puerto.
- * @returns El dominio principal (ej: 'vestido.shop')
+ * Obtiene el dominio actual de la petición, removiendo solo el puerto.
+ * @returns El dominio (ej: 'www.vestido.shop' o 'vestido.shop')
  */
 export async function getDomain() {
     try {
@@ -19,7 +19,6 @@ export async function getDomain() {
 
         return domain;
     } catch (error) {
-        // Fallback para contextos donde headers() no está disponible
         return process.env.NEXT_PUBLIC_DEFAULT_DOMAIN || 'www.vestido.shop';
     }
 }
