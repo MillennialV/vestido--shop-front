@@ -94,7 +94,7 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
   const fetchProductById = useCallback(async (id: number | string): Promise<Garment | null> => {
     // Cancelar peticiones previas de detalle si las hay
     if (detailAbortControllerRef.current) {
-        detailAbortControllerRef.current.abort();
+      detailAbortControllerRef.current.abort();
     }
     const controller = new AbortController();
     detailAbortControllerRef.current = controller;
@@ -103,11 +103,11 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
     setError(null);
     try {
       const res = await fetch(`/api/products/${id}`, {
-          signal: controller.signal
+        signal: controller.signal
       });
       if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw errorData;
+        const errorData = await res.json().catch(() => ({}));
+        throw errorData;
       }
       const product = await res.json();
       setSelectedProduct(product);

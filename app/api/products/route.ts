@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
             headers: headers,
             cache: 'no-store'
         });
-        
+
         if (!res.ok) {
             return NextResponse.json({ products: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } });
         }

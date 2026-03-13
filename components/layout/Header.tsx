@@ -20,8 +20,9 @@ interface HeaderProps {
   onToggleFilters?: () => void;
   brands?: string[];
   sizes?: string[];
-  filters?: { brand: string; size: string; };
-  onFilterChange?: (filters: { brand?: string; size?: string; }) => void;
+  occasions?: string[];
+  filters?: { brand: string; size: string; color: string; occasion: string; };
+  onFilterChange?: (filters: { brand?: string; size?: string; color?: string; occasion?: string; }) => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
 }
@@ -34,6 +35,7 @@ const Header: React.FC<HeaderProps> = ({
   onToggleFilters,
   brands,
   sizes,
+  occasions,
   filters,
   onFilterChange,
   searchQuery,
@@ -74,9 +76,9 @@ const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-50 bg-color-four dark:bg-color-three border-b border-stone-100 dark:border-stone-800 shadow-sm py-[20px] transition-all duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
 
-        <div className="flex items-center justify-between fd:grid fd:grid-cols-3 relative">
+        <div className="flex items-center justify-between md:grid md:grid-cols-3 relative">
           {onToggleFilters && (
-            <div className="fd:hidden flex items-center relative">
+            <div className="md:hidden flex items-center relative">
               <button
                 onClick={onToggleFilters}
                 className="w-[15px] h-[15px] flex items-center justify-center text-color-three dark:text-color-four"
@@ -94,10 +96,11 @@ const Header: React.FC<HeaderProps> = ({
 
               {/* Mobile Filter Modal - Attached to Header */}
               {isFilterVisible && brands && sizes && filters && onFilterChange && searchQuery !== undefined && onSearchChange && (
-                <div className="absolute top-full left-0 mt-2 z-[60]">
+                <div className="absolute top-full left-0 mt-2 z-[60] md:hidden">
                   <FilterModal
-                    brands={brands}
-                    sizes={sizes}
+                    brands={brands || []}
+                    sizes={sizes || []}
+                    occasions={occasions || []}
                     filters={filters}
                     onFilterChange={onFilterChange}
                     searchQuery={searchQuery}
@@ -109,7 +112,7 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          <div className="hidden fd:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-6">
             <button
               onClick={() => scrollToSection('catalogo')}
               className="dark font-primary">
@@ -149,9 +152,9 @@ const Header: React.FC<HeaderProps> = ({
             </a>
           </div>
 
-          <div className="flex items-center justify-end gap-4 fd:gap-[41px]">
+          <div className="flex items-center justify-end gap-4 md:gap-[41px]">
             {/* Desktop Icons */}
-            <div className="hidden fd:flex items-center gap-4 fd:gap-[41px]">
+            <div className="hidden md:flex items-center gap-4 md:gap-[41px]">
               <button
                 onClick={toggleCart}
                 className={`relative p-2 rounded-full transition-all duration-300 ${isCartOpen
@@ -208,7 +211,7 @@ const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Mobile Actions Menu */}
-            <div className="fd:hidden">
+            <div className="md:hidden">
               <MobileActionsMenu isAdmin={isAdmin} onToggleAdmin={onToggleAdmin} />
             </div>
           </div>

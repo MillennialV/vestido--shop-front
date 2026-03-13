@@ -1,83 +1,191 @@
-import FilterModal from "@/components/catalog/FilterModal";
+import React, { useState } from 'react';
+import { FilterDropdown, BrandFilterContent, OccasionFilterContent, SizeFilterContent } from "./FilterDropdown";
+import { CloseIcon } from "@/components/ui/Icons";
 
 interface FilterBarProps {
     brands: string[];
     sizes: string[];
-    filters: { brand: string; size: string; };
-    onFilterChange: (filters: { brand?: string; size?: string; }) => void;
+    occasions: string[];
+    filters: { brand: string; size: string; color: string; occasion: string; };
+    onFilterChange: (filters: { brand?: string; size?: string; color?: string; occasion?: string; }) => void;
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isFilterVisible: boolean;
     onToggleFilters: () => void;
+    onClearFilters: () => void;
     gridColumns: number;
     onGridColumnsChange: (cols: number) => void;
+    totalProducts?: number;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
     brands,
     sizes,
+    occasions,
     filters,
     onFilterChange,
     searchQuery,
     onSearchChange,
     isFilterVisible,
     onToggleFilters,
+    onClearFilters,
     gridColumns,
     onGridColumnsChange,
+    totalProducts = 0,
 }) => {
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+    const toggleDropdown = (name: string) => {
+        setOpenDropdown(openDropdown === name ? null : name);
+    };
+
+    const hasFilters = filters.brand !== "all" || filters.size !== "all" || filters.occasion !== "all" || searchQuery !== "";
+
+    const selectedFilterTags: { key: string; label: string; }[] = [];
+    if (filters.brand !== "all") selectedFilterTags.push({ key: "brand", label: filters.brand });
+    if (filters.size !== "all") selectedFilterTags.push({ key: "size", label: filters.size });
+    if (filters.occasion !== "all") selectedFilterTags.push({ key: "occasion", label: filters.occasion });
+
     return (
-        <div className="relative flex items-center gap-2 mb-0 xl:mb-8 w-full overflow-visible">
-            {/* Desktop Filter Toggle */}
-            <div className="hidden fd:flex items-center">
-                <button
-                    onClick={onToggleFilters}
-                    className="w-10 h-10 flex items-center justify-center text-color-three dark:text-color-four"
-                    aria-label={isFilterVisible ? "Ocultar filtros" : "Mostrar filtros"}
-                >
-                    {isFilterVisible ? (
-                        <div className="w-4 h-[2px] bg-current" />
-                    ) : (
-                        <div className="relative w-4 h-4 flex items-center justify-center">
+        <div className="flex flex-col gap-4 mb-4 xl:mb-8 w-full">
+            <div className="flex items-center gap-2 w-full">
+                {/* Desktop Filter Toggle */}
+                <div className="hidden md:flex items-center">
+                    <button
+                        onClick={onToggleFilters}
+                        className="w-10 h-10 flex items-center justify-center text-color-three dark:text-color-four hover:scale-110 transition-transform"
+                        aria-label={isFilterVisible ? "Ocultar filtros" : "Mostrar filtros"}
+                    >
+                        {isFilterVisible ? (
                             <div className="w-4 h-[2px] bg-current" />
-                            <div className="w-[2px] h-4 bg-current absolute" />
+                        ) : (
+                            <div className="relative w-4 h-4 flex items-center justify-center">
+                                <div className="w-4 h-[2px] bg-current" />
+                                <div className="w-[2px] h-4 bg-current absolute" />
+                            </div>
+                        )}
+                    </button>
+                </div>
+
+                {/* Dropdowns Row */}
+                {isFilterVisible && (
+                    <div className="hidden md:flex items-center gap-6 flex-grow ">
+                        <FilterDropdown
+                            label="Marca"
+                            isOpen={openDropdown === "marca"}
+                            onToggle={() => toggleDropdown("marca")}
+                            activeCount={filters.brand !== "all" ? 1 : 0}
+                        >
+                            <BrandFilterContent
+                                brands={brands}
+                                selectedBrands={filters.brand !== "all" ? [filters.brand] : []}
+                                onChange={(brand) => {
+                                    onFilterChange({ brand: filters.brand === brand ? "all" : brand });
+                                    setOpenDropdown(null);
+                                }}
+                            />
+                        </FilterDropdown>
+
+                        <FilterDropdown
+                            label="Talla"
+                            isOpen={openDropdown === "size"}
+                            onToggle={() => toggleDropdown("size")}
+                            activeCount={filters.size !== "all" ? 1 : 0}
+                        >
+                            <SizeFilterContent
+                                sizes={sizes}
+                                selectedSize={filters.size}
+                                onChange={(size) => {
+                                    onFilterChange({ size: filters.size === size ? "all" : size });
+                                    setOpenDropdown(null);
+                                }}
+                            />
+                        </FilterDropdown>
+
+                        <FilterDropdown
+                            label="Ocasión"
+                            isOpen={openDropdown === "occasion"}
+                            onToggle={() => toggleDropdown("occasion")}
+                            activeCount={filters.occasion !== "all" ? 1 : 0}
+                        >
+                            <OccasionFilterContent
+                                occasions={occasions}
+                                selectedOccasion={filters.occasion}
+                                onChange={(occasion) => {
+                                    onFilterChange({ occasion: filters.occasion === occasion ? "all" : occasion });
+                                    setOpenDropdown(null);
+                                }}
+                            />
+                        </FilterDropdown>
+                    </div>
+                )}
+
+                {!isFilterVisible && <div className="flex-grow" />}
+
+                {/* Right side: Count and Grid */}
+                <div className="flex items-center gap-4 ml-auto">
+                    <span className="text-xs text-stone-500 dark:text-stone-400 font-medium whitespace-nowrap">
+                        <strong className="text-stone-800 dark:text-stone-200">{totalProducts}</strong> products
+                    </span>
+
+                    <div className="flex bg-stone-100 dark:bg-stone-800 rounded-full p-1 gap-1 shadow-sm">
+                        {[2, 3, 4, 5].map((cols) => (
+                            <button
+                                key={cols}
+                                onClick={() => onGridColumnsChange(cols)}
+                                className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${gridColumns === cols
+                                    ? "bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-sm"
+                                    : "text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                                    } ${cols === 4 ? "hidden lg:flex" : cols === 5 ? "hidden xl:flex" : "flex"}`}
+                                aria-label={`Ver ${cols} columnas`}
+                            >
+                                <div className="grid gap-[1px] w-3 h-3" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+                                    {Array.from({ length: cols }).map((_, i) => (
+                                        <div key={i} className="bg-current rounded-[0.5px] h-full" />
+                                    ))}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Selected Tags Row */}
+            {hasFilters && (
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                    {selectedFilterTags.map(tag => (
+                        <div
+                            key={tag.key}
+                            className="flex items-center gap-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-1.5"
+                        >
+                            <span className="text-sm text-stone-700 dark:text-stone-200">{tag.label}</span>
+                            <button
+                                onClick={() => onFilterChange({ [tag.key]: "all" })}
+                                className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                            >
+                                <CloseIcon className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    ))}
+                    {searchQuery && (
+                        <div className="flex items-center gap-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-1.5">
+                            <span className="text-sm text-stone-700 dark:text-stone-200">"{searchQuery}"</span>
+                            <button
+                                onClick={() => onSearchChange("")}
+                                className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                            >
+                                <CloseIcon className="w-3.5 h-3.5" />
+                            </button>
                         </div>
                     )}
-                </button>
-            </div>
-
-            {/* Inline Filters for Desktop / Hidden on Mobile here */}
-            <div className="hidden fd:flex flex-grow">
-                <FilterModal
-                    brands={brands}
-                    sizes={sizes}
-                    filters={filters}
-                    onFilterChange={onFilterChange}
-                    searchQuery={searchQuery}
-                    onSearchChange={onSearchChange}
-                    isVisible={isFilterVisible}
-                />
-            </div>
-
-            {/* Grid Controls (Always on right) */}
-            <div className="flex bg-color-four dark:bg-color-three rounded-full p-1 shadow-sm gap-2 ml-auto flex-shrink-0 px-[12px] hidden fd:flex ">
-                {[2, 3, 4, 5].map((cols) => (
                     <button
-                        key={cols}
-                        onClick={() => onGridColumnsChange(cols)}
-                        className={`w-7 h-7 flex items-center justify-center rounded-full transition-all ${gridColumns === cols
-                            ? "bg-color-one text-color-four shadow-sm"
-                            : "text-color-three hover:text-color-four hover:bg-color-one dark:text-color-four"
-                            } ${cols === 4 ? "hidden lg:flex" : cols === 5 ? "hidden xl:flex" : "flex"}`}
-                        aria-label={`Ver ${cols} columnas`}
+                        onClick={onClearFilters}
+                        className="text-sm font-semibold text-[#D4B57E] hover:underline ml-2"
                     >
-                        <div className="grid gap-[1px] w-3 h-3" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
-                            {Array.from({ length: cols }).map((_, i) => (
-                                <div key={i} className="bg-current rounded-[0.5px] h-full" />
-                            ))}
-                        </div>
+                        Clear all
                     </button>
-                ))}
-            </div>
+                </div>
+            )}
         </div>
     );
 };
