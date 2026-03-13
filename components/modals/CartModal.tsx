@@ -5,8 +5,10 @@ import { useCart } from '@/context/CartContext';
 import { CloseIcon } from '@/components/ui/Icons';
 import { event } from '@/lib/analytics';
 import ItemCart from "@/components/product/ItemCart";
+import { useRouter } from 'next/navigation';
 
 const CartModal: React.FC = () => {
+    const router = useRouter();
     const { cart, removeFromCart, updateQuantity, cartTotal, isCartOpen, toggleCart } = useCart();
 
     const handleCheckout = () => {
@@ -17,13 +19,8 @@ const CartModal: React.FC = () => {
             value: cartTotal
         });
 
-        const itemsList = cart.map((item, index) =>
-            `${index + 1}. ${item.title} - Talla: ${item.size} - Precio: S/ ${item.price}`
-        ).join('\n');
-
-        const total = `\n\nTotal a Pagar: S/ ${cartTotal.toFixed(2)}`;
-        const message = `Resumen del Pedido:\n\n${itemsList}${total}`;
-        alert(message);
+        toggleCart();
+        router.push('/checkout');
     };
 
     const modalRef = React.useRef<HTMLDivElement>(null);

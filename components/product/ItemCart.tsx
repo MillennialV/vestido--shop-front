@@ -1,6 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
 import { MinusIcon, PlusIcon } from '@/components/ui/Icons';
+import Link from 'next/link';
+import { slugify } from '@/lib/slugify';
 
 const isExternalVideo = (url: string) => {
     if (!url) return false;
@@ -12,15 +14,16 @@ const isExternalVideo = (url: string) => {
 };
 
 const CartItemThumbnail = ({ item }: { item: any }) => {
-    if (item.imagen_principal) {
+    const imageUrl = item.imagen_principal || (item.imagenes && item.imagenes[0]);
+    if (imageUrl) {
         return (
             <Image
-                src={item.imagen_principal}
+                src={imageUrl}
                 alt={item.title}
                 fill
-                className="flex object-cover rounded-[16px]"
+                unoptimized
+                className="object-cover rounded-[16px]"
             />
-
         );
     }
     if (item.videoUrl && !isExternalVideo(item.videoUrl)) {
@@ -49,17 +52,22 @@ interface ItemCartProps {
 }
 
 const ItemCart: React.FC<ItemCartProps> = ({ item, updateQuantity, removeFromCart }) => {
+    const currentSlug = item.slug || slugify(item.title, item.id);
+    const productLink = `/producto/${currentSlug}`;
+
     return (
         <div className="flex w-full bg-color-background/20 dark:bg-color-background-dark/20 backdrop-blur-lg rounded-[16px] overflow-hidden mb-[10px] shadow-md relative">
-            <div className="w-[70px] sm:w-[80px]  m-[8px] flex-shrink-0 relative">
+            <Link href={productLink} className="w-[70px] sm:w-[80px] aspect-square m-[8px] flex-shrink-0 relative">
                 <CartItemThumbnail item={item} />
-            </div>
+            </Link>
 
             <div className="flex-1 p-2 sm:p-3 flex flex-col justify-between">
                 <div className="mb-1">
-                    <h3 className="uppercase text-color-three dark:text-color-four text-[12px] sm:text-[13px] md:text-[14px] font-[500] leading-tight mb-1 sm:mb-2 tracking-wide font-allrounder-monument-test-regular line-clamp-2">
-                        {item.title}
-                    </h3>
+                    <Link href={productLink}>
+                        <h3 className="uppercase text-color-three dark:text-color-four text-[12px] sm:text-[13px] md:text-[14px] font-[500] leading-tight mb-1 sm:mb-2 tracking-wide font-allrounder-monument-test-regular line-clamp-2 hover:text-stone-500 transition-colors">
+                            {item.title}
+                        </h3>
+                    </Link>
                     <p className="hidden sm:block text-color-disable text-[10px] sm:text-xs mb-0.5 sm:mb-1 font-inter">Talla: {item.size}</p>
                     <p className="hidden sm:block text-color-disable text-[10px] sm:text-xs font-inter">Color: {item.color}</p>
                 </div>

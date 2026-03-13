@@ -6,29 +6,34 @@ const BANNER_API_URL = process.env.NEXT_PUBLIC_BANNER_SERVICE_URL || 'http://loc
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
-    const queryParams = new URLSearchParams(searchParams);
+    const domain = await getDomain();
     
-    // Obtenemos el dominio normalizado (sin www., fallback a vestido.shop si es localhost)
-    const currentDomain = queryParams.get("domain")?.replace(/^www\./, '') || await getDomain();
-    
-    if (currentDomain) queryParams.set("domain", currentDomain);
-
-    const orgId = req.headers.get("organization-id") || queryParams.get("organization-id");
-    const token = req.cookies.get("authToken")?.value;
-
-    // Con el nuevo backend, si hay token no necesitamos orgId.
-    // Si no hay token, intentamos usar domain o el orgId manual (fallback).
-    if (!token && !orgId && !currentDomain) {
-        return NextResponse.json({ error: "organization-id, domain or authToken is required" }, { status: 400 });
-    }
+    // Si viene un organization-id en los headers o query, lo usamos
+    const orgId = req.headers.get("organization-id") || searchParams.get("organization-id");
 
     try {
-        const backendRes = await fetch(`${BANNER_API_URL}/api/banners?${queryParams.toString()}`, {
-            headers: {
-                ...(orgId ? { "organization-id": orgId } : {}),
-                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        const url = new URL(`${BANNER_API_URL}/api/banners`);
+        const reqHeaders: Record<string, string> = {};
+
+        if (orgId) {
+            reqHeaders["organization-id"] = orgId;
+        } else {
+            url.searchParams.append("domain", domain);
+        }
+
+        // Copiar otros parámetros de búsqueda (excepto domain y organization-id si ya se manejaron)
+        searchParams.forEach((value, key) => {
+            if (key !== "domain" && key !== "organization-id") {
+                url.searchParams.append(key, value);
             }
         });
+
+        const cookieStore = await cookies();
+        const token = cookieStore.get("authToken")?.value;
+        if (token) reqHeaders["Authorization"] = `Bearer ${token}`;
+
+
+        const backendRes = await fetch(url.toString(), { headers: reqHeaders });
 
         if (!backendRes.ok) {
             const errorData = await backendRes.text();
