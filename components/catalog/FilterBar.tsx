@@ -185,7 +185,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         onClick={onClearFilters}
                         className="text-xs sm:text-sm font-bold text-[#D4B57E] hover:text-[#C4A56E] transition-colors px-2 py-1"
                     >
-                        Clear all
+                        Limpiar todo
                     </button>
                 </div>
             )}
