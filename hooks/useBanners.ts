@@ -25,10 +25,11 @@ export const useBanners = () => {
             
             let url = endpoint;
             if (!authenticated) {
-                // Para usuarios públicos, enviamos el dominio actual
-                const domain = window.location.hostname;
+                // Para usuarios públicos, enviamos el dominio actual (sin www.)
+                const domain = window.location.hostname.replace(/^www\./, '');
                 url += `?domain=${domain}`;
             }
+
 
             const response = await fetch(url, { headers });
             if (!response.ok) throw new Error('Error al cargar los banners');

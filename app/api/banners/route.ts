@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { getDomain } from "@/lib/get-domain";
 
 const BANNER_API_URL = process.env.NEXT_PUBLIC_BANNER_SERVICE_URL || 'http://localhost:3009';
 
@@ -7,15 +8,8 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const queryParams = new URLSearchParams(searchParams);
     
-    // Si viene domain=localhost o no viene y estamos en localhost, usamos vestido.shop
-    let currentDomain = queryParams.get("domain");
-    if (!currentDomain) {
-        let host = req.headers.get("host") || "";
-        if (host.includes(":")) host = host.split(":")[0];
-        if (host === "localhost") currentDomain = "vestido.shop";
-    } else if (currentDomain === "localhost") {
-        currentDomain = "vestido.shop";
-    }
+    // Obtenemos el dominio normalizado (sin www., fallback a vestido.shop si es localhost)
+    const currentDomain = queryParams.get("domain")?.replace(/^www\./, '') || await getDomain();
     
     if (currentDomain) queryParams.set("domain", currentDomain);
 
