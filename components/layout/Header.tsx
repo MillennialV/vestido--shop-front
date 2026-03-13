@@ -27,6 +27,7 @@ interface HeaderProps {
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   colors?: string[];
+  hideAdminControls?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -44,6 +45,7 @@ const Header: React.FC<HeaderProps> = ({
   searchQuery,
   onSearchChange,
   colors = [],
+  hideAdminControls = false,
 }) => {
   const { isDark, toggleDarkMode } = useDarkMode();
   const { totalItems, toggleCart, isCartOpen } = useCart();
@@ -186,7 +188,7 @@ const Header: React.FC<HeaderProps> = ({
                 )}
               </button>
 
-              {isAdmin && (
+              {!hideAdminControls && isAdmin && (
                 <button
                   onClick={() => setIsConfigModalOpen(true)}
                   className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
@@ -196,26 +198,28 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
-              <button
-                onClick={onToggleAdmin}
-                className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
-                aria-label={
-                  isAdmin
-                    ? "Salir del modo administrador"
-                    : "Entrar al modo administrador"
-                }
-              >
-                {isAdmin ? (
-                  <ExitIcon className="w-6 h-6" />
-                ) : (
-                  <AdminIcon className="w-6 h-6" />
-                )}
-              </button>
+              {!hideAdminControls && (
+                <button
+                  onClick={onToggleAdmin}
+                  className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                  aria-label={
+                    isAdmin
+                      ? "Salir del modo administrador"
+                      : "Entrar al modo administrador"
+                  }
+                >
+                  {isAdmin ? (
+                    <ExitIcon className="w-6 h-6" />
+                  ) : (
+                    <AdminIcon className="w-6 h-6" />
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Mobile Actions Menu */}
             <div className="lg:hidden">
-              <MobileActionsMenu isAdmin={isAdmin} onToggleAdmin={onToggleAdmin} />
+              <MobileActionsMenu isAdmin={isAdmin} onToggleAdmin={onToggleAdmin} hideAdminControls={hideAdminControls} />
             </div>
           </div>
         </div>

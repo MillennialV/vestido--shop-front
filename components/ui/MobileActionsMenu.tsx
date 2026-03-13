@@ -10,9 +10,10 @@ interface MobileActionsMenuProps {
     isAdmin: boolean;
     onToggleAdmin: () => void;
     onOpenConfig?: () => void;
+    hideAdminControls?: boolean;
 }
 
-const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggleAdmin, onOpenConfig }) => {
+const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggleAdmin, onOpenConfig, hideAdminControls = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
     const { isDark, toggleDarkMode } = useDarkMode();
@@ -87,7 +88,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                 </button>
 
                 {/* Config Action (Mobile Admin) */}
-                {isAdmin && (
+                {!hideAdminControls && isAdmin && (
                     <button
                         onClick={() => {
                             if (onOpenConfig) {
@@ -105,16 +106,18 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                 )}
 
                 {/* Profile/Admin Action */}
-                <button
-                    onClick={() => {
-                        onToggleAdmin();
-                        setIsOpen(false);
-                    }}
-                    className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
-                    aria-label={isAdmin ? "Cerrar sesión" : "Modo administrador"}
-                >
-                    {isAdmin ? <ExitIcon className="size-[24px]" /> : <AdminIcon className="size-[24px]" />}
-                </button>
+                {!hideAdminControls && (
+                    <button
+                        onClick={() => {
+                            onToggleAdmin();
+                            setIsOpen(false);
+                        }}
+                        className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                        aria-label={isAdmin ? "Cerrar sesión" : "Modo administrador"}
+                    >
+                        {isAdmin ? <ExitIcon className="size-[24px]" /> : <AdminIcon className="size-[24px]" />}
+                    </button>
+                )}
 
 
             </div>
