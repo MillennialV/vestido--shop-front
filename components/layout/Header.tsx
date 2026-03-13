@@ -75,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
 
-    <header className="sticky top-0 z-50 bg-color-four dark:bg-color-three border-b border-stone-100 dark:border-stone-800 shadow-sm py-[20px] transition-all duration-300">
+    <header className={`sticky top-0 ${isFilterVisible ? 'z-[999999]' : 'z-50'} bg-color-four dark:bg-color-three border-b border-stone-100 dark:border-stone-800 shadow-sm py-[20px] transition-all duration-300`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
 
         <div className="flex items-center justify-between md:grid md:grid-cols-3 relative">

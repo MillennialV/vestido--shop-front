@@ -52,7 +52,7 @@ export const BrandFilterContent: React.FC<{
     const filteredBrands = brands.filter(b => b.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
             <div className="relative">
                 <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <input
@@ -63,7 +63,7 @@ export const BrandFilterContent: React.FC<{
                     className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-stone-800 dark:text-stone-200 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#D4B57E]/50 transition-all"
                 />
             </div>
-            <div className="flex flex-col gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex flex-col gap-3 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
                 {filteredBrands.map(brand => (
                     <label key={brand} className="flex items-center gap-4 cursor-pointer group">
                         <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
@@ -99,7 +99,7 @@ export const OccasionFilterContent: React.FC<{
     onChange: (occasion: string) => void;
 }> = ({ occasions, selectedOccasion, onChange }) => {
     return (
-        <div className="flex flex-wrap gap-3 max-w-full">
+        <div className="flex flex-wrap gap-3 max-w-full max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
             {occasions.map(occasion => (
                 <button
                     key={occasion}
@@ -127,7 +127,7 @@ export const SizeFilterContent: React.FC<{
     const numericSizes = sizes.filter(s => !isNaN(Number(s)));
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
             <div className="flex flex-wrap gap-3">
                 {alphaSizes.map(size => (
                     <button

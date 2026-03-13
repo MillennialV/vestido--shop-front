@@ -54,55 +54,57 @@ const FilterModal: React.FC<FilterModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-black/60 backdrop-blur-sm md:hidden animate-fade-in">
-            <div className="mt-auto bg-white dark:bg-[#1C1C1E] w-full rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl animate-slide-up relative">
+        <div className="fixed inset-0 z-[999999] flex items-end justify-center bg-black/60 backdrop-blur-sm md:hidden animate-fade-in">
+            <div className="bg-white dark:bg-[#1C1C1E] w-full rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl animate-slide-up relative overflow-hidden h-auto">
                 {/* Header Handle */}
-                <div className="w-full flex justify-center py-4">
+                <div className="w-full flex justify-center py-4 flex-shrink-0">
                     <div className="w-12 h-1.5 bg-stone-200 dark:bg-stone-700 rounded-full" />
                 </div>
 
                 {/* Close Button Only if needed, otherwise handle is enough */}
                 <button 
                     onClick={onClose}
-                    className="absolute top-6 right-6 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                    className="absolute top-6 right-6 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 z-10"
                 >
                     <CloseIcon className="w-6 h-6" />
                 </button>
 
-                <div className="flex-grow overflow-y-auto px-6 py-2 custom-scrollbar pb-32">
-                    {/* MARCA */}
-                    <div className="mb-10">
-                        <h3 className="text-xs font-bold tracking-widest text-stone-500 mb-6 uppercase">Marca</h3>
-                        <BrandFilterContent 
-                            brands={brands}
-                            selectedBrands={localFilters.brand !== "all" ? [localFilters.brand] : []}
-                            onChange={(brand) => setLocalFilters({...localFilters, brand: localFilters.brand === brand ? "all" : brand})}
-                        />
-                    </div>
+                <div className="overflow-y-auto px-6 pt-4 pb-0 custom-scrollbar">
+                    <div className="flex flex-col gap-6">
+                        {/* MARCA */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Marca</h3>
+                            <BrandFilterContent 
+                                brands={brands}
+                                selectedBrands={localFilters.brand !== "all" ? [localFilters.brand] : []}
+                                onChange={(brand) => setLocalFilters({...localFilters, brand: localFilters.brand === brand ? "all" : brand})}
+                            />
+                        </div>
 
-                    {/* TALLA */}
-                    <div className="mb-10">
-                        <h3 className="text-xs font-bold tracking-widest text-stone-500 mb-6 uppercase">Talla</h3>
-                        <SizeFilterContent 
-                            sizes={sizes}
-                            selectedSize={localFilters.size}
-                            onChange={(size) => setLocalFilters({...localFilters, size: localFilters.size === size ? "all" : size})}
-                        />
-                    </div>
+                        {/* TALLA */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Talla</h3>
+                            <SizeFilterContent 
+                                sizes={sizes}
+                                selectedSize={localFilters.size}
+                                onChange={(size) => setLocalFilters({...localFilters, size: localFilters.size === size ? "all" : size})}
+                            />
+                        </div>
 
-                    {/* OCASIÓN */}
-                    <div className="mb-10">
-                        <h3 className="text-xs font-bold tracking-widest text-stone-500 mb-6 uppercase">Ocasión</h3>
-                        <OccasionFilterContent 
-                            occasions={occasions}
-                            selectedOccasion={localFilters.occasion}
-                            onChange={(occasion) => setLocalFilters({...localFilters, occasion: localFilters.occasion === occasion ? "all" : occasion})}
-                        />
+                        {/* OCASIÓN */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Ocasión</h3>
+                            <OccasionFilterContent 
+                                occasions={occasions}
+                                selectedOccasion={localFilters.occasion}
+                                onChange={(occasion) => setLocalFilters({...localFilters, occasion: localFilters.occasion === occasion ? "all" : occasion})}
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="sticky bottom-0 left-0 right-0 p-6 bg-white dark:bg-[#1C1C1E] border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-4">
+                <div className="flex-shrink-0 p-6 bg-white dark:bg-[#1C1C1E] border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-4 z-10">
                     <button 
                         onClick={handleClear}
                         className="text-stone-500 dark:text-stone-400 font-bold px-8 py-4 hover:underline"
