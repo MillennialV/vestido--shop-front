@@ -1,81 +1,126 @@
-import React from 'react';
-import { SearchIcon, ChevronDownIcon } from "@/components/ui/Icons";
+import React, { useState, useEffect } from 'react';
+import { SearchIcon, ChevronDownIcon, CloseIcon, CheckCircleIcon } from "@/components/ui/Icons";
+import { BrandFilterContent, SizeFilterContent, OccasionFilterContent } from "./FilterDropdown";
 
 interface FilterModalProps {
     brands: string[];
     sizes: string[];
-    filters: { brand: string; size: string; };
-    onFilterChange: (filters: { brand?: string; size?: string; }) => void;
+    occasions: string[];
+    filters: { brand: string; size: string; color: string; occasion: string; };
+    onFilterChange: (filters: { brand?: string; size?: string; color?: string; occasion?: string; }) => void;
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isVisible: boolean;
+    onClose?: () => void;
+    onClearAll?: () => void;
 }
 
 const FilterModal: React.FC<FilterModalProps> = ({
     brands,
     sizes,
+    occasions = [],
     filters,
     onFilterChange,
     searchQuery,
     onSearchChange,
     isVisible,
+    onClose,
+    onClearAll,
 }) => {
+    // Local state for filters to apply only when clicking "Aplicar"
+    const [localFilters, setLocalFilters] = useState(filters);
+
+    useEffect(() => {
+        if (isVisible) {
+            setLocalFilters(filters);
+            // Only hide scroll on mobile/tablet (less than md: 768px)
+            if (window.innerWidth < 768) {
+                document.body.style.overflow = 'hidden';
+            }
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => { document.body.style.overflow = 'auto'; };
+    }, [isVisible, filters]);
+
     if (!isVisible) return null;
 
-    const handleBrandChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        onFilterChange({ brand: e.target.value });
+    const handleApply = () => {
+        onFilterChange(localFilters);
+        if (onClose) onClose();
     };
 
-    const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        onFilterChange({ size: e.target.value });
+    const handleClear = () => {
+        const cleared = { brand: "all", size: "all", color: "all", occasion: "all" };
+        setLocalFilters(cleared);
+        if (onClearAll) onClearAll();
     };
-
-    // No extra filters
 
     return (
-        <div className="absolute top-12 left-0 z-50 flex flex-col gap-2 p-4 bg-color-four/70 dark:bg-color-two/70  rounded-2xl shadow-xl border border-stone-100 dark:border-stone-700 w-[calc(100vw-46px)] md:w-[30%] md:min-w-[300px] max-h-[80vh] overflow-y-auto overflow-x-hidden fd:relative fd:top-0 fd:flex-row fd:p-0 fd:bg-transparent fd:dark:bg-transparent fd:shadow-none fd:border-none fd:w-auto fd:max-h-none fd:overflow-visible fd:flex-grow flex-nowrap">
-            {/* Search Bar */}
-            <div className="relative w-full fd:flex-grow fd:max-w-[300px]">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                    <SearchIcon className="h-4 w-4 text-stone-400" />
+        <div className="fixed inset-0 z-[999999] flex items-end justify-center bg-black/60 backdrop-blur-sm md:hidden animate-fade-in">
+            <div className="bg-white dark:bg-[#1C1C1E] w-full rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl animate-slide-up relative overflow-hidden h-auto">
+                {/* Header Handle */}
+                <div className="w-full flex justify-center py-4 flex-shrink-0">
+                    <div className="w-12 h-1.5 bg-stone-200 dark:bg-stone-700 rounded-full" />
                 </div>
-                <input
-                    type="text"
-                    placeholder="Hinted search text"
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    className="input-primary w-full rounded-full py-2 pl-11 pr-4 focus:ring-2 focus:ring-color-one transition-all placeholder:text-stone-400"
-                />
-            </div>
 
-            {/* Brand Filter */}
-            <div className="relative w-full fd:flex-shrink-0 fd:w-auto">
-                <select
-                    value={filters.brand}
-                    onChange={handleBrandChange}
-                    className="input-primary w-full appearance-none rounded-full py-2 pl-4 pr-9 focus:ring-2 focus:ring-color-one transition-all cursor-pointer fd:min-w-[130px]"
+                {/* Close Button Only if needed, otherwise handle is enough */}
+                <button 
+                    onClick={onClose}
+                    className="absolute top-6 right-6 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 z-10"
                 >
-                    <option value="all">Todas las marcas</option>
-                    {brands.map((brand) => (
-                        <option key={brand} value={brand}>{brand}</option>
-                    ))}
-                </select>
-                <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
-            </div>
+                    <CloseIcon className="w-6 h-6" />
+                </button>
 
-            {/* Size Filter */}
-            <div className="relative w-full fd:flex-shrink-0 fd:w-auto">
-                <select
-                    value={filters.size}
-                    onChange={handleSizeChange}
-                    className="input-primary w-full appearance-none rounded-full py-2 pl-4 pr-9 focus:ring-2 focus:ring-color-one transition-all cursor-pointer fd:min-w-[110px]"
-                >
-                    <option value="all">Todas las tallas</option>
-                    {sizes.map((size) => (
-                        <option key={size} value={size}>{size}</option>
-                    ))}
-                </select>
-                <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
+                <div className="overflow-y-auto px-6 pt-4 pb-0 custom-scrollbar">
+                    <div className="flex flex-col gap-6">
+                        {/* MARCA */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Marca</h3>
+                            <BrandFilterContent 
+                                brands={brands}
+                                selectedBrands={localFilters.brand !== "all" ? [localFilters.brand] : []}
+                                onChange={(brand) => setLocalFilters({...localFilters, brand: localFilters.brand === brand ? "all" : brand})}
+                            />
+                        </div>
+
+                        {/* TALLA */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Talla</h3>
+                            <SizeFilterContent 
+                                sizes={sizes}
+                                selectedSize={localFilters.size}
+                                onChange={(size) => setLocalFilters({...localFilters, size: localFilters.size === size ? "all" : size})}
+                            />
+                        </div>
+
+                        {/* OCASIÓN */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Ocasión</h3>
+                            <OccasionFilterContent 
+                                occasions={occasions}
+                                selectedOccasion={localFilters.occasion}
+                                onChange={(occasion) => setLocalFilters({...localFilters, occasion: localFilters.occasion === occasion ? "all" : occasion})}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="flex-shrink-0 p-6 bg-white dark:bg-[#1C1C1E] border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-4 z-10">
+                    <button 
+                        onClick={handleClear}
+                        className="text-stone-500 dark:text-stone-400 font-bold px-8 py-4 hover:underline"
+                    >
+                        Limpiar
+                    </button>
+                    <button 
+                        onClick={handleApply}
+                        className="flex-grow bg-[#D4B57E] hover:bg-[#C4A56E] text-white font-bold py-5 rounded-2xl shadow-lg transition-all active:scale-95"
+                    >
+                        Aplicar
+                    </button>
+                </div>
             </div>
         </div>
     );
