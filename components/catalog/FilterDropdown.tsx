@@ -52,28 +52,32 @@ export const BrandFilterContent: React.FC<{
     const filteredBrands = brands.filter(b => b.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
             <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <input
                     type="text"
-                    placeholder="Search brand"
+                    placeholder="Buscar Marca"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full bg-stone-800/50 border border-stone-700 rounded-xl py-2 pl-10 pr-4 text-sm text-stone-200 placeholder:text-stone-600 focus:outline-none focus:ring-1 focus:ring-[#D4B57E]"
+                    className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-stone-800 dark:text-stone-200 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#D4B57E]/50 transition-all"
                 />
             </div>
-            <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex flex-col gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {filteredBrands.map(brand => (
-                    <label key={brand} className="flex items-center gap-3 cursor-pointer group">
-                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
+                    <label key={brand} className="flex items-center gap-4 cursor-pointer group">
+                        <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
                             selectedBrands.includes(brand)
                                 ? "bg-[#D4B57E] border-[#D4B57E]"
-                                : "border-stone-700 group-hover:border-stone-500"
+                                : "border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 group-hover:border-[#D4B57E]/50"
                         }`}>
-                            {selectedBrands.includes(brand) && <CheckCircleIcon className="w-3.5 h-3.5 text-stone-900" />}
+                            {selectedBrands.includes(brand) && <div className="w-2.5 h-2.5 bg-white rounded-sm" />}
                         </div>
-                        <span className="text-sm text-stone-300 group-hover:text-white transition-colors">
+                        <span className={`text-sm transition-colors ${
+                            selectedBrands.includes(brand) 
+                                ? "font-bold text-stone-900 dark:text-white" 
+                                : "text-stone-600 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-200"
+                        }`}>
                             {brand}
                         </span>
                         <input
@@ -95,18 +99,18 @@ export const OccasionFilterContent: React.FC<{
     onChange: (occasion: string) => void;
 }> = ({ occasions, selectedOccasion, onChange }) => {
     return (
-        <div className="flex flex-wrap gap-2 max-w-[400px] max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="flex flex-wrap gap-3 max-w-full">
             {occasions.map(occasion => (
                 <button
                     key={occasion}
                     onClick={() => onChange(occasion)}
-                    className={`px-4 py-2 rounded-xl border text-sm transition-all flex items-center gap-2 ${
+                    className={`px-5 py-3 rounded-2xl border text-sm font-medium transition-all flex items-center gap-2 ${
                         selectedOccasion === occasion
-                            ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D4B57E]"
-                            : "bg-stone-800/30 border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200"
+                            ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D3A24D]"
+                            : "bg-stone-50 dark:bg-stone-800/50 border-stone-100 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:border-[#D4B57E]/30 hover:text-stone-900 dark:hover:text-stone-200"
                     }`}
                 >
-                    {selectedOccasion === occasion && <CheckCircleIcon className="w-3.5 h-3.5" />}
+                    {selectedOccasion === occasion && <div className="w-4 h-4 flex items-center justify-center"><CheckCircleIcon className="w-full h-full" /></div>}
                     <span>{occasion}</span>
                 </button>
             ))}
@@ -123,16 +127,16 @@ export const SizeFilterContent: React.FC<{
     const numericSizes = sizes.filter(s => !isNaN(Number(s)));
 
     return (
-        <div className="flex flex-col gap-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="flex flex-col gap-8">
             <div className="flex flex-wrap gap-3">
                 {alphaSizes.map(size => (
                     <button
                         key={size}
                         onClick={() => onChange(size)}
-                        className={`w-10 h-10 rounded-xl border text-sm font-medium transition-all ${
+                        className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
                             selectedSize === size
-                                ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D4B57E]"
-                                : "bg-stone-800/30 border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200"
+                                ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D3A24D]"
+                                : "bg-stone-50 dark:bg-stone-800/50 border-stone-100 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:border-[#D4B57E]/30"
                         }`}
                     >
                         {size}
@@ -141,23 +145,20 @@ export const SizeFilterContent: React.FC<{
             </div>
 
             {numericSizes.length > 0 && (
-                <div className="flex flex-col gap-3">
-                    <span className="text-[10px] text-stone-500 font-bold tracking-[0.1em] uppercase">Numeric Sizes</span>
-                    <div className="flex flex-wrap gap-3">
-                        {numericSizes.map(size => (
-                            <button
-                                key={size}
-                                onClick={() => onChange(size)}
-                                className={`w-10 h-10 rounded-xl border text-sm font-medium transition-all ${
-                                    selectedSize === size
-                                        ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D4B57E]"
-                                        : "bg-stone-800/30 border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200"
-                                }`}
-                            >
-                                {size}
-                            </button>
-                        ))}
-                    </div>
+                <div className="flex flex-wrap gap-3">
+                    {numericSizes.map(size => (
+                        <button
+                            key={size}
+                            onClick={() => onChange(size)}
+                            className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
+                                selectedSize === size
+                                    ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D3A24D]"
+                                    : "bg-stone-50 dark:bg-stone-800/50 border-stone-100 dark:border-stone-700 text-stone-600 dark:text-stone-400"
+                            }`}
+                        >
+                            {size}
+                        </button>
+                    ))}
                 </div>
             )}
         </div>

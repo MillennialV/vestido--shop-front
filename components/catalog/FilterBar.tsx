@@ -150,37 +150,40 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 </div>
             </div>
 
-            {/* Selected Tags Row */}
+            {/* Selected Tags Row (Premium Mockup Style) */}
             {hasFilters && (
-                <div className="flex flex-wrap items-center gap-2 mt-2">
-                    {selectedFilterTags.map(tag => (
-                        <div
-                            key={tag.key}
-                            className="flex items-center gap-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-1.5"
-                        >
-                            <span className="text-sm text-stone-700 dark:text-stone-200">{tag.label}</span>
-                            <button
-                                onClick={() => onFilterChange({ [tag.key]: "all" })}
-                                className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                <div className="flex flex-wrap items-center gap-3 p-3 sm:p-4 bg-stone-50/50 dark:bg-[#1C1C1E]/50 border border-stone-100 dark:border-stone-800 rounded-3xl mt-2 animate-fade-in">
+                    <div className="flex flex-wrap items-center gap-2 flex-grow">
+                        {selectedFilterTags.map(tag => (
+                            <div
+                                key={tag.key}
+                                className="flex items-center gap-2 bg-white dark:bg-stone-800/80 border border-stone-100 dark:border-stone-700 rounded-xl px-4 py-2 shadow-sm transition-all hover:border-[#D4B57E]/30"
                             >
-                                <CloseIcon className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-                    ))}
-                    {searchQuery && (
-                        <div className="flex items-center gap-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-1.5">
-                            <span className="text-sm text-stone-700 dark:text-stone-200">"{searchQuery}"</span>
-                            <button
-                                onClick={() => onSearchChange("")}
-                                className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
-                            >
-                                <CloseIcon className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-                    )}
+                                <span className="text-xs sm:text-sm font-semibold text-stone-700 dark:text-stone-300 capitalize">{tag.label}</span>
+                                <button
+                                    onClick={() => onFilterChange({ [tag.key]: "all" })}
+                                    className="text-stone-400 hover:text-red-500 transition-colors"
+                                    aria-label={`Remove ${tag.label}`}
+                                >
+                                    <CloseIcon className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        ))}
+                        {searchQuery && (
+                            <div className="flex items-center gap-2 bg-white dark:bg-stone-800/80 border border-stone-100 dark:border-stone-700 rounded-xl px-4 py-2 shadow-sm">
+                                <span className="text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-300 italic">"{searchQuery}"</span>
+                                <button
+                                    onClick={() => onSearchChange("")}
+                                    className="text-stone-400 hover:text-red-500 transition-colors"
+                                >
+                                    <CloseIcon className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     <button
                         onClick={onClearFilters}
-                        className="text-sm font-semibold text-[#D4B57E] hover:underline ml-2"
+                        className="text-xs sm:text-sm font-bold text-[#D4B57E] hover:text-[#C4A56E] transition-colors px-2 py-1"
                     >
                         Clear all
                     </button>

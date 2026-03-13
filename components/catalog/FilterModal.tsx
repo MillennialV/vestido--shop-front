@@ -1,5 +1,6 @@
-import React from 'react';
-import { SearchIcon, ChevronDownIcon } from "@/components/ui/Icons";
+import React, { useState, useEffect } from 'react';
+import { SearchIcon, ChevronDownIcon, CloseIcon, CheckCircleIcon } from "@/components/ui/Icons";
+import { BrandFilterContent, SizeFilterContent, OccasionFilterContent } from "./FilterDropdown";
 
 interface FilterModalProps {
     brands: string[];
@@ -10,6 +11,8 @@ interface FilterModalProps {
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isVisible: boolean;
+    onClose?: () => void;
+    onClearAll?: () => void;
 }
 
 const FilterModal: React.FC<FilterModalProps> = ({
@@ -21,80 +24,98 @@ const FilterModal: React.FC<FilterModalProps> = ({
     searchQuery,
     onSearchChange,
     isVisible,
+    onClose,
+    onClearAll,
 }) => {
+    // Local state for filters to apply only when clicking "Aplicar"
+    const [localFilters, setLocalFilters] = useState(filters);
+
+    useEffect(() => {
+        if (isVisible) {
+            setLocalFilters(filters);
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => { document.body.style.overflow = 'auto'; };
+    }, [isVisible, filters]);
+
     if (!isVisible) return null;
 
-    const handleBrandChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        onFilterChange({ brand: e.target.value });
+    const handleApply = () => {
+        onFilterChange(localFilters);
+        if (onClose) onClose();
     };
 
-    const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        onFilterChange({ size: e.target.value });
-    };
-
-    const handleOccasionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        onFilterChange({ occasion: e.target.value });
+    const handleClear = () => {
+        const cleared = { brand: "all", size: "all", color: "all", occasion: "all" };
+        setLocalFilters(cleared);
+        if (onClearAll) onClearAll();
     };
 
     return (
-        <div className="absolute top-12 left-0 z-50 flex flex-col gap-2 p-4 bg-color-four  dark:bg-color-two rounded-2xl shadow-xl border border-stone-100 dark:border-stone-700 w-[calc(100vw-46px)] max-h-[80vh] overflow-y-auto overflow-x-hidden md:relative md:top-0 md:flex-row md:p-0 md:bg-transparent md:dark:bg-transparent md:shadow-none md:border-none md:w-auto md:max-h-none md:overflow-visible md:flex-grow flex-nowrap">
-            {/* Search Bar */}
-            <div className="relative w-full md:flex-grow md:max-w-[300px]">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                    <SearchIcon className="h-4 w-4 text-stone-400" />
+        <div className="fixed inset-0 z-[100] flex flex-col bg-black/60 backdrop-blur-sm md:hidden animate-fade-in">
+            <div className="mt-auto bg-white dark:bg-[#1C1C1E] w-full rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl animate-slide-up relative">
+                {/* Header Handle */}
+                <div className="w-full flex justify-center py-4">
+                    <div className="w-12 h-1.5 bg-stone-200 dark:bg-stone-700 rounded-full" />
                 </div>
-                <input
-                    type="text"
-                    placeholder="Buscar prenda..."
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    className="input-primary w-full rounded-full py-2 pl-11 pr-4 focus:ring-2 focus:ring-color-one transition-all placeholder:text-stone-400"
-                />
-            </div>
 
-            {/* Brand Filter */}
-            <div className="relative w-full md:flex-shrink-0 md:w-auto">
-                <select
-                    value={filters.brand}
-                    onChange={handleBrandChange}
-                    className="input-primary w-full appearance-none rounded-full py-2 pl-4 pr-9 focus:ring-2 focus:ring-color-one transition-all cursor-pointer md:min-w-[130px]"
+                {/* Close Button Only if needed, otherwise handle is enough */}
+                <button 
+                    onClick={onClose}
+                    className="absolute top-6 right-6 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
                 >
-                    <option value="all">Todas las marcas</option>
-                    {brands.map((brand) => (
-                        <option key={brand} value={brand}>{brand}</option>
-                    ))}
-                </select>
-                <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
-            </div>
+                    <CloseIcon className="w-6 h-6" />
+                </button>
 
-            {/* Size Filter */}
-            <div className="relative w-full md:flex-shrink-0 md:w-auto">
-                <select
-                    value={filters.size}
-                    onChange={handleSizeChange}
-                    className="input-primary w-full appearance-none rounded-full py-2 pl-4 pr-9 focus:ring-2 focus:ring-color-one transition-all cursor-pointer md:min-w-[110px]"
-                >
-                    <option value="all">Todas las tallas</option>
-                    {sizes.map((size) => (
-                        <option key={size} value={size}>{size}</option>
-                    ))}
-                </select>
-                <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
-            </div>
+                <div className="flex-grow overflow-y-auto px-6 py-2 custom-scrollbar pb-32">
+                    {/* MARCA */}
+                    <div className="mb-10">
+                        <h3 className="text-xs font-bold tracking-widest text-stone-500 mb-6 uppercase">Marca</h3>
+                        <BrandFilterContent 
+                            brands={brands}
+                            selectedBrands={localFilters.brand !== "all" ? [localFilters.brand] : []}
+                            onChange={(brand) => setLocalFilters({...localFilters, brand: localFilters.brand === brand ? "all" : brand})}
+                        />
+                    </div>
 
-            {/* Occasion Filter */}
-            <div className="relative w-full md:flex-shrink-0 md:w-auto">
-                <select
-                    value={filters.occasion}
-                    onChange={handleOccasionChange}
-                    className="input-primary w-full appearance-none rounded-full py-2 pl-4 pr-9 focus:ring-2 focus:ring-color-one transition-all cursor-pointer md:min-w-[110px]"
-                >
-                    <option value="all">Todas las ocasiones</option>
-                    {occasions.map((occasion) => (
-                        <option key={occasion} value={occasion}>{occasion}</option>
-                    ))}
-                </select>
-                <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
+                    {/* TALLA */}
+                    <div className="mb-10">
+                        <h3 className="text-xs font-bold tracking-widest text-stone-500 mb-6 uppercase">Talla</h3>
+                        <SizeFilterContent 
+                            sizes={sizes}
+                            selectedSize={localFilters.size}
+                            onChange={(size) => setLocalFilters({...localFilters, size: localFilters.size === size ? "all" : size})}
+                        />
+                    </div>
+
+                    {/* OCASIÓN */}
+                    <div className="mb-10">
+                        <h3 className="text-xs font-bold tracking-widest text-stone-500 mb-6 uppercase">Ocasión</h3>
+                        <OccasionFilterContent 
+                            occasions={occasions}
+                            selectedOccasion={localFilters.occasion}
+                            onChange={(occasion) => setLocalFilters({...localFilters, occasion: localFilters.occasion === occasion ? "all" : occasion})}
+                        />
+                    </div>
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="sticky bottom-0 left-0 right-0 p-6 bg-white dark:bg-[#1C1C1E] border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-4">
+                    <button 
+                        onClick={handleClear}
+                        className="text-stone-500 dark:text-stone-400 font-bold px-8 py-4 hover:underline"
+                    >
+                        Limpiar
+                    </button>
+                    <button 
+                        onClick={handleApply}
+                        className="flex-grow bg-[#D4B57E] hover:bg-[#C4A56E] text-white font-bold py-5 rounded-2xl shadow-lg transition-all active:scale-95"
+                    >
+                        Aplicar
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -23,6 +23,7 @@ interface HeaderProps {
   occasions?: string[];
   filters?: { brand: string; size: string; color: string; occasion: string; };
   onFilterChange?: (filters: { brand?: string; size?: string; color?: string; occasion?: string; }) => void;
+  onClearFilters?: () => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
 }
@@ -38,6 +39,7 @@ const Header: React.FC<HeaderProps> = ({
   occasions,
   filters,
   onFilterChange,
+  onClearFilters,
   searchQuery,
   onSearchChange,
 }) => {
@@ -78,10 +80,10 @@ const Header: React.FC<HeaderProps> = ({
 
         <div className="flex items-center justify-between md:grid md:grid-cols-3 relative">
           {onToggleFilters && (
-            <div className="md:hidden flex items-center relative">
+            <div className="md:hidden flex items-center">
               <button
                 onClick={onToggleFilters}
-                className="w-[15px] h-[15px] flex items-center justify-center text-color-three dark:text-color-four"
+                className="w-10 h-10 flex items-center justify-center bg-stone-100 dark:bg-[#1C1C1E] text-stone-900 dark:text-white rounded-full shadow-md hover:scale-110 active:scale-95 transition-all"
                 aria-label={isFilterVisible ? "Ocultar filtros" : "Mostrar filtros"}
               >
                 {isFilterVisible ? (
@@ -95,20 +97,18 @@ const Header: React.FC<HeaderProps> = ({
               </button>
 
               {/* Mobile Filter Modal - Attached to Header */}
-              {isFilterVisible && brands && sizes && filters && onFilterChange && searchQuery !== undefined && onSearchChange && (
-                <div className="absolute top-full left-0 mt-2 z-[60] md:hidden">
-                  <FilterModal
-                    brands={brands || []}
-                    sizes={sizes || []}
-                    occasions={occasions || []}
-                    filters={filters}
-                    onFilterChange={onFilterChange}
-                    searchQuery={searchQuery}
-                    onSearchChange={onSearchChange}
-                    isVisible={isFilterVisible}
-                  />
-                </div>
-              )}
+              <FilterModal
+                brands={brands || []}
+                sizes={sizes || []}
+                occasions={occasions || []}
+                filters={filters || { brand: "all", size: "all", color: "all", occasion: "all" }}
+                onFilterChange={onFilterChange || (() => { })}
+                searchQuery={searchQuery || ""}
+                onSearchChange={onSearchChange || (() => { })}
+                isVisible={!!isFilterVisible}
+                onClose={onToggleFilters}
+                onClearAll={onClearFilters}
+              />
             </div>
           )}
 
