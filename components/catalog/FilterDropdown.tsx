@@ -164,36 +164,3 @@ export const SizeFilterContent: React.FC<{
         </div>
     );
 };
-
-export const ColorFilterContent: React.FC<{
-    colors: string[];
-    selectedColor: string;
-    onChange: (color: string) => void;
-}> = ({ colors, selectedColor, onChange }) => {
-    return (
-        <div className="flex flex-wrap gap-3 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
-            {colors.map(color => (
-                <button
-                    key={color}
-                    onClick={() => onChange(color)}
-                    className={`group relative w-12 h-12 rounded-2xl border transition-all flex items-center justify-center ${
-                        selectedColor === color
-                            ? "border-[#D4B57E] ring-2 ring-[#D4B57E]/20"
-                            : "border-stone-100 dark:border-stone-800 hover:border-[#D4B57E]/30"
-                    }`}
-                    title={color}
-                >
-                    <div 
-                        className="w-8 h-8 rounded-xl shadow-inner border border-stone-100/10 dark:border-stone-700/50"
-                        style={{ backgroundColor: color.toLowerCase() }}
-                    />
-                    {selectedColor === color && (
-                        <div className="absolute -top-1 -right-1 bg-[#D4B57E] text-white rounded-full p-0.5 shadow-sm">
-                            <CheckCircleIcon className="w-3 h-3" />
-                        </div>
-                    )}
-                </button>
-            ))}
-        </div>
-    );
-};

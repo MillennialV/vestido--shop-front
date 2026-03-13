@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { FilterDropdown, BrandFilterContent, OccasionFilterContent, SizeFilterContent, ColorFilterContent } from "./FilterDropdown";
+import { FilterDropdown, BrandFilterContent, OccasionFilterContent, SizeFilterContent } from "./FilterDropdown";
 import { CloseIcon } from "@/components/ui/Icons";
 
 interface FilterBarProps {
     brands: string[];
     sizes: string[];
-    colors: string[];
     occasions: string[];
     filters: { brand: string; size: string; color: string; occasion: string; };
     onFilterChange: (filters: { brand?: string; size?: string; color?: string; occasion?: string; }) => void;
@@ -22,7 +21,6 @@ interface FilterBarProps {
 const FilterBar: React.FC<FilterBarProps> = ({
     brands,
     sizes,
-    colors,
     occasions,
     filters,
     onFilterChange,
@@ -41,12 +39,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
         setOpenDropdown(openDropdown === name ? null : name);
     };
 
-    const hasFilters = filters.brand !== "all" || filters.size !== "all" || filters.color !== "all" || filters.occasion !== "all" || searchQuery !== "";
+    const hasFilters = filters.brand !== "all" || filters.size !== "all" || filters.occasion !== "all" || searchQuery !== "";
 
     const selectedFilterTags: { key: string; label: string; }[] = [];
     if (filters.brand !== "all") selectedFilterTags.push({ key: "brand", label: filters.brand });
     if (filters.size !== "all") selectedFilterTags.push({ key: "size", label: filters.size });
-    if (filters.color !== "all") selectedFilterTags.push({ key: "color", label: filters.color });
     if (filters.occasion !== "all") selectedFilterTags.push({ key: "occasion", label: filters.occasion });
 
     return (
@@ -116,22 +113,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                 selectedOccasion={filters.occasion}
                                 onChange={(occasion) => {
                                     onFilterChange({ occasion: filters.occasion === occasion ? "all" : occasion });
-                                    setOpenDropdown(null);
-                                }}
-                            />
-                        </FilterDropdown>
-
-                        <FilterDropdown
-                            label="Color"
-                            isOpen={openDropdown === "color"}
-                            onToggle={() => toggleDropdown("color")}
-                            activeCount={filters.color !== "all" ? 1 : 0}
-                        >
-                            <ColorFilterContent
-                                colors={colors}
-                                selectedColor={filters.color}
-                                onChange={(color) => {
-                                    onFilterChange({ color: filters.color === color ? "all" : color });
                                     setOpenDropdown(null);
                                 }}
                             />
