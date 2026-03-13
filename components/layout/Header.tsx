@@ -26,6 +26,7 @@ interface HeaderProps {
   onClearFilters?: () => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
+  colors?: string[];
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -42,6 +43,7 @@ const Header: React.FC<HeaderProps> = ({
   onClearFilters,
   searchQuery,
   onSearchChange,
+  colors = [],
 }) => {
   const { isDark, toggleDarkMode } = useDarkMode();
   const { totalItems, toggleCart, isCartOpen } = useCart();
@@ -101,6 +103,7 @@ const Header: React.FC<HeaderProps> = ({
                 brands={brands || []}
                 sizes={sizes || []}
                 occasions={occasions || []}
+                colors={colors}
                 filters={filters || { brand: "all", size: "all", color: "all", occasion: "all" }}
                 onFilterChange={onFilterChange || (() => { })}
                 searchQuery={searchQuery || ""}

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { SearchIcon, ChevronDownIcon, CloseIcon, CheckCircleIcon } from "@/components/ui/Icons";
-import { BrandFilterContent, SizeFilterContent, OccasionFilterContent } from "./FilterDropdown";
+import { BrandFilterContent, SizeFilterContent, OccasionFilterContent, ColorFilterContent } from "./FilterDropdown";
 
 interface FilterModalProps {
     brands: string[];
     sizes: string[];
     occasions: string[];
+    colors: string[];
     filters: { brand: string; size: string; color: string; occasion: string; };
     onFilterChange: (filters: { brand?: string; size?: string; color?: string; occasion?: string; }) => void;
     searchQuery: string;
@@ -19,6 +20,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
     brands,
     sizes,
     occasions = [],
+    colors = [],
     filters,
     onFilterChange,
     searchQuery,
@@ -101,6 +103,16 @@ const FilterModal: React.FC<FilterModalProps> = ({
                                 occasions={occasions}
                                 selectedOccasion={localFilters.occasion}
                                 onChange={(occasion) => setLocalFilters({...localFilters, occasion: localFilters.occasion === occasion ? "all" : occasion})}
+                            />
+                        </div>
+
+                        {/* COLOR */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Color</h3>
+                            <ColorFilterContent 
+                                colors={colors}
+                                selectedColor={localFilters.color}
+                                onChange={(color) => setLocalFilters({...localFilters, color: localFilters.color === color ? "all" : color})}
                             />
                         </div>
                     </div>
