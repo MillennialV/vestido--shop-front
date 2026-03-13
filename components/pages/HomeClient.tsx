@@ -95,7 +95,7 @@ export default function HomeClient({
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({ brand: "all", size: "all", color: "all", occasion: "all" });
+  const [filters, setFilters] = useState({ brand: "all", size: "all", occasion: "all" });
   const [currentPage, setCurrentPage] = useState(1);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Map<number, Garment>>(new Map());
@@ -245,11 +245,10 @@ export default function HomeClient({
     return {
       brands: getUnique(sourceData.map((g) => g.brand)),
       sizes: getUnique(sourceData.map((g) => g.size)),
-      colors: getUnique(sourceData.map((g) => g.color)),
       occasions: getUnique(sourceData.map((g) => g.occasion)),
     };
   }, [allProductsForFilters, initialGarments]);
-  const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string; color?: string; occasion?: string }) => {
+  const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string; occasion?: string }) => {
     const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
     setCurrentPage(1);
@@ -791,7 +790,6 @@ export default function HomeClient({
         onToggleFilters={() => setIsFilterVisible(!isFilterVisible)}
         brands={uniqueFilters.brands}
         sizes={uniqueFilters.sizes}
-        colors={uniqueFilters.colors}
         occasions={uniqueFilters.occasions}
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -899,7 +897,6 @@ export default function HomeClient({
               <FilterBar
                 brands={uniqueFilters.brands}
                 sizes={uniqueFilters.sizes}
-                colors={uniqueFilters.colors}
                 occasions={uniqueFilters.occasions}
                 filters={filters}
                 onFilterChange={handleFilterChange}

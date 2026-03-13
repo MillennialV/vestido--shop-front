@@ -6,8 +6,8 @@ interface FilterModalProps {
     brands: string[];
     sizes: string[];
     occasions: string[];
-    filters: { brand: string; size: string; color: string; occasion: string; };
-    onFilterChange: (filters: { brand?: string; size?: string; color?: string; occasion?: string; }) => void;
+    filters: { brand: string; size: string; occasion: string; };
+    onFilterChange: (filters: { brand?: string; size?: string; occasion?: string; }) => void;
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isVisible: boolean;

@@ -21,8 +21,8 @@ interface HeaderProps {
   brands?: string[];
   sizes?: string[];
   occasions?: string[];
-  filters?: { brand: string; size: string; color: string; occasion: string; };
-  onFilterChange?: (filters: { brand?: string; size?: string; color?: string; occasion?: string; }) => void;
+  filters?: { brand: string; size: string; occasion: string; };
+  onFilterChange?: (filters: { brand?: string; size?: string; occasion?: string; }) => void;
   onClearFilters?: () => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
@@ -101,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({
                 brands={brands || []}
                 sizes={sizes || []}
                 occasions={occasions || []}
-                filters={filters || { brand: "all", size: "all", color: "all", occasion: "all" }}
+                filters={filters || { brand: "all", size: "all", occasion: "all" }}
                 onFilterChange={onFilterChange || (() => { })}
                 searchQuery={searchQuery || ""}
                 onSearchChange={onSearchChange || (() => { })}
