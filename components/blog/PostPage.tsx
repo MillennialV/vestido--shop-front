@@ -30,10 +30,11 @@ const PostPage: React.FC<PostPageProps> = ({ post, navigate }) => {
 
                 {post.featured_image_url && (
                     <div className="relative w-full h-[300px] md:h-[500px] mb-8 rounded-xl overflow-hidden shadow-sm">
-                        <Image
+                         <Image
                             src={post.featured_image_url}
                             alt={post.title}
                             fill
+                            unoptimized
                             className="object-cover"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                             priority
