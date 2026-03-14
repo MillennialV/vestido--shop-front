@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FilterDropdown, BrandFilterContent, OccasionFilterContent, SizeFilterContent } from "./FilterDropdown";
-import { CloseIcon } from "@/components/ui/Icons";
+import { CloseIcon, SearchIcon, MinusIcon } from "@/components/ui/Icons";
 
 interface FilterBarProps {
     brands: string[];
@@ -57,12 +57,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         aria-label={isFilterVisible ? "Ocultar filtros" : "Mostrar filtros"}
                     >
                         {isFilterVisible ? (
-                            <div className="w-4 h-[2px] bg-current" />
+                            <MinusIcon className="w-6 h-6" />
                         ) : (
-                            <div className="relative w-4 h-4 flex items-center justify-center">
-                                <div className="w-4 h-[2px] bg-current" />
-                                <div className="w-[2px] h-4 bg-current absolute" />
-                            </div>
+                            <SearchIcon className="w-6 h-6" />
                         )}
                     </button>
                 </div>

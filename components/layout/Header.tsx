@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { SettingsIcon, AdminIcon, ExitIcon, SunIcon, MoonIcon, ShoppingCartIcon } from "@/components/ui/Icons";
+import { SettingsIcon, AdminIcon, ExitIcon, SunIcon, MoonIcon, ShoppingCartIcon, SearchIcon, MinusIcon } from "@/components/ui/Icons";
 import FilterModal from "@/components/catalog/FilterModal";
 import { ConfigModal } from "@/components/modals/ConfigModal";
 import MobileActionsMenu from "@/components/ui/MobileActionsMenu";
@@ -91,12 +91,9 @@ const Header: React.FC<HeaderProps> = ({
                 aria-label={isFilterVisible ? "Ocultar filtros" : "Mostrar filtros"}
               >
                 {isFilterVisible ? (
-                  <div className="w-4 h-[2px] bg-current" />
+                  <MinusIcon className="w-6 h-6" />
                 ) : (
-                  <div className="relative w-4 h-4 flex items-center justify-center">
-                    <div className="w-4 h-[2px] bg-current" />
-                    <div className="w-[2px] h-4 bg-current absolute" />
-                  </div>
+                  <SearchIcon className="w-6 h-6" />
                 )}
               </button>
 
