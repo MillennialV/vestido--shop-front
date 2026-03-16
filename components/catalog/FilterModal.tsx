@@ -29,6 +29,27 @@ const FilterModal: React.FC<FilterModalProps> = ({
 }) => {
     // Local state for filters to apply only when clicking "Aplicar"
     const [localFilters, setLocalFilters] = useState(filters);
+    const [dragOffset, setDragOffset] = useState(0);
+    const touchStartY = React.useRef(0);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        const currentY = e.touches[0].clientY;
+        const offset = currentY - touchStartY.current;
+        if (offset > 0) {
+            setDragOffset(offset);
+        }
+    };
+
+    const handleTouchEnd = () => {
+        if (dragOffset > 80) { // Threshold for close on drag
+            if (onClose) onClose();
+        }
+        setDragOffset(0);
+    };
 
     useEffect(() => {
         if (isVisible) {
@@ -58,9 +79,21 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[999999] flex items-end justify-center bg-black/60 backdrop-blur-sm md:hidden animate-fade-in">
-            <div className="bg-white dark:bg-[#1C1C1E] w-full rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl animate-slide-up relative overflow-hidden h-auto">
+            <div 
+                onTouchEnd={handleTouchEnd}
+                className="bg-white dark:bg-[#1C1C1E] w-full rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl animate-slide-up relative overflow-hidden h-auto"
+                style={{ 
+                    transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined, 
+                    transition: dragOffset > 0 ? 'none' : dragOffset === 0 ? 'transform 0.2s ease-out' : undefined 
+                }}
+            >
                 {/* Header Handle */}
-                <div className="w-full flex justify-center py-4 flex-shrink-0">
+                <div 
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    className="w-full flex justify-center py-4 flex-shrink-0 cursor-grab active:cursor-grabbing"
+                >
                     <div className="w-12 h-1.5 bg-stone-200 dark:bg-stone-700 rounded-full" />
                 </div>
 
