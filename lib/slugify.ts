@@ -1,6 +1,7 @@
-export const slugify = (title: string, id: number): string => {
+export const slugify = (title: string, id?: number): string => {
+  // Slug sin ID visible al final. El ID solo se usa como fallback interno si no hay título.
   if (!title) {
-    return `prenda-${id}`;
+    return id != null ? `prenda-${id}` : 'prenda';
   }
   return title
     .toLowerCase()
@@ -9,6 +10,5 @@ export const slugify = (title: string, id: number): string => {
     .replace(/[^\w\s-]/g, '') // remove non-word chars except spaces and hyphens
     .trim()
     .replace(/\s+/g, '-') // replace spaces with hyphens
-    .replace(/-+/g, '-') // remove consecutive hyphens
-    + `-${id}`;
+    .replace(/-+/g, '-'); // remove consecutive hyphens
 };

@@ -1099,9 +1099,9 @@ export default function HomeClient({
             const imgFolder = zip.folder("imagenes_catalogo");
             if (!imgFolder) throw new Error("Error ZIP");
 
-            // Helper function for slugify
-            const slugify = (text: string, id: number) => {
-              const baseSlug = text
+            // Helper function para generar un slug local sin ID
+            const localSlugify = (text: string) => {
+              return text
                 .toString()
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
@@ -1110,7 +1110,6 @@ export default function HomeClient({
                 .replace(/\s+/g, '-')
                 .replace(/[^\w-]+/g, '')
                 .replace(/--+/g, '-');
-              return `${baseSlug}-${id}`;
             };
 
             // 3. Descargar imágenes
@@ -1124,7 +1123,7 @@ export default function HomeClient({
                   const blob = await response.blob();
 
                   // Regla: slug o titulo
-                  const currentSlug = p.slug || slugify(p.title, p.id);
+                  const currentSlug = p.slug || localSlugify(p.title);
                   const extension = imgUrl.split('.').pop()?.split(/[?#]/)[0] || 'jpg';
                   imgFolder.file(`${currentSlug}.${extension}`, blob);
                 } catch (err) {
