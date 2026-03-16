@@ -99,13 +99,15 @@ export default function PanelView() {
                 throw new Error(data.error || "Ocurrió un error al crear la empresa");
             }
 
-            // Éxito - Redirección al dominio si existe, si no, se queda en el panel
+            // Éxito - Redirección al dominio si existe, si no, al subdominio de vestido.shop
             if (formData.domain) {
-                window.location.href = `https://${formData.domain}/panel`;
+                window.location.href = `https://${formData.domain}/`;
+            } else if (data.data?.organization_name) {
+                window.location.href = `https://${data.data.organization_name}.vestido.shop/`;
             } else {
-                alert("¡Organización creada con éxito!");
-                // Aquí podrías mutar el usuario / forzar relogin si quieres
-                router.refresh();
+                // Fallback si algo falla en la respuesta pero el registro fue exitoso
+                const nextDomain = formData.organization_name ? `${formData.organization_name}.vestido.shop` : window.location.host;
+                window.location.href = `https://${nextDomain}/`;
             }
         } catch (err: any) {
             setError(err.message);

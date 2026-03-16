@@ -23,24 +23,34 @@ export async function GET(req: NextRequest) {
         if (token) reqHeaders["Authorization"] = `Bearer ${token}`;
 
         let backendRes = await fetch(url.toString(), { headers: reqHeaders });
+        let text = await backendRes.text();
+        let data = text ? JSON.parse(text) : null;
 
-        // Si falla (404) y el dominio tiene www, intentar con el dominio limpio
+        // Si falla (404) o devuelve data null, y el dominio tiene www, intentar con el dominio limpio
         const cleanDomain = domain.replace(/^www\./, '');
-        if (!backendRes.ok && backendRes.status === 404 && domain !== cleanDomain && !orgId) {
-            console.log(`[api/theme/store-info] 404 with ${domain}, trying with ${cleanDomain}`);
+        const needsFallback = (domain !== cleanDomain && !orgId) && 
+            (!backendRes.ok && backendRes.status === 404 || (backendRes.ok && data && data.success && !data.data));
+
+        if (needsFallback) {
+            console.log(`[api/theme/store-info] 404 or null data with ${domain}, trying with ${cleanDomain}`);
             const fallbackUrl = new URL(url.toString());
             fallbackUrl.searchParams.set("domain", cleanDomain);
-            backendRes = await fetch(fallbackUrl.toString(), { headers: reqHeaders });
+            const fallbackRes = await fetch(fallbackUrl.toString(), { headers: reqHeaders });
+            
+            if (fallbackRes.ok) {
+                const fallbackText = await fallbackRes.text();
+                const fallbackData = fallbackText ? JSON.parse(fallbackText) : null;
+                if (fallbackData && fallbackData.success && fallbackData.data) {
+                    return NextResponse.json(fallbackData, { status: 200 });
+                }
+            }
         }
 
         if (!backendRes.ok) {
-            const errorText = await backendRes.text();
-            console.error("Backend Theme Store-Info GET Error:", { status: backendRes.status, body: errorText });
+            console.error("Backend Theme Store-Info GET Error:", { status: backendRes.status, body: text });
             throw new Error(`Backend error: ${backendRes.status}`);
         }
 
-        const text = await backendRes.text();
-        const data = text ? JSON.parse(text) : null;
         return NextResponse.json(data, { status: backendRes.status });
     } catch (err: any) {
         console.error("Error en GET /api/theme/store-info:", err);

@@ -635,12 +635,21 @@ export default function HomeClient({
         "URL Video",
         "URL Imagen",
         "Slug",
-        "Fecha de Registro"
+        "Fecha de Registro",
+        "Link"
       ];
 
       const rows = productsToExport.map(p => {
         // Formatear fecha de forma legible
         const date = p.created_at ? new Date(p.created_at).toLocaleDateString('es-ES') : 'N/A';
+
+        // Construir link público del producto
+        const origin = typeof window !== "undefined" ? window.location.origin : "";
+        const computedSlug = p.slug || slugify(p.title, p.id);
+        const link =
+          origin && computedSlug
+            ? `${origin}/producto/${computedSlug}`
+            : "";
 
         // Limpiar textos para evitar que rompan el CSV
         const clean = (text: string | undefined | null) =>
@@ -661,7 +670,8 @@ export default function HomeClient({
           clean(p.videoUrl),
           clean(p.imagen_principal),
           clean(p.slug),
-          clean(date)
+          clean(date),
+          clean(link)
         ];
       });
 
