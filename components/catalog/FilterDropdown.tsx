@@ -18,8 +18,35 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
     children,
     activeCount
 }) => {
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                onToggle();
+            }
+        };
+
+        const handleEscape = (e: KeyboardEvent) => {
+            if (isOpen && e.key === 'Escape') {
+                onToggle();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('touchstart', handleClickOutside);
+            document.addEventListener('keydown', handleEscape);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isOpen, onToggle]);
+
     return (
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
             <button
                 onClick={onToggle}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 text-sm font-medium ${
@@ -33,7 +60,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-3 z-[100] min-w-[300px] bg-stone-900/95 backdrop-blur-md border border-stone-800 rounded-[24px] shadow-2xl p-6 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute top-full left-0 mt-3 z-[100] min-w-[300px] bg-white dark:bg-stone-900/95 backdrop-blur-md border border-stone-100 dark:border-stone-800 rounded-[24px] shadow-2xl p-6 animate-in fade-in slide-in-from-top-2 duration-200">
                     {children}
                 </div>
             )}
@@ -69,7 +96,7 @@ export const BrandFilterContent: React.FC<{
                         <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
                             selectedBrands.includes(brand)
                                 ? "bg-[#D4B57E] border-[#D4B57E]"
-                                : "border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 group-hover:border-[#D4B57E]/50"
+                                : "border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 group-hover:border-[#D4B57E]/50"
                         }`}>
                             {selectedBrands.includes(brand) && <div className="w-2.5 h-2.5 bg-white rounded-sm" />}
                         </div>

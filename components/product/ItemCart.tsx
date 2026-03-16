@@ -68,8 +68,8 @@ const ItemCart: React.FC<ItemCartProps> = ({ item, updateQuantity, removeFromCar
                             {item.title}
                         </h3>
                     </Link>
-                    <p className="hidden sm:block text-color-disable text-[10px] sm:text-xs mb-0.5 sm:mb-1 font-inter">Talla: {item.size}</p>
-                    <p className="hidden sm:block text-color-disable text-[10px] sm:text-xs font-inter">Color: {item.color}</p>
+                    <p className="hidden sm:block text-stone-600 dark:text-stone-400 text-[10px] sm:text-xs mb-0.5 sm:mb-1 font-inter">Talla: {item.size}</p>
+                    <p className="hidden sm:block text-stone-600 dark:text-stone-400 text-[10px] sm:text-xs font-inter">Color: {item.color}</p>
                 </div>
 
                 <div className="flex flex-col items-end mt-1 gap-1">
