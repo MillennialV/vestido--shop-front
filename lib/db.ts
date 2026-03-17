@@ -132,7 +132,7 @@ async function saveGarmentData(
         savedData = await res.json();
     }
     // Actualizar slug si es necesario
-    const newSlug = slugify(savedData.title, savedData.id);
+    const newSlug = slugify(savedData.title);
     if (savedData.slug !== newSlug) {
         try {
             const res = await fetch('/api/products', {
@@ -328,7 +328,7 @@ export async function saveArticle(articleData: Omit<Article, 'id' | 'slug' | 'cr
         }
 
         // Actualizar slug si es necesario
-        const newSlug = slugify(data.title, data.id);
+        const newSlug = slugify(data.title);
         if (data.slug !== newSlug) {
             try {
                 const updatedData = await makeApiRequest<Article>(`/api/articles/${data.id}`, {

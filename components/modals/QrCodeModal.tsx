@@ -35,7 +35,7 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({
 
   useEffect(() => {
     if (isRendered && garment && canvasRef.current) {
-      const currentSlug = garment.slug || slugify(garment.title, garment.id);
+      const currentSlug = slugify(garment.title);
       const shareUrl = `${PUBLIC_URL}/producto/${currentSlug}`;
 
       QRCode.toCanvas(
@@ -76,7 +76,7 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({
 
   const handleDownload = () => {
     if (canvasRef.current && garment) {
-      const currentSlug = garment.slug || slugify(garment.title, garment.id);
+      const currentSlug = slugify(garment.title);
       const link = document.createElement("a");
       link.download = `vestidos-de-fiesta-qr-${currentSlug}.png`;
       link.href = canvasRef.current.toDataURL("image/png");

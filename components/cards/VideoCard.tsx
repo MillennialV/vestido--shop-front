@@ -188,7 +188,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   // Mostrar contenido siempre que esté visible, incluso si el video falla
   const showContent = isVisible && !showSpinner;
   const brandDisplay = garment.brand && garment.brand !== "No identificable" ? garment.brand : null;
-  const currentSlug = garment.slug || slugify(garment.title, garment.id);
+  const currentSlug = slugify(garment.title);
 
   const cardDescription = `${garment.title}${brandDisplay ? ` por ${brandDisplay}` : ""}, Talla ${garment.size}, Color ${garment.color}`;
   const actionLabel = isSelectionMode ? `Seleccionar` : `Ver detalles de`;

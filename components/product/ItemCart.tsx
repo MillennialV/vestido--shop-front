@@ -52,7 +52,7 @@ interface ItemCartProps {
 }
 
 const ItemCart: React.FC<ItemCartProps> = ({ item, updateQuantity, removeFromCart }) => {
-    const currentSlug = item.slug || slugify(item.title, item.id);
+    const currentSlug = slugify(item.title);
     const productLink = `/producto/${currentSlug}`;
 
     return (

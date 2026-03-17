@@ -1,7 +1,6 @@
-export const slugify = (title: string, id?: number): string => {
-  // Slug sin ID visible al final. El ID solo se usa como fallback interno si no hay título.
+export const slugify = (title: string): string => {
   if (!title) {
-    return id != null ? `prenda-${id}` : 'prenda';
+    return 'prenda';
   }
   return title
     .toLowerCase()
