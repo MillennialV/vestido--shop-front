@@ -423,10 +423,11 @@ const CheckoutClient = () => {
                 {cart.map((item) => (
                   <div key={`${item.id}-${item.size}`} className="flex gap-5 group">
                     <div className="relative w-20 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-stone-50 dark:bg-stone-800">
-                      <Image
+                       <Image
                         src={item.imagen_principal || (item.imagenes?.[0]) || "/placeholder.png"}
                         alt={item.title}
                         fill
+                        unoptimized
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     </div>
