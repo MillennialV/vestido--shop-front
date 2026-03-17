@@ -259,7 +259,6 @@ const SuccessPage = () => {
                            src={item.imagen_principal || item.imagenes?.[0] || "/placeholder.png"} 
                            alt={item.title}
                            fill
-                           unoptimized
                            className="object-cover transition-transform duration-500 group-hover:scale-110"
                          />
                        </div>
