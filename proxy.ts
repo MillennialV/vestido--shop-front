@@ -6,8 +6,8 @@ export async function proxy(request: NextRequest) {
 
   // Evitar bucles y permitir rutas estáticas/api
   if (
-    pathname.startsWith('/onboarding') ||
-    pathname.startsWith('/panel') ||
+    // pathname.startsWith('/onboarding') ||
+    // pathname.startsWith('/panel') ||
     pathname.startsWith('/_next') ||
     pathname.includes('.') || // archivos estáticos (favicon, etc)
     pathname.startsWith('/api')
@@ -43,14 +43,14 @@ export async function proxy(request: NextRequest) {
       }
     }
 
-    if (!res.ok || !data || !data.success || !data.data) {
-      return NextResponse.redirect(new URL('/onboarding', request.url));
-    }
+    // if (!res.ok || !data || !data.success || !data.data) {
+    //   return NextResponse.redirect(new URL('/onboarding', request.url));
+    // }
   } catch (error) {
     console.error('Proxy check failed:', error);
     // En caso de error crítico, podríamos decidir si permitir o redirigir.
     // Redirigimos por seguridad de que la tienda debe estar configurada.
-    return NextResponse.redirect(new URL('/onboarding', request.url));
+    // return NextResponse.redirect(new URL('/onboarding', request.url));
   }
 
   return NextResponse.next();

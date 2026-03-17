@@ -242,10 +242,22 @@ export default function HomeClient({
     const getUnique = (arr: (string | undefined | null)[]) =>
       [...new Set(arr.filter(v => v != null).map(v => String(v).trim()))].filter(Boolean).sort();
 
+    const filterOccasions = sourceData.flatMap((g) => 
+      g.occasion ? g.occasion.split(/[,/]/).map(o => o.trim()) : []
+    );
+
+    const normalizedOccasionsMap = new Map<string, string>();
+    filterOccasions.forEach((o) => {
+      const norm = o.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (!normalizedOccasionsMap.has(norm)) {
+        normalizedOccasionsMap.set(norm, o); 
+      }
+    });
+
     return {
       brands: getUnique(sourceData.map((g) => g.brand)),
       sizes: getUnique(sourceData.map((g) => g.size)),
-      occasions: getUnique(sourceData.map((g) => g.occasion)),
+      occasions: Array.from(normalizedOccasionsMap.values()).sort(),
     };
   }, [allProductsForFilters, initialGarments]);
   const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string; occasion?: string }) => {
@@ -261,7 +273,7 @@ export default function HomeClient({
       page: 1,
       limit: ITEMS_PER_PAGE,
       ...updatedFilters,
-      q: searchQuery
+      title: searchQuery
     });
   }, [filters, searchQuery, fetchProducts, ITEMS_PER_PAGE]);
 
@@ -278,7 +290,7 @@ export default function HomeClient({
         page: 1,
         limit: ITEMS_PER_PAGE,
         ...filters,
-        q: query
+        title: query
       });
     }, 800);
   };
@@ -297,7 +309,7 @@ export default function HomeClient({
       page: 1,
       limit: ITEMS_PER_PAGE,
       ...defaultFilters,
-      q: ""
+      title: ""
     });
   }, [fetchProducts, ITEMS_PER_PAGE]);
 
@@ -308,7 +320,7 @@ export default function HomeClient({
         page,
         limit: ITEMS_PER_PAGE,
         ...filters,
-        q: searchQuery
+        title: searchQuery
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -932,7 +944,7 @@ export default function HomeClient({
                       page: 1,
                       limit: newLimit,
                       ...filters,
-                      q: searchQuery
+                      title: searchQuery
                     });
                   }
                 }}

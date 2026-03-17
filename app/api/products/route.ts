@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
             return value && value !== 'all' && value.trim() !== '';
         };
 
-        const hasActiveFilters = isRealFilter('brand') || isRealFilter('size') || isRealFilter('color') || isRealFilter('q');
+        const hasActiveFilters = isRealFilter('brand') || isRealFilter('size') || isRealFilter('color') || isRealFilter('title') || isRealFilter('occasion');
 
         const domain = await getDomain();
         let endpoint = hasActiveFilters ? '/api/producto/filtrar-busqueda' : '/api/producto/obtener-listado-productos';
@@ -28,11 +28,7 @@ export async function GET(request: NextRequest) {
         searchParams.forEach((value, key) => {
             if (value === 'all' || !value) return;
 
-            if (key === 'q') {
-                backendUrl.searchParams.append('personalizado', value);
-            } else {
-                backendUrl.searchParams.append(key, value);
-            }
+            backendUrl.searchParams.append(key, value);
         });
 
         const headers = getAuthHeaders(request);
