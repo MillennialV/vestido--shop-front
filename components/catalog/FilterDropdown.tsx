@@ -126,19 +126,19 @@ export const OccasionFilterContent: React.FC<{
     onChange: (occasion: string) => void;
 }> = ({ occasions, selectedOccasion, onChange }) => {
     return (
-        <div className="flex flex-wrap gap-3 max-w-full max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="flex flex-col gap-2 max-w-full max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
             {occasions.map(occasion => (
                 <button
                     key={occasion}
                     onClick={() => onChange(occasion)}
-                    className={`px-5 py-3 rounded-2xl border text-sm font-medium transition-all flex items-center gap-2 ${
+                    className={`w-full px-5 py-3 rounded-xl border text-sm font-medium transition-all flex justify-between items-center gap-2 text-left ${
                         selectedOccasion === occasion
                             ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D3A24D]"
                             : "bg-stone-50 dark:bg-stone-800/50 border-stone-100 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:border-[#D4B57E]/30 hover:text-stone-900 dark:hover:text-stone-200"
                     }`}
                 >
-                    {selectedOccasion === occasion && <div className="w-4 h-4 flex items-center justify-center"><CheckCircleIcon className="w-full h-full" /></div>}
                     <span>{occasion}</span>
+                    {selectedOccasion === occasion && <div className="w-4 h-4 flex items-center justify-center flex-shrink-0"><CheckCircleIcon className="w-full h-full" /></div>}
                 </button>
             ))}
         </div>
