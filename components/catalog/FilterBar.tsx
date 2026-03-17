@@ -49,25 +49,25 @@ const FilterBar: React.FC<FilterBarProps> = ({
     return (
         <div className="flex flex-col gap-4 mb-4 xl:mb-8 w-full">
             <div className="flex items-center gap-2 w-full">
-                {/* Dropdowns Row (Siempre visible en desktop) */}
-                <div className="hidden md:flex items-center gap-6 flex-grow ">
-                    {/* Buscador de Texto (Título) */}
-                    <div className="flex items-center bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-1.5 min-w-[200px] max-w-[300px] gap-2 border border-transparent focus-within:border-[#D4B57E]/50 transition-all shadow-sm">
-                        <SearchIcon className="w-3.5 h-3.5 text-stone-400" />
-                        <input
-                            type="text"
-                            placeholder="Buscar por título..."
-                            className="bg-transparent border-none outline-none text-[13px] text-stone-800 dark:text-stone-100 placeholder-stone-400 w-full"
-                            value={searchQuery}
-                            onChange={(e) => onSearchChange(e.target.value)}
-                        />
-                        {searchQuery && (
-                            <button onClick={() => onSearchChange("")} className="text-stone-400 hover:text-stone-600 transition-colors">
-                                <CloseIcon className="w-3.5 h-3.5" />
-                            </button>
-                        )}
-                    </div>
+                {/* Buscador de Texto (Título) - Siempre visible */}
+                <div className="flex items-center bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-1.5 w-full md:w-auto md:min-w-[200px] md:max-w-[300px] gap-2 border border-transparent focus-within:border-[#D4B57E]/50 transition-all shadow-sm">
+                    <SearchIcon className="w-3.5 h-3.5 text-stone-400" />
+                    <input
+                        type="text"
+                        placeholder="Buscar producto..."
+                        className="bg-transparent border-none outline-none text-[13px] text-stone-800 dark:text-stone-100 placeholder-stone-400 w-full"
+                        value={searchQuery}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                    />
+                    {searchQuery && (
+                        <button onClick={() => onSearchChange("")} className="text-stone-400 hover:text-stone-600 transition-colors">
+                            <CloseIcon className="w-3.5 h-3.5" />
+                        </button>
+                    )}
+                </div>
 
+                {/* Dropdowns Row (Solo Desktop) */}
+                <div className="hidden md:flex items-center gap-6 flex-grow ">
                     <FilterDropdown
                         label="Marca"
                         isOpen={openDropdown === "marca"}
@@ -118,7 +118,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 </div>
 
                 {/* Right side: Count and Grid */}
-                <div className="flex items-center gap-4 ml-auto">
+                <div className="hidden md:flex items-center gap-4 ml-auto">
                     <span className="text-xs text-stone-500 dark:text-stone-400 font-medium whitespace-nowrap">
                         <strong className="text-stone-800 dark:text-stone-200">{totalProducts}</strong> products
                     </span>
