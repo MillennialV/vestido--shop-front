@@ -32,7 +32,7 @@ const PrintLabelsPage = () => {
     const generateQRs = async (items: Garment[]) => {
         const codes: Record<string, string> = {};
         for (const item of items) {
-            const currentSlug = item.slug || slugify(item.title, item.id);
+            const currentSlug = slugify(item.title);
             const url = `${PUBLIC_URL}/#/${currentSlug}`;
             try {
                 // Para etiquetas pequeñas (30mm alto), el QR debe ser más simple (menos margen)

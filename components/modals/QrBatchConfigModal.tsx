@@ -83,7 +83,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                 doc.rect(x + 2, y + 2, itemWidth - 4, itemHeight - 4);
 
                 // Generate QR
-                const currentSlug = garment.slug || slugify(garment.title, garment.id);
+                const currentSlug = slugify(garment.title);
                 const url = `${PUBLIC_URL}/producto/${currentSlug}`;
 
                 try {

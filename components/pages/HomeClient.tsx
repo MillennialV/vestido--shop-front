@@ -146,7 +146,7 @@ export default function HomeClient({
   // Sync URL with selected garment without triggering full page re-renders
   useEffect(() => {
     if (selectedGarment) {
-      const slug = selectedGarment.slug || slugify(selectedGarment.title, selectedGarment.id);
+      const slug = slugify(selectedGarment.title);
       const newPath = `/producto/${slug}`;
       if (window.location.pathname !== newPath) {
         window.history.pushState(null, "", newPath);
@@ -365,23 +365,28 @@ export default function HomeClient({
       }
       if (globalProcessedSlugRef.current === slug) return;
       globalProcessedSlugRef.current = slug;
-      const foundInList = garments.find(g => g.slug === slug || slugify(g.title, g.id) === slug);
+      const foundInList = garments.find(g => slugify(g.title) === slug);
       if (foundInList) {
         handleSelectGarmentWrapper(foundInList, true);
         return;
       }
-      // Intentar extraer UUID (36 caracteres con guiones) o número al final del slug
-      const idMatch = slug.match(/-([a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12})$/i) || slug.match(/-(\d+)$/);
-      if (idMatch) {
-        const id = idMatch[1];
-        try {
-          const product = await fetchProductById(id);
+
+      // Si no estÃ¡ en la lista inicial, buscarlo especificamente en la API
+      try {
+        const res = await fetch(`/api/products?q=${slug}&limit=1`);
+        if (res.ok) {
+          const data = await res.json();
+          console.log("Respuesta de búsqueda por slug", data);
+          const products = data.products || [];
+          // Buscar coincidencia exacta por slug calculado
+          const product = products.find((p: Garment) => slugify(p.title) === slug);
           if (product) {
-            handleSelectGarment(product, true);
+            handleSelectGarmentWrapper(product, true);
+            return;
           }
-        } catch (e) {
-          console.error("[HomeClient] Error opening from deep link:", e);
         }
+      } catch (e) {
+        console.error("[HomeClient] Error opening from deep link API fallback:", e);
       }
     };
     handleUrlChange(false);
@@ -645,7 +650,7 @@ export default function HomeClient({
 
         // Construir link público del producto
         const origin = typeof window !== "undefined" ? window.location.origin : "";
-        const computedSlug = p.slug || slugify(p.title, p.id);
+        const computedSlug = slugify(p.title);
         const link =
           origin && computedSlug
             ? `${origin}/producto/${computedSlug}`

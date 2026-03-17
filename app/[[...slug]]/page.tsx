@@ -2,6 +2,7 @@ import HomeClient from "@/components/pages/HomeClient";
 import { Metadata } from "next";
 import { PUBLIC_URL } from "@/lib/seo";
 import { getDomain } from "@/lib/get-domain";
+import { slugify } from "@/lib/slugify";
 
 const INVENTARIO_BASE_API = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
@@ -170,8 +171,8 @@ async function getProduct(slug: string) {
         if (res.ok) {
             const data = await res.json();
             const products = data?.data?.products || [];
-            // Devuelve el primer producto si coincide el slug (en este endpoint q filtra texto amplio, nos aseguramos)
-            return products.find((p: any) => p.slug === slug) || products[0] || null;
+            // Devuelve el primer producto si coincide el slug calculado del título
+            return products.find((p: any) => slugify(p.title) === slug) || products[0] || null;
         }
     } catch (error) {
         console.error("Error fetching product for schema:", error);
@@ -208,7 +209,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
         ...(product.sku ? { "sku": product.sku } : {}),
         "offers": {
             "@type": "Offer",
-            "url": `${PUBLIC_URL}/producto/${product.slug}`,
+            "url": `${PUBLIC_URL}/producto/${slugify(product.title)}`,
             "priceCurrency": "PEN",
             // Bug 3: solo incluir price si tiene valor real
             ...(product.price ? { "price": String(product.price) } : {}),
