@@ -198,7 +198,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
       ref={cardRef}
       className={`relative group aspect-[9/16] overflow-hidden rounded-[20px] shadow-lg transform transition-all duration-300 ease-in-out bg-stone-900 
         w-full mx-auto
-        ${isDisabled ? "cursor-not-allowed opacity-75 grayscale-[0.5]" : isSelectionMode ? "cursor-pointer" : "cursor-pointer hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500"}
+        ${isDisabled ? "cursor-not-allowed opacity-75 grayscale-[0.5]" : isSelectionMode ? "cursor-pointer" : "cursor-pointer hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 dark:focus:ring-offset-[#1a1a1a] focus:ring-stone-500 dark:focus:ring-white"}
         ${isSelected ? "ring-4 ring-offset-2 ring-sky-500" : ""}
       `}
       onMouseEnter={!isSelectionMode ? handleMouseEnter : undefined}
@@ -211,12 +211,12 @@ const VideoCard: React.FC<VideoCardProps> = ({
       aria-pressed={isSelectionMode ? isSelected : undefined}
     >
       {showSpinner && (
-        <div
-          className="absolute inset-0 flex items-center justify-center z-10"
-          aria-hidden="true"
-        >
-          <SpinnerIcon className="w-10 h-10 text-stone-400 animate-spin" />
-        </div>
+          <div
+            className="absolute inset-0 flex items-center justify-center z-10"
+            aria-hidden="true"
+          >
+            <SpinnerIcon className="w-10 h-10 text-stone-400 dark:text-[#a0a0a0] animate-spin" />
+          </div>
       )}
 
       {toastMessage && (
@@ -226,14 +226,14 @@ const VideoCard: React.FC<VideoCardProps> = ({
       )}
       {isVisible && hasError && garment.videoUrl && (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-stone-200 to-stone-300 dark:from-stone-700 dark:to-stone-800 z-10"
+          className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-color-four/20 to-color-four/40 dark:from-[#1a1a1a] dark:to-[#0f0f0f] z-10"
           aria-hidden="true"
         >
-          <ErrorIcon className="w-12 h-12 mb-2 text-stone-400" />
-          <p className="text-sm font-semibold text-stone-600 dark:text-stone-300">
+          <ErrorIcon className="w-12 h-12 mb-2 text-stone-400 dark:text-[#a0a0a0]" />
+          <p className="text-sm font-semibold text-stone-600 dark:text-white">
             Error al cargar el video
           </p>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+          <p className="text-xs text-color-disable dark:text-[#a0a0a0] mt-1">
             No se pudo mostrar la vista previa.
           </p>
         </div>
@@ -241,7 +241,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
       {isVisible && !garment.videoUrl && !garment.imagen_principal && (
         <div
-          className="absolute inset-0 bg-stone-300 dark:bg-stone-700 z-0"
+          className="absolute inset-0 bg-stone-300 dark:bg-[#1a1a1a] z-0"
           aria-hidden="true"
         ></div>
       )}

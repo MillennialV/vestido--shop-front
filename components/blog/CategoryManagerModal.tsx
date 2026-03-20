@@ -67,11 +67,11 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
 
   return (
     <div
-      className={`fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 bg-black/60 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-4 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       onClick={onClose}
     >
       <div
-        className={`relative bg-white dark:bg-[#0a0a0a] text-stone-900 dark:text-white rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl border border-stone-200 dark:border-[#1a1a1a] transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative bg-white dark:bg-[#1a1a1a] text-stone-900 dark:text-white rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl border border-stone-200 dark:border-[#2a2a2a] transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="px-8 pt-8 pb-4 flex justify-between items-center">
@@ -91,7 +91,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
               categories.map((category) => (
                 <div
                   key={category.id}
-                  className="group relative flex items-center justify-between p-4 bg-stone-50 dark:bg-black rounded-xl border border-stone-100 dark:border-[#1a1a1a] hover:border-stone-300 dark:hover:border-[#262626] transition-all"
+                  className="group relative flex items-center justify-between p-4 bg-stone-50 dark:bg-[#0f0f0f] rounded-xl border border-stone-100 dark:border-[#2a2a2a] hover:border-stone-300 dark:hover:border-white transition-all"
                 >
                   {editingId === category.id ? (
                     <div className="flex flex-grow gap-2 items-center">
@@ -99,7 +99,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                         type="text"
                         value={editingName}
                         onChange={(e) => setEditingName(e.target.value)}
-                        className="flex-grow bg-white dark:bg-[#141414] border border-stone-300 dark:border-[#262626] rounded-lg p-2 text-sm focus:outline-none text-stone-900 dark:text-white"
+                        className="flex-grow bg-white dark:bg-[#1a1a1a] border border-stone-300 dark:border-[#2a2a2a] rounded-lg p-2 text-sm focus:outline-none text-stone-900 dark:text-white"
                         autoFocus
                       />
                       <button
@@ -120,7 +120,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                             setEditingId(category.id);
                             setEditingName(category.name);
                           }}
-                          className="p-2 bg-white dark:bg-[#141414] rounded-lg text-stone-400 hover:text-stone-900 dark:hover:text-white border border-stone-200 dark:border-transparent transition-all shadow-sm"
+                          className="p-2 bg-white dark:bg-[#1a1a1a] rounded-lg text-stone-400 hover:text-stone-900 dark:hover:text-white border border-stone-200 dark:border-transparent transition-all shadow-sm"
                         >
                           <EditIcon className="w-4 h-4" />
                         </button>
@@ -141,13 +141,13 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
 
             {showCreateForm ? (
               <form onSubmit={handleCreate} className="animate-in fade-in slide-in-from-top-2 duration-300 pt-2">
-                <div className="p-4 bg-stone-50 dark:bg-black rounded-xl border border-stone-200 dark:border-stone-800 flex flex-col gap-3">
+                <div className="p-4 bg-stone-50 dark:bg-[#0f0f0f] rounded-xl border border-stone-200 dark:border-[#2a2a2a] flex flex-col gap-3">
                   <input
                     type="text"
                     placeholder="Escribe una categoría..."
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="w-full bg-white dark:bg-[#141414] border border-stone-300 dark:border-[#262626] rounded-lg p-3 text-sm focus:outline-none text-stone-900 dark:text-white"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-stone-300 dark:border-[#2a2a2a] rounded-lg p-3 text-sm focus:outline-none text-stone-900 dark:text-white"
                     autoFocus
                     disabled={isLoading}
                   />
@@ -170,9 +170,9 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                 </div>
               </form>
             ) : (
-              <button
+               <button
                 onClick={() => setShowCreateForm(true)}
-                className="w-full py-4 rounded-xl border border-dashed border-stone-200 dark:border-[#1a1a1a] text-stone-500 dark:text-stone-600 hover:text-stone-400 hover:border-stone-400 dark:hover:border-[#262626] transition-all flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest"
+                className="w-full py-4 rounded-xl border border-dashed border-stone-200 dark:border-[#2a2a2a] text-stone-500 dark:text-[#a0a0a0] hover:text-stone-400 hover:border-stone-400 dark:hover:border-white transition-all flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest"
               >
                 <PlusIcon className="w-4 h-4" />
                 Nueva Categoría
@@ -186,7 +186,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
         <footer className="p-8 pt-4 flex justify-end">
           <button
             onClick={onClose}
-            className="px-8 py-2.5 bg-white dark:bg-[#0a0a0a] border border-stone-200 dark:border-[#1a1a1a] text-stone-900 dark:text-white text-[13px] font-bold rounded-xl hover:bg-stone-50 dark:hover:bg-[#141414] transition-all tracking-wide shadow-sm"
+            className="px-8 py-2.5 bg-white dark:bg-[#0f0f0f] border border-stone-200 dark:border-[#2a2a2a] text-stone-900 dark:text-white text-[13px] font-bold rounded-xl hover:bg-stone-50 dark:hover:bg-[#1a1a1a] transition-all tracking-wide shadow-sm"
           >
             Cerrar
           </button>
@@ -216,8 +216,8 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
             border: 2px solid white;
           }
           :global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #262626;
-            border: 2px solid #0a0a0a;
+            background: #2a2a2a;
+            border: 2px solid #1a1a1a;
           }
           .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgba(0,0,0,0.2);

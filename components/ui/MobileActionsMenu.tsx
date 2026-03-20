@@ -52,12 +52,12 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                 aria-label="Abrir menú de acciones"
             >
 
-                <div className="w-[15px] h-[2.5px] bg-color-three dark:bg-color-four"></div>
-                <div className="w-[15px] h-[2.5px] bg-color-three dark:bg-color-four"></div>
+                <div className="w-[15px] h-[2.5px] bg-color-three dark:bg-white"></div>
+                <div className="w-[15px] h-[2.5px] bg-color-three dark:bg-white"></div>
             </button>
 
             {/* Glassy Actions Bar */}
-            <div className={`w-[55px] absolute top-full right-0 mt-2 flex flex-col items-center gap-6 p-4 bg-color-four/70 dark:bg-color-three/70 backdrop-blur-md rounded-[15px] shadow-lg transition-all duration-300 transform origin-top ${isOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-4 pointer-events-none"}`}>
+            <div className={`w-[55px] absolute top-full right-0 mt-2 flex flex-col items-center gap-6 p-4 bg-color-four/70 dark:bg-[#1a1a1a]/80 backdrop-blur-md rounded-[15px] shadow-lg transition-all duration-300 transform origin-top ${isOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-4 pointer-events-none"}`}>
 
                 {/* Cart Action */}
                 <button
@@ -65,14 +65,14 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                         toggleCart();
                     }}
                     className={`relative p-2 rounded-full transition-all duration-300 ${isCartOpen
-                        ? 'bg-color-background text-color-three dark:bg-color-background-dark dark:text-color-four scale-[1.15] shadow-sm'
-                        : 'text-color-three dark:text-color-four dark:hover:bg-color-background-dark dark:hover:text-color-four hover:scale-110'
+                        ? 'bg-color-background text-color-three dark:bg-[#0f0f0f] dark:text-white scale-[1.15] shadow-sm'
+                        : 'text-color-three dark:text-white dark:hover:bg-[#0f0f0f] hover:scale-110'
                         }`}
                     aria-label="Cesta"
                 >
                     <ShoppingCartIcon className="size-[24px]" />
                     {totalItems > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-color-one text-color-three dark:text-color-four text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
+                        <span className="absolute -top-1 -right-1 bg-color-one text-color-three dark:text-[#1a1a1a] text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
                             {totalItems}
                         </span>
                     )}
@@ -81,7 +81,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                 {/* Theme Toggle Action */}
                 <button
                     onClick={toggleDarkMode}
-                    className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                    className="p-2 rounded-full text-color-three dark:text-white hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
                     aria-label="Cambiar tema"
                 >
                     {isDark ? <SunIcon className="size-[24px]" /> : <MoonIcon className="size-[24px]" />}
@@ -98,7 +98,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                             }
                             setIsOpen(false);
                         }}
-                        className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                        className="p-2 rounded-full text-color-three dark:text-white hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
                         aria-label="Configuración"
                     >
                         <SettingsIcon className="size-[24px]" />
@@ -112,7 +112,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                             onToggleAdmin();
                             setIsOpen(false);
                         }}
-                        className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                        className="p-2 rounded-full text-color-three dark:text-white hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
                         aria-label={isAdmin ? "Cerrar sesión" : "Modo administrador"}
                     >
                         {isAdmin ? <ExitIcon className="size-[24px]" /> : <AdminIcon className="size-[24px]" />}

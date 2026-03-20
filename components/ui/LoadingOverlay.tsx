@@ -19,9 +19,9 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       aria-live="polite"
       aria-label="Cargando"
     >
-      <div className="bg-stone-50 rounded-lg shadow-2xl p-8 flex flex-col items-center gap-4 animate-modal-in">
-        <SpinnerIcon className="w-12 h-12 text-stone-800 animate-spin" />
-        <p className="text-stone-700 font-medium text-lg">{message}</p>
+      <div className="bg-stone-50 dark:bg-[#1a1a1a] rounded-lg shadow-2xl p-8 flex flex-col items-center gap-4 animate-modal-in border border-transparent dark:border-[#2a2a2a]">
+        <SpinnerIcon className="w-12 h-12 text-stone-800 dark:text-white animate-spin" />
+        <p className="text-stone-700 dark:text-white font-medium text-lg">{message}</p>
       </div>
       <style>{`
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }

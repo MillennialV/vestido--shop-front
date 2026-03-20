@@ -59,7 +59,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="p-2 text-color-three dark:text-color-four transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 text-color-three dark:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="Página anterior"
       >
         <ChevronLeftIcon className="w-5 h-5" />
@@ -68,7 +68,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
       <div className="flex items-center gap-1.5">
         {visiblePages.map((page, index) =>
           page === "..." ? (
-            <span key={`dots-${index}`} className="px-2 text-color-three dark:text-color-four">
+            <span key={`dots-${index}`} className="px-2 text-color-three dark:text-[#a0a0a0]">
               ...
             </span>
           ) : (
@@ -76,8 +76,8 @@ const PaginationComponent: React.FC<PaginationProps> = ({
               key={page}
               onClick={() => onPageChange(page as number)}
               className={`min-w-[20px] h-8 px-3 text-sm font-medium rounded-full transition-all duration-200 flex items-center justify-center ${currentPage === page
-                ? "bg-color-one text-color-four shadow-sm cursor-default"
-                : "bg-color-four dark:bg-color-two text-color-three dark:text-color-four border border-gray-300 hover:bg-color-one hover:text-color-four"
+                ? "bg-color-one text-color-four dark:text-[#1a1a1a] shadow-sm cursor-default"
+                : "bg-color-four dark:bg-[#1a1a1a] text-color-three dark:text-[#a0a0a0] border border-gray-300 dark:border-[#2a2a2a] hover:bg-color-one hover:text-color-four dark:hover:text-[#1a1a1a]"
                 }`}
               aria-current={currentPage === page ? "page" : undefined}
             >
@@ -90,7 +90,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="p-2 text-color-three dark:text-color-four transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 text-color-three dark:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="Página siguiente"
       >
         <ChevronRightIcon className="w-5 h-5" />

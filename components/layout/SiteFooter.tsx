@@ -15,7 +15,7 @@ const SiteFooter: React.FC = () => {
     const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}` : null;
 
     return (
-        <footer className="bg-color-one text-color-three pt-[45px] pb-[25px] transition-colors duration-300">
+        <footer className="bg-color-one text-color-three dark:bg-[#1a1a1a] dark:text-white pt-[45px] pb-[25px] transition-colors duration-300">
             <div className="container mx-auto px-[23px]">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-[40px] mb-[60px]">
                     {/* Logo y Descripción */}
@@ -113,7 +113,7 @@ const SiteFooter: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="text-center w-full pt-8 border-t border-color-three/10">
+                <div className="text-center w-full pt-8 border-t border-color-three/10 dark:border-[#2a2a2a]">
                     <p className="font-p-footer uppercase text-[10px] tracking-widest">
                         {storeInfo?.footer_license || `${currentYear} ${storeInfo?.title || 'WOMANITY BOUTIQUE'}. TODOS LOS DERECHOS RESERVADOS`}
                     </p>

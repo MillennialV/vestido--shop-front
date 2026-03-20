@@ -37,9 +37,9 @@ const PostCard: React.FC<PostCardProps> = ({
   return (
     <Link
       href={`/posts/${post.slug}`}
-      className="group flex flex-col h-full bg-color-four dark:bg-color-three rounded-[20px] overflow-hidden transition-all duration-300 hover:shadow-xl"
+      className="group flex flex-col h-full bg-color-four dark:bg-[#1a1a1a] border border-transparent dark:border-[#2a2a2a] rounded-[20px] overflow-hidden transition-all duration-300 hover:shadow-xl"
     >
-      <div className="relative aspect-[16/10] overflow-hidden m-[15px] rounded-[20px] bg-color-two">
+      <div className="relative aspect-[16/10] overflow-hidden m-[15px] rounded-[20px] bg-color-two dark:bg-[#0f0f0f]">
         <Image
           src={post.featured_image_url}
           alt={post.title}
@@ -59,7 +59,7 @@ const PostCard: React.FC<PostCardProps> = ({
           {post.categories && post.categories.length > 0 && post.categories.map(cat => (
             <span
               key={cat.id}
-              className="backdrop-blur-md bg-white/90 dark:bg-black/60 text-stone-900 dark:text-stone-100 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full shadow-sm"
+              className="backdrop-blur-md bg-color-four/90 dark:bg-[#0f0f0f]/60 text-color-three dark:text-white text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full shadow-sm"
             >
               {cat.name}
             </span>
@@ -76,7 +76,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   e.stopPropagation();
                   onEdit(post);
                 }}
-                className="p-2 bg-white text-stone-700 hover:text-sky-600 rounded-full shadow-lg hover:bg-stone-50 transition-colors"
+                className="p-2 bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white hover:text-sky-600 dark:hover:text-sky-400 rounded-full shadow-lg hover:bg-color-four/80 dark:hover:bg-[#1a1a1a] transition-colors"
                 aria-label={`Editar ${post.title}`}
               >
                 <EditIcon className="w-4 h-4" />
@@ -89,7 +89,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   e.stopPropagation();
                   onDelete(post);
                 }}
-                className="p-2 bg-white text-stone-700 hover:text-red-600 rounded-full shadow-lg hover:bg-stone-50 transition-colors"
+                className="p-2 bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white hover:text-red-600 dark:hover:text-red-400 rounded-full shadow-lg hover:bg-color-four/80 dark:hover:bg-[#1a1a1a] transition-colors"
                 aria-label={`Eliminar ${post.title}`}
               >
                 <DeleteIcon className="w-4 h-4" />

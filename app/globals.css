@@ -48,6 +48,33 @@
     button:disabled {
         cursor: default;
     }
+
+    /* Black Theme Overrides for Tailwind classes */
+    .dark body, 
+    .dark .bg-stone-50 { 
+        @apply bg-[#0f0f0f]!; 
+    }
+    
+    .dark .bg-white,
+    .dark .bg-stone-100 { 
+        @apply bg-[#1a1a1a]!; 
+    }
+    
+    .dark .border-stone-100,
+    .dark .border-stone-200 { 
+        @apply border-[#2a2a2a]!; 
+    }
+    
+    .dark .text-stone-900,
+    .dark .text-stone-800 { 
+        @apply text-white!; 
+    }
+    
+    .dark .text-stone-700,
+    .dark .text-stone-600,
+    .dark .text-stone-500 { 
+        @apply text-[#a0a0a0]!; 
+    }
 }
 
 @theme {
@@ -75,6 +102,31 @@
     --color-two: #1B1B1B;
     --color-three: #000000;
     --color-four: #FFFFFF;
+}
+
+/* =============================================
+   BLACK THEME — Modo oscuro estático
+   El color principal (color-one) se mantiene.
+   Fondo: #0f0f0f | Textos: blanco
+   ============================================= */
+.dark {
+    --color-bk-background: #0f0f0f;
+    --color-bk-surface:    #1a1a1a;
+    --color-bk-border:     #2a2a2a;
+    --color-bk-text:       #ffffff;
+    --color-bk-text-muted: #a0a0a0;
+    /* El color principal de marca se preserva sin cambios */
+    --color-bk-accent:     var(--color-one);
+}
+
+/* Fondo y color de texto base en modo oscuro */
+.dark body {
+    background-color: var(--color-bk-background);
+    color: var(--color-bk-text);
+}
+
+.dark .bg-stone-50 {
+    background-color: var(--color-bk-background) !important;
 }
 
 /*Color de titulo header*/
@@ -292,11 +344,11 @@
     font-weight: 400;
     line-height: 1.6;
     letter-spacing: -3%;
-    color: var(--color-color-four);
+    color: var(--color-color-three);
 }
 
 .dark .font-title-card {
-    color: var(--color-color-four);
+    color: #ffffff;
 }
 
 .font-subtitle-card {
@@ -305,7 +357,11 @@
     font-weight: 400;
     line-height: 120%;
     letter-spacing: -3%;
-    color: var(--color-color-four);
+    color: var(--color-color-three);
+}
+
+.dark .font-subtitle-card {
+    color: #ffffff;
 }
 
 .buttom-shop {

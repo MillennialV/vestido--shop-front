@@ -959,19 +959,19 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       aria-labelledby="bulk-upload-title"
     >
       <div
-        className={`relative bg-stone-50 dark:bg-stone-900 rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
+        className={`relative bg-color-four dark:bg-[#1a1a1a] rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="p-6 border-b border-stone-200 dark:border-stone-800 flex justify-between items-center">
+        <header className="p-6 border-b border-color-three/10 dark:border-[#2a2a2a] flex justify-between items-center">
           <h2
             id="bulk-upload-title"
-            className="text-2xl font-semibold text-stone-900 dark:text-stone-100"
+            className="text-2xl font-semibold text-color-three dark:text-white"
           >
             Carga Masiva de Multimedia
           </h2>
           <button
             onClick={onClose}
-            className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+            className="text-color-three/60 dark:text-stone-400 hover:text-color-three dark:hover:text-stone-100 transition-colors"
             aria-label="Cerrar"
           >
             <CloseIcon className="w-6 h-6" />
@@ -981,7 +981,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         <main className="flex-grow p-6 overflow-y-auto space-y-6">
           {files.length === 0 ? (
             <div
-              className="border-2 border-dashed border-stone-300 dark:border-stone-700 rounded-lg h-full flex flex-col items-center justify-center text-center text-stone-500 dark:text-stone-400"
+              className="border-2 border-dashed border-color-three/20 dark:border-[#2a2a2a] rounded-lg h-full flex flex-col items-center justify-center text-center text-color-disable"
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
@@ -992,7 +992,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               }}
             >
               <UploadIcon className="w-12 h-12 mb-4 opacity-50" />
-              <p className="font-semibold text-stone-700 dark:text-stone-300">Arrastra y suelta tus videos e imágenes aquí</p>
+              <p className="font-semibold text-color-three dark:text-stone-300">Arrastra y suelta tus videos e imágenes aquí</p>
               <p className="text-sm">o</p>
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -1004,22 +1004,22 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           ) : (
             <div className="space-y-6">
               {/* Sección de Edición Creativa Masiva */}
-              <div className="bg-stone-100 dark:bg-stone-800/50 p-4 rounded-xl border border-stone-200 dark:border-stone-700 shadow-inner space-y-4">
+              <div className="bg-color-three/5 dark:bg-[#0f0f0f]/50 p-4 rounded-xl border border-color-three/10 dark:border-[#2a2a2a] shadow-inner space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-bold text-stone-600 dark:text-stone-400 uppercase tracking-widest flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-color-three/60 dark:text-[#a0a0a0] uppercase tracking-widest flex items-center gap-2">
                     <SparklesIcon className="w-4 h-4 text-sky-500" />
                     Edición Creativa Masiva (Solo Imágenes)
                   </h3>
                   <div className="flex items-center gap-4">
                     {(imageUsage.promptTokens > 0 || textUsage.promptTokens > 0) && (
-                      <div className="flex items-center gap-2 px-2 py-1 bg-stone-200 dark:bg-stone-900 rounded-lg border border-stone-300 dark:border-stone-700 animate-in fade-in slide-in-from-right-2">
-                        <div className="flex flex-col items-center px-2 border-r border-stone-300 dark:border-stone-700">
+                      <div className="flex items-center gap-2 px-2 py-1 bg-color-three/10 dark:bg-[#0f0f0f] rounded-lg border border-color-three/10 dark:border-[#2a2a2a] animate-in fade-in slide-in-from-right-2">
+                        <div className="flex flex-col items-center px-2 border-r border-color-three/10 dark:border-[#2a2a2a]">
                           <span className="text-[9px] text-stone-500 uppercase font-bold text-center">INPUT</span>
                           <span className="text-[10px] font-mono font-bold text-sky-600 dark:text-sky-400">
                             {(imageUsage.promptTokens + textUsage.promptTokens).toLocaleString()}
                           </span>
                         </div>
-                        <div className="flex flex-col items-center px-2 border-r border-stone-300 dark:border-stone-700">
+                        <div className="flex flex-col items-center px-2 border-r border-color-three/10 dark:border-[#2a2a2a]">
                           <span className="text-[9px] text-stone-500 uppercase font-bold text-center">OUTPUT</span>
                           <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400">
                             {(imageUsage.candidatesTokens + textUsage.candidatesTokens).toLocaleString()}
@@ -1052,7 +1052,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 <textarea
                   value={iaPrompt}
                   onChange={(e) => setIaPrompt(e.target.value)}
-                  className="w-full p-3 text-xs bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg focus:ring-1 focus:ring-sky-500 min-h-[100px] resize-none text-stone-700 dark:text-stone-300 transition-all"
+                  className="w-full p-3 text-xs bg-color-four dark:bg-[#0f0f0f] border border-color-three/20 dark:border-[#2a2a2a] rounded-lg focus:ring-1 focus:ring-color-one min-h-[100px] resize-none text-color-three dark:text-white transition-all"
                   placeholder="Escribe aquí las instrucciones para la IA... (Ej: Pon el vestido en una modelo en la playa)"
                 />
 
@@ -1061,8 +1061,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                     onClick={handleMassiveImageEdit}
                     disabled={isEditingMassively || imagesToEditCount === 0}
                     className={`w-full py-3 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 text-sm shadow-sm active:scale-[0.98] ${isEditingMassively || imagesToEditCount === 0
-                      ? 'bg-stone-300 dark:bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-200 dark:border-stone-700'
-                      : 'bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 shadow-sky-500/20'
+                      ? 'bg-color-three/20 dark:bg-stone-800 text-color-disable cursor-not-allowed border border-color-three/10 dark:border-stone-700'
+                      : 'bg-color-three hover:opacity-90 shadow-color-three/20'
                       }`}
                   >
                     {isEditingMassively ? (
@@ -1077,10 +1077,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                     <button
                       onClick={handleQuoteImageEdit}
                       disabled={isQuotingImageEdit || imagesToEditCount === 0 || isEditingMassively}
-                      className="text-[11px] text-stone-500 hover:text-stone-800 dark:hover:text-stone-300 transition-colors flex items-center gap-1 disabled:opacity-50"
+                      className="text-[11px] text-color-disable hover:text-color-three transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
                       {isQuotingImageEdit ? <SpinnerIcon className="w-3 h-3 animate-spin" /> : <DownloadIcon className="w-3 h-3 rotate-180" />}
-                      {isQuotingImageEdit ? 'Cotizando...' : 'Cotizar costo estimado'}
+                      {isQuotingImageEdit ? 'Cotizar costo estimado' : 'Cotizar costo estimado'}
                     </button>
 
                     {imageEditQuote && (
@@ -1106,7 +1106,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 {files.map((file) => (
                   <div
                     key={file.id}
-                    className="bg-white dark:bg-stone-800 p-4 rounded-lg shadow-sm border border-stone-200 dark:border-stone-700 grid grid-cols-1 md:grid-cols-3 gap-4"
+                    className="bg-color-four dark:bg-[#1a1a1a] p-4 rounded-lg shadow-sm border border-color-three/10 dark:border-[#2a2a2a] grid grid-cols-1 md:grid-cols-3 gap-4"
                   >
                     <div className="w-full aspect-[9/16] bg-black rounded-md overflow-hidden relative shadow-inner">
                       {file.imageUrl || (file.file && file.file?.type?.startsWith("image/")) ? (
@@ -1147,7 +1147,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                           onChange={(e) =>
                             handleInputChange(file.id, "title", e.target.value)
                           }
-                          className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.title ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                          className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.title ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-color-three/20 dark:border-[#2a2a2a] focus:ring-1 focus:ring-color-one dark:focus:ring-white'}`}
                         />
                         {file.validationErrors?.title && (
                           <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
@@ -1165,7 +1165,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                             onChange={(e) =>
                               handleInputChange(file.id, "brand", e.target.value)
                             }
-                            className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.brand ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                            className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.brand ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-color-three/20 dark:border-[#2a2a2a] focus:ring-1 focus:ring-color-one dark:focus:ring-white'}`}
                           />
                           {file.validationErrors?.brand && (
                             <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
@@ -1181,7 +1181,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                             onChange={(e) =>
                               handleInputChange(file.id, "size", e.target.value)
                             }
-                            className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.size ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                            className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.size ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-color-three/20 dark:border-[#2a2a2a] focus:ring-1 focus:ring-color-one dark:focus:ring-white'}`}
                           />
                           {file.validationErrors?.size && (
                             <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
@@ -1197,7 +1197,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                             onChange={(e) =>
                               handleInputChange(file.id, "color", e.target.value)
                             }
-                            className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.color ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                            className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.color ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-color-three/20 dark:border-[#2a2a2a] focus:ring-1 focus:ring-color-one dark:focus:ring-white'}`}
                           />
                           {file.validationErrors?.color && (
                             <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
@@ -1218,7 +1218,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                             onChange={(e) =>
                               handleInputChange(file.id, "price", e.target.value)
                             }
-                            className={`w-full p-2 pl-8 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.price ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                            className={`w-full p-2 pl-8 border rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.price ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-color-three/20 dark:border-[#2a2a2a] focus:ring-1 focus:ring-color-one dark:focus:ring-white'}`}
                           />
                         </div>
                         {file.validationErrors?.price && (
@@ -1237,7 +1237,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                           onChange={(e) =>
                             handleInputChange(file.id, "cantidad", e.target.value)
                           }
-                          className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.cantidad ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                          className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.cantidad ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-color-three/20 dark:border-[#2a2a2a] focus:ring-1 focus:ring-color-one dark:focus:ring-white'}`}
                         />
                         {file.validationErrors?.cantidad && (
                           <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
@@ -1257,7 +1257,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                             )
                           }
                           rows={3}
-                          className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.description ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-stone-300 dark:border-stone-700 focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400'}`}
+                          className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.description ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-color-three/20 dark:border-[#2a2a2a] focus:ring-1 focus:ring-color-one dark:focus:ring-white'}`}
                         />
                         {file.validationErrors?.description && (
                           <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
@@ -1340,19 +1340,19 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           />
         </main>
 
-        <footer className="p-4 border-t border-stone-200 dark:border-stone-800 bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-2">
+        <footer className="p-4 border-t border-color-three/10 dark:border-[#2a2a2a] bg-color-four/50 dark:bg-[#0f0f0f]/50 backdrop-blur-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-2">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isProcessing || isEditingMassively || isSaving}
-              className="flex-grow sm:flex-grow-0 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-medium py-2 px-4 rounded-lg border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-sm disabled:opacity-50"
+              className="flex-grow sm:flex-grow-0 bg-color-four dark:bg-[#1a1a1a] text-color-three dark:text-white font-medium py-2 px-4 rounded-lg border border-color-three/20 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#2a2a2a] transition-colors text-sm disabled:opacity-50"
             >
               + Añadir más
             </button>
             <button
               onClick={() => excelInputRef.current?.click()}
               disabled={isProcessing || isEditingMassively || isSaving}
-              className="flex-grow sm:flex-grow-0 bg-white dark:bg-stone-800 text-green-700 dark:text-green-400 font-medium py-2 px-4 rounded-lg border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-grow sm:flex-grow-0 bg-color-four dark:bg-[#1a1a1a] text-green-700 dark:text-green-400 font-medium py-2 px-4 rounded-lg border border-color-three/20 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#2a2a2a] transition-colors text-sm disabled:opacity-50 flex items-center justify-center gap-2"
               title="Importar datos desde Excel o CSV"
             >
               <ExcelIcon className="w-5 h-5" />
@@ -1361,7 +1361,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             <button
               onClick={handleDownloadZip}
               disabled={files.filter(f => f.file?.type.startsWith("image/")).length === 0}
-              className="p-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50"
+              className="p-2 bg-color-three/5 dark:bg-[#1a1a1a] text-color-three/60 dark:text-[#a0a0a0] rounded-lg border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/10 dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50"
               title="Descargar todas las imágenes editadas en ZIP"
             >
               <DownloadIcon className="w-5 h-5" />
@@ -1382,7 +1382,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 <button
                   onClick={handleQuoteAutocompletion}
                   disabled={isQuotingAutocompletion || pendingAutocompleteCount === 0 || isProcessing}
-                  className="p-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50"
+                  className="p-2 bg-color-three/5 dark:bg-stone-800 text-color-three/60 dark:text-stone-400 rounded-lg border border-color-three/10 dark:border-stone-700 hover:bg-color-three/10 dark:hover:bg-stone-700 transition-colors disabled:opacity-50"
                   title="Cotizar autocompletado"
                 >
                   <DownloadIcon className="w-5 h-5 rotate-180" />
@@ -1390,7 +1390,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 <button
                   onClick={processQueue}
                   disabled={isProcessing || pendingAutocompleteCount === 0}
-                  className="w-full sm:w-auto bg-stone-800 dark:bg-stone-100 text-white dark:text-stone-900 font-medium py-2 px-4 rounded-lg hover:bg-stone-700 dark:hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm inline-flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full sm:w-auto bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-medium py-2 px-4 rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm inline-flex items-center justify-center gap-2 shadow-sm"
                 >
                   {isProcessing ? (
                     <SpinnerIcon className="w-4 h-4 animate-spin" />

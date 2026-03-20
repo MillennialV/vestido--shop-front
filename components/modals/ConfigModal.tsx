@@ -259,38 +259,38 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm animate-fade-in overflow-hidden">
-            <div className="bg-color-four dark:bg-color-three rounded-none sm:rounded-[24px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[90vh] border-0 sm:border border-stone-200 dark:border-stone-800">
+            <div className="bg-color-four dark:bg-[#1a1a1a] rounded-none sm:rounded-[24px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[90vh] border-0 sm:border border-stone-200 dark:border-[#2a2a2a]">
                 {/* Header */}
-                <div className="p-4 sm:p-6 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-color-four dark:bg-color-three z-10 sticky top-0">
-                    <h2 className="text-lg sm:text-xl font-bold text-color-three dark:text-color-four font-serif">Configuración del Sitio</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors text-color-three dark:text-color-four">
+                <div className="p-4 sm:p-6 border-b border-stone-100 dark:border-[#2a2a2a] flex justify-between items-center bg-color-four dark:bg-[#1a1a1a] z-10 sticky top-0">
+                    <h2 className="text-lg sm:text-xl font-bold text-color-three dark:text-white font-serif">Configuración del Sitio</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-stone-100 dark:hover:bg-[#2a2a2a] rounded-full transition-colors text-color-three dark:text-white">
                         <CloseIcon className="w-6 h-6" />
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-stone-100 dark:border-stone-800">
+                <div className="flex border-b border-stone-100 dark:border-[#2a2a2a]">
                     <button
                         onClick={() => setActiveTab('colors')}
-                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'colors' ? 'text-color-three dark:text-color-four border-b-2 border-stone-900 dark:border-stone-100' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'colors' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-stone-400 hover:text-stone-600'}`}
                     >
                         Colores
                     </button>
                     <button
                         onClick={() => setActiveTab('social')}
-                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'social' ? 'text-color-three dark:text-color-four border-b-2 border-stone-900 dark:border-stone-100' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'social' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-stone-400 hover:text-stone-600'}`}
                     >
                         Redes
                     </button>
                     <button
                         onClick={() => setActiveTab('metadata')}
-                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'metadata' ? 'text-color-three dark:text-color-four border-b-2 border-stone-900 dark:border-stone-100' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'metadata' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-stone-400 hover:text-stone-600'}`}
                     >
                         Metadata
                     </button>
                     <button
                         onClick={() => setActiveTab('links')}
-                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'links' ? 'text-color-three dark:text-color-four border-b-2 border-stone-900 dark:border-stone-100' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'links' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-stone-400 hover:text-stone-600'}`}
                     >
                         Enlaces
                     </button>
@@ -307,7 +307,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                     {activeTab === 'colors' ? (
                         <div className="space-y-6">
                             {/* ... labels and color selectors ... */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-x-10 sm:gap-y-6">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-x-6 sm:gap-y-6">
                                 {/* Color 1 */}
                                 <div>
                                     <LabelWithInfo 
@@ -326,15 +326,15 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                                 className="absolute inset-[-100%] w-[300%] h-[300%] cursor-pointer border-none bg-transparent"
                                             />
                                         </div>
-                                        <input
-                                            id="color_one"
-                                            name="color_one"
-                                            type="text"
-                                            value={localColors.color_one || ''}
-                                            placeholder="Color principal"
-                                            onChange={(e) => setLocalColors({ ...localColors, color_one: e.target.value })}
-                                            className="input-primary flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
-                                        />
+                                         <input
+                                             id="color_one"
+                                             name="color_one"
+                                             type="text"
+                                             value={localColors.color_one || ''}
+                                             placeholder="Color principal"
+                                             onChange={(e) => setLocalColors({ ...localColors, color_one: e.target.value })}
+                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
+                                         />
                                     </div>
                                 </div>
                                 {/* Color 2 */}
@@ -355,15 +355,15 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                                 className="absolute inset-[-100%] w-[300%] h-[300%] cursor-pointer border-none bg-transparent"
                                             />
                                         </div>
-                                        <input
-                                            id="color_two"
-                                            name="color_two"
-                                            type="text"
-                                            value={localColors.color_two || ''}
-                                            placeholder="Color secundario"
-                                            onChange={(e) => setLocalColors({ ...localColors, color_two: e.target.value })}
-                                            className="input-primary flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
-                                        />
+                                         <input
+                                             id="color_two"
+                                             name="color_two"
+                                             type="text"
+                                             value={localColors.color_two || ''}
+                                             placeholder="Color secundario"
+                                             onChange={(e) => setLocalColors({ ...localColors, color_two: e.target.value })}
+                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
+                                         />
                                     </div>
                                 </div>
                                 {/* Color 3 */}
@@ -384,15 +384,15 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                                 className="absolute inset-[-100%] w-[300%] h-[300%] cursor-pointer border-none bg-transparent"
                                             />
                                         </div>
-                                        <input
-                                            id="color_three"
-                                            name="color_three"
-                                            type="text"
-                                            value={localColors.color_three || ''}
-                                            placeholder="Color de texto"
-                                            onChange={(e) => setLocalColors({ ...localColors, color_three: e.target.value })}
-                                            className="input-primary flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
-                                        />
+                                         <input
+                                             id="color_three"
+                                             name="color_three"
+                                             type="text"
+                                             value={localColors.color_three || ''}
+                                             placeholder="Color de texto"
+                                             onChange={(e) => setLocalColors({ ...localColors, color_three: e.target.value })}
+                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
+                                         />
                                     </div>
                                 </div>
                                 {/* Color 4 */}
@@ -413,37 +413,37 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                                 className="absolute inset-[-100%] w-[300%] h-[300%] cursor-pointer border-none bg-transparent"
                                             />
                                         </div>
-                                        <input
-                                            id="color_four"
-                                            name="color_four"
-                                            type="text"
-                                            value={localColors.color_four || ''}
-                                            placeholder="Color de fondo"
-                                            onChange={(e) => setLocalColors({ ...localColors, color_four: e.target.value })}
-                                            className="input-primary flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
-                                        />
+                                         <input
+                                             id="color_four"
+                                             name="color_four"
+                                             type="text"
+                                             value={localColors.color_four || ''}
+                                             placeholder="Color de fondo"
+                                             onChange={(e) => setLocalColors({ ...localColors, color_four: e.target.value })}
+                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
+                                         />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Banner Toggle Switch */}
-                            <div className="pt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between">
+                            <div className="pt-4 border-t border-stone-100 dark:border-[#2a2a2a] flex items-center justify-between">
                                 <div className="flex flex-col">
                                     <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Configuración de Pantalla</span>
                                     <span className="text-[11px] text-stone-400">Habilitar o deshabilitar el banner principal de la tienda.</span>
                                 </div>
                                 <button 
                                     onClick={() => setLocalSocial({ ...localSocial, is_carousel_enabled: !localSocial.is_carousel_enabled })}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${localSocial.is_carousel_enabled ? 'bg-stone-900' : 'bg-stone-200'}`}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${localSocial.is_carousel_enabled ? 'bg-stone-900 dark:bg-white' : 'bg-stone-200 dark:bg-stone-800'}`}
                                 >
-                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${localSocial.is_carousel_enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-[#1a1a1a] transition-transform ${localSocial.is_carousel_enabled ? 'translate-x-6' : 'translate-x-1'}`} />
                                 </button>
                             </div>
 
                             <button
                                 onClick={handleSaveColors}
                                 disabled={isSaving}
-                                className="buttom-shop w-full font-bold py-3 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="buttom-shop w-full font-bold py-3 transition-all disabled:opacity-50 flex items-center justify-center gap-2 dark:bg-white dark:text-[#0f0f0f] dark:hover:bg-stone-200"
                             >
                                 {isSaving && <SpinnerIcon className="w-4 h-4 animate-spin" />}
                                 Guardar Colores
@@ -613,7 +613,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                         </button>
                                     </div>
                                     
-                                    <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-stone-50 dark:bg-stone-900/50 rounded-xl border border-dashed border-stone-200 dark:border-stone-800">
+                                    <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-stone-50 dark:bg-[#0f0f0f]/50 rounded-xl border border-dashed border-stone-200 dark:border-[#2a2a2a]">
                                         {(() => {
                                             const keywords = (localSEO.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
                                             if (keywords.length === 0) {
@@ -621,19 +621,18 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                             }
                                             
                                             const displayedKeywords = isExpanded ? keywords : keywords.slice(0, 4);
-                                            
-                                            return (
+                                                  return (
                                                 <>
                                                     {displayedKeywords.map((kw, i) => (
                                                         <div 
                                                             key={i} 
-                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-full text-[11px] font-medium text-stone-600 dark:text-stone-300 shadow-sm animate-fade-in"
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2a2a2a] border border-stone-200 dark:border-[#3a3a3a] rounded-full text-[11px] font-medium text-stone-600 dark:text-white shadow-sm animate-fade-in"
                                                         >
                                                             <span>{kw}</span>
                                                             <button 
                                                                 type="button"
                                                                 onClick={() => removeKeyword(kw)}
-                                                                className="w-4 h-4 flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-700 rounded-full text-stone-400 hover:text-red-500 transition-colors"
+                                                                className="w-4 h-4 flex items-center justify-center hover:bg-stone-100 dark:hover:bg-[#3a3a3a] rounded-full text-stone-400 hover:text-red-500 transition-colors"
                                                             >
                                                                 <CloseIcon className="w-2.5 h-2.5" />
                                                             </button>

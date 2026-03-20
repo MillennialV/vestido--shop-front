@@ -74,7 +74,7 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
       aria-labelledby="access-code-modal-title"
     >
       <div
-        className={`relative bg-color-four dark:bg-color-three rounded-lg shadow-2xl w-full max-w-sm transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative bg-color-four dark:bg-[#1a1a1a] rounded-lg shadow-2xl w-full max-w-sm transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -82,11 +82,11 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
         >
           <h2
             id="access-code-modal-title"
-            className="text-2xl font-semibold text-color-three dark:text-color-four mb-4 text-center font-serif"
+            className="text-2xl font-semibold text-color-three dark:text-white mb-4 text-center font-serif"
           >
             Iniciar sesión
           </h2>
-          <p className="text-stone-500 dark:text-stone-400 mb-6 text-center text-sm">
+          <p className="text-stone-500 dark:text-[#a0a0a0] mb-6 text-center text-sm">
             Inicia sesión con tu correo y contraseña para continuar.
           </p>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,7 +105,7 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className={`input-primary w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-stone-600"}`}
+                className={`input-primary w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-white focus:border-stone-500 dark:focus:border-[#2a2a2a] text-base ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-[#2a2a2a]"}`}
                 aria-invalid={!!error}
                 placeholder="tu@correo.com"
               />
@@ -125,7 +125,7 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className={`input-primary w-full p-3 pr-10 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-stone-600"}`}
+                  className={`input-primary w-full p-3 pr-10 border rounded-md focus:ring-stone-500 dark:focus:ring-white focus:border-stone-500 dark:focus:border-[#2a2a2a] text-base ${error ? "border-red-500 dark:border-red-500" : "border-stone-300 dark:border-[#2a2a2a]"}`}
                   aria-invalid={!!error}
                   aria-describedby="code-error"
                   placeholder="••••••••"
@@ -133,7 +133,7 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors focus:outline-none focus:ring-2 focus:ring-stone-500 dark:focus:ring-stone-400 rounded"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-600 dark:text-[#a0a0a0] hover:text-stone-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-stone-500 dark:focus:ring-white rounded"
                   aria-label={
                     showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
                   }
@@ -159,7 +159,7 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                className="bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 font-medium py-2 px-6 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-stone-100 dark:bg-[#0f0f0f] text-stone-600 dark:text-[#a0a0a0] font-medium py-2 px-6 rounded-lg border border-stone-200 dark:border-[#2a2a2a] hover:bg-stone-200 dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
@@ -176,18 +176,18 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
         {!isLoading && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400"
+            className="absolute top-4 right-4 text-stone-600 dark:text-[#a0a0a0] hover:text-stone-900 dark:hover:text-white z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-white"
             aria-label="Cerrar"
           >
-            <CloseIcon className="w-6 h-6 text-color-three dark:text-color-four" />
+            <CloseIcon className="w-6 h-6 text-color-three dark:text-white" />
           </button>
         )}
 
         {isLoading && (
-          <div className="absolute inset-0 bg-color-four/95 dark:bg-color-three/95 rounded-lg flex items-center justify-center z-20">
+          <div className="absolute inset-0 bg-color-four/95 dark:bg-[#1a1a1a]/95 rounded-lg flex items-center justify-center z-20">
             <div className="flex flex-col items-center gap-4">
-              <SpinnerIcon className="w-12 h-12 text-color-three dark:text-color-four animate-spin" />
-              <p className="text-color-three dark:text-color-four font-bold text-lg">
+              <SpinnerIcon className="w-12 h-12 text-color-three dark:text-white animate-spin" />
+              <p className="text-color-three dark:text-white font-bold text-lg">
                 Iniciando sesión...
               </p>
             </div>

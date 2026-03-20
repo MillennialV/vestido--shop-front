@@ -79,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
 
-    <header className={`sticky top-0 ${isFilterVisible ? 'z-[999999]' : 'z-50'} bg-color-four dark:bg-color-three border-b border-stone-100 dark:border-stone-800 shadow-sm py-[20px] transition-all duration-300`}>
+    <header className={`sticky top-0 ${isFilterVisible ? 'z-[999999]' : 'z-50'} bg-color-four dark:bg-[#0f0f0f] border-b border-color-three/10 dark:border-[#2a2a2a] shadow-sm py-[20px] transition-all duration-300`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
 
         <div className="flex items-center justify-between md:grid md:grid-cols-3 relative">
@@ -87,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="md:hidden flex items-center">
               <button
                 onClick={onToggleFilters}
-                className="w-10 h-10 flex items-center justify-center bg-stone-100 dark:bg-[#1C1C1E] text-stone-900 dark:text-white rounded-full shadow-md hover:scale-110 active:scale-95 transition-all"
+                className="w-10 h-10 flex items-center justify-center bg-color-four dark:bg-[#1a1a1a] text-color-three dark:text-white rounded-full shadow-md hover:scale-110 active:scale-95 transition-all"
                 aria-label={isFilterVisible ? "Ocultar filtros" : "Mostrar filtros"}
               >
                 {isFilterVisible ? (
@@ -159,8 +159,8 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={toggleCart}
                 className={`relative p-2 rounded-full transition-all duration-300 ${isCartOpen
-                  ? "bg-color-background text-color-three dark:bg-color-background-dark dark:text-color-four scale-[1.15] shadow-sm"
-                  : "text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110"
+                  ? "bg-color-background text-color-three dark:bg-[#0f0f0f] dark:text-color-four scale-[1.15] shadow-sm"
+                  : "text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110"
                   }`}
                 aria-label="Abrir carrito"
               >
@@ -174,7 +174,7 @@ const Header: React.FC<HeaderProps> = ({
 
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
                 aria-label={mounted ? (isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro") : "Cambiar modo"}
               >
                 {mounted ? (
@@ -187,7 +187,7 @@ const Header: React.FC<HeaderProps> = ({
               {!hideAdminControls && isAdmin && (
                 <button
                   onClick={() => setIsConfigModalOpen(true)}
-                  className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                  className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
                   aria-label="Abrir configuración"
                 >
                   <SettingsIcon className="w-6 h-6" />
@@ -197,7 +197,7 @@ const Header: React.FC<HeaderProps> = ({
               {!hideAdminControls && (
                 <button
                   onClick={onToggleAdmin}
-                  className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-color-background-dark hover:scale-110 transition-all duration-300"
+                   className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
                   aria-label={
                     isAdmin
                       ? "Salir del modo administrador"

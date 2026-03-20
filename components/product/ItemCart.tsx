@@ -42,7 +42,7 @@ const CartItemThumbnail = ({ item }: { item: any }) => {
             />
         );
     }
-    return <div className="w-full h-full bg-stone-200 flex items-center justify-center text-stone-400 text-xs text-center p-1 rounded-l-[16px]">Sin imagen</div>;
+    return <div className="w-full h-full bg-stone-200 dark:bg-[#1a1a1a] flex items-center justify-center text-stone-400 dark:text-[#a0a0a0] text-xs text-center p-1 rounded-l-[16px]">Sin imagen</div>;
 };
 
 interface ItemCartProps {
@@ -56,7 +56,7 @@ const ItemCart: React.FC<ItemCartProps> = ({ item, updateQuantity, removeFromCar
     const productLink = `/producto/${currentSlug}`;
 
     return (
-        <div className="flex w-full bg-color-background/20 dark:bg-color-background-dark/20 backdrop-blur-lg rounded-[16px] overflow-hidden mb-[10px] shadow-md relative">
+        <div className="flex w-full bg-color-background/20 dark:bg-[#1a1a1a]/40 backdrop-blur-lg rounded-[16px] border border-transparent dark:border-[#2a2a2a] overflow-hidden mb-[10px] shadow-md relative">
             <Link href={productLink} className="w-[70px] sm:w-[80px] aspect-square m-[8px] flex-shrink-0 relative">
                 <CartItemThumbnail item={item} />
             </Link>
@@ -64,22 +64,22 @@ const ItemCart: React.FC<ItemCartProps> = ({ item, updateQuantity, removeFromCar
             <div className="flex-1 p-2 sm:p-3 flex flex-col justify-between">
                 <div className="mb-1">
                     <Link href={productLink}>
-                        <h3 className="uppercase text-color-three dark:text-color-four text-[12px] sm:text-[13px] md:text-[14px] font-[500] leading-tight mb-1 sm:mb-2 tracking-wide font-allrounder-monument-test-regular line-clamp-2 hover:text-stone-500 transition-colors">
+                        <h3 className="uppercase text-color-three dark:text-white text-[12px] sm:text-[13px] md:text-[14px] font-[500] leading-tight mb-1 sm:mb-2 tracking-wide font-allrounder-monument-test-regular line-clamp-2 hover:text-stone-500 transition-colors">
                             {item.title}
                         </h3>
                     </Link>
-                    <p className="hidden sm:block text-stone-600 dark:text-stone-400 text-[10px] sm:text-xs mb-0.5 sm:mb-1 font-inter">Talla: {item.size}</p>
-                    <p className="hidden sm:block text-stone-600 dark:text-stone-400 text-[10px] sm:text-xs font-inter">Color: {item.color}</p>
+                    <p className="hidden sm:block text-stone-600 dark:text-[#a0a0a0] text-[10px] sm:text-xs mb-0.5 sm:mb-1 font-inter">Talla: {item.size}</p>
+                    <p className="hidden sm:block text-stone-600 dark:text-[#a0a0a0] text-[10px] sm:text-xs font-inter">Color: {item.color}</p>
                 </div>
 
                 <div className="flex flex-col items-end mt-1 gap-1">
-                    <span className="font-[600] text-color-three dark:text-color-four text-[14px] xs:text-[15px] sm:text-[18px] md:text-[20px] font-inter">
+                    <span className="font-[600] text-color-three dark:text-white text-[14px] xs:text-[15px] sm:text-[18px] md:text-[20px] font-inter">
                         S/. {((typeof item.price === 'string' ? parseFloat(item.price) : (item.price || 0)) * item.quantity).toFixed(0)}
                     </span>
-                    <div className="flex items-center gap-1 sm:gap-4 rounded-full border border-stone-500/50 px-1.5 sm:px-3 py-1 bg-transparent">
+                    <div className="flex items-center gap-1 sm:gap-4 rounded-full border border-stone-500/50 dark:border-[#2a2a2a] px-1.5 sm:px-3 py-1 bg-transparent">
                         <button
                             onClick={() => item.quantity <= 1 ? removeFromCart(item.id) : updateQuantity(item.id, item.quantity - 1)}
-                            className={`p-1 transition-colors ${item.quantity <= 1 ? 'text-red-500 hover:text-red-400' : 'text-color-three dark:text-color-four hover:text-stone-300'}`}
+                            className={`p-1 transition-colors ${item.quantity <= 1 ? 'text-red-500 hover:text-red-400' : 'text-color-three dark:text-white hover:text-stone-300 dark:hover:text-[#a0a0a0]'}`}
                             aria-label={item.quantity <= 1 ? "Eliminar del carrito" : "Disminuir cantidad"}
                         >
                             {item.quantity <= 1 ? (
@@ -93,10 +93,10 @@ const ItemCart: React.FC<ItemCartProps> = ({ item, updateQuantity, removeFromCar
                                 <MinusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                             )}
                         </button>
-                        <span className="text-[13px] sm:text-[15px] font-[400] text-color-three dark:text-color-four w-3 sm:w-4 text-center font-inter">{item.quantity}</span>
+                        <span className="text-[13px] sm:text-[15px] font-[400] text-color-three dark:text-white w-3 sm:w-4 text-center font-inter">{item.quantity}</span>
                         <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="p-1 text-color-three dark:text-color-four hover:text-stone-300 transition-colors"
+                            className="p-1 text-color-three dark:text-white hover:text-stone-300 dark:hover:text-[#a0a0a0] transition-colors"
                             aria-label="Aumentar cantidad"
                         >
                             <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />

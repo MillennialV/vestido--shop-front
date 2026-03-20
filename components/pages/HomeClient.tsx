@@ -242,7 +242,7 @@ export default function HomeClient({
     const getUnique = (arr: (string | undefined | null)[]) =>
       [...new Set(arr.filter(v => v != null).map(v => String(v).trim()))].filter(Boolean).sort();
 
-    const filterOccasions = sourceData.flatMap((g) => 
+    const filterOccasions = sourceData.flatMap((g) =>
       g.occasion ? g.occasion.split(/[,/]/).map(o => o.trim()) : []
     );
 
@@ -250,7 +250,7 @@ export default function HomeClient({
     filterOccasions.forEach((o) => {
       const norm = o.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       if (!normalizedOccasionsMap.has(norm)) {
-        normalizedOccasionsMap.set(norm, o); 
+        normalizedOccasionsMap.set(norm, o);
       }
     });
 
@@ -808,7 +808,7 @@ export default function HomeClient({
   );
 
   return (
-    <div className="bg-color-four  dark:bg-color-three min-h-screen font-sans text-stone-900 dark:text-stone-100 transition-colors">
+    <div className="bg-[#FFFFFF] dark:bg-[#000000] min-h-screen font-sans text-color-three dark:text-white transition-colors">
       <Header
         isAdmin={authenticated}
         onToggleAdmin={handleToggleAdmin}
@@ -823,14 +823,14 @@ export default function HomeClient({
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
       />
-      <main className="mx-[12px] md:mx-[23px] md:mx-auto md:max-w-[1290px] bg-color-background dark:bg-color-background-dark rounded-[21px] my-5 px-[26px] py-[30px]">
+      <main className="mx-[12px] md:mx-[23px] md:mx-auto md:max-w-[1290px] bg-color-four dark:bg-[#0F0F0F] rounded-[21px] my-5 px-[26px] py-[30px]">
         {SHOW_CAROUSEL && (
           <div className="mb-5 relative">
             {authenticated && (
               <div className="flex justify-end mb-2">
                 <button
                   onClick={() => setIsBannerUploadModalOpen(true)}
-                  className="flex items-center gap-2 bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-stone-800 transition-colors"
+                  className="flex items-center gap-2 bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-all"
                 >
                   <PlusIcon className="w-4 h-4" />
                   Agregar Banners
@@ -852,7 +852,6 @@ export default function HomeClient({
             />
           </div>
         )}
-
 
         {/* Modal de Eliminar Banner */}
         {deletingBanner && (
@@ -891,7 +890,7 @@ export default function HomeClient({
         />
 
         {isLoading && garments.length === 0 && (
-          <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
+          <p className="text-center text-lg text-stone-500 dark:text-[#a0a0a0] py-16">
             Cargando...
           </p>
         )}
@@ -973,7 +972,7 @@ export default function HomeClient({
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-lg text-stone-500 dark:text-stone-400 py-16">
+                <p className="text-center text-lg text-stone-500 dark:text-[#a0a0a0] py-16">
                   No se encontraron prendas que coincidan con tu búsqueda.
                 </p>
               )}
@@ -1014,7 +1013,7 @@ export default function HomeClient({
                           setEditingFaq(null);
                           setIsFaqModalOpen(true);
                         }}
-                        className="inline-flex mt-8 items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
+                        className="inline-flex mt-8 items-center gap-2 bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-semibold py-2.5 px-5 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
                       >
                         <PlusIcon className="w-4 h-4" />
                         <span>Agregar pregunta</span>
@@ -1042,8 +1041,8 @@ export default function HomeClient({
                     />
                   ) : (
                     authenticated && (
-                      <div className="text-center py-12 border-2 border-dashed border-stone-200 dark:border-stone-700 rounded-2xl">
-                        <p className="text-stone-500 dark:text-stone-400">Aún no has agregado ninguna pregunta frecuente.</p>
+                      <div className="text-center py-12 border-2 border-dashed border-stone-200 dark:border-[#2a2a2a] rounded-2xl">
+                        <p className="text-stone-500 dark:text-[#a0a0a0]">Aún no has agregado ninguna pregunta frecuente.</p>
                       </div>
                     )
                   )}

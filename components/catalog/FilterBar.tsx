@@ -50,12 +50,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <div className="flex flex-col gap-4 mb-4 xl:mb-8 w-full">
             <div className="flex items-center gap-2 w-full">
                 {/* Buscador de Texto (Título) - Siempre visible */}
-                <div className="flex items-center bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-1.5 w-full md:w-auto md:min-w-[200px] md:max-w-[300px] gap-2 border border-transparent focus-within:border-[#D4B57E]/50 transition-all shadow-sm">
-                    <SearchIcon className="w-3.5 h-3.5 text-stone-400" />
+                <div className="flex items-center bg-color-four dark:bg-[#0f0f0f] rounded-xl px-4 py-1.5 w-full md:w-auto md:min-w-[200px] md:max-w-[300px] gap-2 border border-color-three/10 dark:border-[#2a2a2a] focus-within:border-color-one transition-all shadow-sm">
+                    <SearchIcon className="w-3.5 h-3.5 text-stone-400 dark:text-[#a0a0a0]" />
                     <input
                         type="text"
                         placeholder="Buscar producto..."
-                        className="bg-transparent border-none outline-none text-[13px] text-stone-800 dark:text-stone-100 placeholder-stone-400 w-full"
+                        className="bg-transparent border-none outline-none text-[13px] text-color-three dark:text-white placeholder-color-three/40 dark:placeholder-[#a0a0a0] w-full"
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
                     />
@@ -119,18 +119,18 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
                 {/* Right side: Count and Grid */}
                 <div className="hidden md:flex items-center gap-4 ml-auto">
-                    <span className="text-xs text-stone-500 dark:text-stone-400 font-medium whitespace-nowrap">
-                        <strong className="text-stone-800 dark:text-stone-200">{totalProducts}</strong> products
+                    <span className="text-xs text-stone-500 dark:text-[#a0a0a0] font-medium whitespace-nowrap">
+                        <strong className="text-stone-800 dark:text-white">{totalProducts}</strong> products
                     </span>
 
-                    <div className="flex bg-stone-100 dark:bg-stone-800 rounded-full p-1 gap-1 shadow-sm">
+                    <div className="flex bg-color-four dark:bg-[#1a1a1a] border border-color-three/10 dark:border-[#2a2a2a] rounded-full p-1 gap-1 shadow-sm">
                         {[2, 3, 4, 5].map((cols) => (
                             <button
                                 key={cols}
                                 onClick={() => onGridColumnsChange(cols)}
                                 className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${gridColumns === cols
-                                    ? "bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-sm"
-                                    : "text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                                    ? "bg-color-three dark:bg-[#2a2a2a] text-color-four dark:text-white shadow-sm"
+                                    : "text-stone-400 hover:text-stone-600 dark:text-[#a0a0a0] dark:hover:text-white"
                                     } ${cols === 4 ? "hidden lg:flex" : cols === 5 ? "hidden xl:flex" : "flex"}`}
                                 aria-label={`Ver ${cols} columnas`}
                             >
@@ -147,17 +147,17 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
             {/* Selected Tags Row (Premium Mockup Style) */}
             {hasFilters && (
-                <div className="flex flex-wrap items-center gap-3 p-3 sm:p-4 bg-stone-50/50 dark:bg-[#1C1C1E]/50 border border-stone-100 dark:border-stone-800 rounded-3xl mt-2 animate-fade-in">
+                <div className="flex flex-wrap items-center gap-3 p-3 sm:p-4 bg-color-four/50 dark:bg-[#1a1a1a]/50 border border-color-three/10 dark:border-[#2a2a2a] rounded-3xl mt-2 animate-fade-in">
                     <div className="flex flex-wrap items-center gap-2 flex-grow">
                         {selectedFilterTags.map(tag => (
                             <div
                                 key={tag.key}
-                                className="flex items-center gap-2 bg-white dark:bg-stone-800/80 border border-stone-100 dark:border-stone-700 rounded-xl px-4 py-2 shadow-sm transition-all hover:border-[#D4B57E]/30"
+                                className="flex items-center gap-2 bg-color-four dark:bg-[#2a2a2a]/80 border border-stone-100 dark:border-[#2a2a2a] rounded-xl px-4 py-2 shadow-sm transition-all hover:border-[#D4B57E]/30"
                             >
-                                <span className="text-xs sm:text-sm font-semibold text-stone-700 dark:text-stone-300 capitalize">{tag.label}</span>
+                                <span className="text-xs sm:text-sm font-semibold text-stone-700 dark:text-white capitalize">{tag.label}</span>
                                 <button
                                     onClick={() => onFilterChange({ [tag.key]: "all" })}
-                                    className="text-stone-400 hover:text-red-500 transition-colors"
+                                    className="text-stone-400 dark:text-[#a0a0a0] hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                     aria-label={`Remove ${tag.label}`}
                                 >
                                     <CloseIcon className="w-3.5 h-3.5" />
@@ -165,11 +165,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             </div>
                         ))}
                         {searchQuery && (
-                            <div className="flex items-center gap-2 bg-white dark:bg-stone-800/80 border border-stone-100 dark:border-stone-700 rounded-xl px-4 py-2 shadow-sm">
-                                <span className="text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-300 italic">"{searchQuery}"</span>
+                            <div className="flex items-center gap-2 bg-color-four dark:bg-[#2a2a2a]/80 border border-stone-100 dark:border-[#2a2a2a] rounded-xl px-4 py-2 shadow-sm">
+                                <span className="text-xs sm:text-sm font-medium text-stone-700 dark:text-white italic">"{searchQuery}"</span>
                                 <button
                                     onClick={() => onSearchChange("")}
-                                    className="text-stone-400 hover:text-red-500 transition-colors"
+                                    className="text-stone-400 dark:text-[#a0a0a0] hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                 >
                                     <CloseIcon className="w-3.5 h-3.5" />
                                 </button>

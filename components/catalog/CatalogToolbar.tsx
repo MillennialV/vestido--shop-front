@@ -35,9 +35,9 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
     isExportingExcel = false
 }) => {
     return (
-        <section className="mt-8 mb-8 bg-white/90 dark:bg-stone-900/90 backdrop-blur-sm border border-stone-200 dark:border-stone-700 rounded-xl shadow-sm overflow-hidden">
+        <section className="mt-8 mb-8 bg-color-four/90 dark:bg-[#1a1a1a]/90 backdrop-blur-sm border border-color-three/10 dark:border-[#2a2a2a] rounded-xl shadow-sm overflow-hidden">
             <div className="p-6">
-                <h2 className="text-base font-medium font-sans text-stone-700 dark:text-stone-200 mb-6 font-h3">Administra Catálogo</h2>
+                <h2 className="text-base font-medium font-sans text-color-three dark:text-white mb-6 font-h3">Administra Catálogo</h2>
 
                 <div className="flex flex-col gap-6">
                     {/* Fila superior: Gestión y Modo de Selección */}
@@ -46,23 +46,23 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                         <div className="flex flex-wrap items-center gap-2">
                             <button
                                 onClick={onAddGarment}
-                                className="inline-flex items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-all text-sm shadow-sm"
+                                className="inline-flex items-center gap-2 bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-all text-sm shadow-sm"
                                 aria-label="Añadir nueva prenda"
                             >
                                 <PlusIcon className="w-4 h-4" />
                                 <span>Añadir Prenda</span>
                             </button>
-                            <button
+                             <button
                                 onClick={onBulkUpload}
-                                className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold py-2 px-4 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 transition-all text-sm shadow-sm"
+                                className="inline-flex items-center gap-2 bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white font-semibold py-2 px-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#1a1a1a] transition-all text-sm shadow-sm"
                             >
                                 <UploadIcon className="w-4 h-4" />
                                 <span>Carga Masiva</span>
                             </button>
-                            <button
+                             <button
                                 onClick={onExportExcel}
                                 disabled={isExportingExcel}
-                                className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold py-2 px-4 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 transition-all text-sm shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="inline-flex items-center gap-2 bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white font-semibold py-2 px-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#1a1a1a] transition-all text-sm shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 {isExportingExcel ? (
                                     <>
@@ -77,9 +77,9 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                                 )}
                             </button>
                             {!isSelectionMode && (
-                                <button
+                                 <button
                                     onClick={onDownloadAll}
-                                    className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold py-2 px-4 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 transition-all text-sm shadow-sm"
+                                    className="inline-flex items-center gap-2 bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white font-semibold py-2 px-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#1a1a1a] transition-all text-sm shadow-sm"
                                 >
                                     <DownloadIcon className="w-4 h-4" />
                                     <span>Descargar</span>
@@ -89,28 +89,28 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
 
                         {/* Grupo 2: Control de Selección (Derecha) */}
                         <div className="flex items-center gap-3">
-                            {isSelectionMode && (
-                                <div className="flex items-center bg-stone-100 dark:bg-stone-800/50 p-1 rounded-lg">
+                              {isSelectionMode && (
+                                <div className="flex items-center bg-color-three/5 dark:bg-[#0f0f0f] p-1 rounded-lg border border-color-three/10 dark:border-[#2a2a2a]">
                                     <button
                                         onClick={onSelectAll}
-                                        className="text-xs font-medium px-3 py-1.5 text-sky-600 dark:text-sky-400 hover:bg-white dark:hover:bg-stone-700 rounded-md transition-all"
+                                        className="text-xs font-medium px-3 py-1.5 text-sky-600 dark:text-sky-400 hover:bg-white dark:hover:bg-[#1a1a1a] rounded-md transition-all"
                                     >
                                         Marcar Página
                                     </button>
-                                    <div className="w-px h-4 bg-stone-300 dark:bg-stone-600"></div>
-                                    <button
+                                     <div className="w-px h-4 bg-color-three/10 dark:bg-[#2a2a2a]"></div>
+                                     <button
                                         onClick={onDeselectAll}
-                                        className="text-xs font-medium px-3 py-1.5 text-stone-500 hover:bg-white dark:hover:bg-stone-700 rounded-md transition-all"
+                                        className="text-xs font-medium px-3 py-1.5 text-color-disable dark:text-[#a0a0a0] hover:bg-color-four dark:hover:bg-[#1a1a1a] rounded-md transition-all"
                                     >
                                         Limpiar Todo
                                     </button>
                                 </div>
                             )}
                             <button
-                                onClick={onToggleSelectionMode}
+                                 onClick={onToggleSelectionMode}
                                 className={`inline-flex items-center gap-2 font-semibold py-2 px-4 rounded-lg transition-all text-sm ${isSelectionMode
                                     ? 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
-                                    : 'bg-white dark:bg-stone-800 text-sky-700 dark:text-sky-400 border border-sky-100 dark:border-stone-700 hover:bg-sky-50 shadow-sm'
+                                     : 'bg-color-four dark:bg-[#0f0f0f] text-sky-700 dark:text-white border border-color-three/10 dark:border-[#2a2a2a] hover:bg-sky-50 dark:hover:bg-[#1a1a1a] shadow-sm'
                                     }`}
                             >
                                 <CheckCircleIcon className="w-4 h-4" />
@@ -132,16 +132,16 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2">
-                                <button
+                                 <button
                                     onClick={onDownloadImages}
-                                    className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold py-2 px-4 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 transition-all text-sm shadow-sm"
+                                    className="inline-flex items-center gap-2 bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white font-semibold py-2 px-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#1a1a1a] transition-all text-sm shadow-sm"
                                 >
                                     <DownloadIcon className="w-4 h-4" />
                                     <span>Descargar Imágenes</span>
                                 </button>
                                 <button
                                     onClick={onGenerateQr}
-                                    className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold py-2 px-4 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 transition-all text-sm shadow-sm"
+                                    className="inline-flex items-center gap-2 bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white font-semibold py-2 px-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#1a1a1a] transition-all text-sm shadow-sm"
                                 >
                                     <QrCodeIcon className="w-4 h-4" />
                                     <span>Generar QR</span>
@@ -157,8 +157,8 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                         </div>
                     )}
 
-                    {/* Fila Inferior: Configuración Extra */}
-                    <div className="pt-4 border-t border-stone-100 dark:border-stone-800 flex justify-start">
+                     {/* Fila Inferior: Configuración Extra */}
+                     <div className="pt-4 border-t border-color-three/10 dark:border-[#2a2a2a] flex justify-start">
                         <button
                             onClick={onWhatsapp}
                             className="inline-flex items-center gap-2 bg-[#25D366] text-white font-semibold py-2 px-4 rounded-lg hover:bg-[#20BA5A] transition-all text-sm shadow-sm"
