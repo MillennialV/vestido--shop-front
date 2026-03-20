@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const host = request.headers.get('host') || 'localhost:3000';
+  let domain = host.split(':')[0];
 
   // Evitar bucles y permitir rutas estáticas/api
   if (
@@ -12,13 +14,13 @@ export async function proxy(request: NextRequest) {
     pathname.includes('.') || // archivos estáticos (favicon, etc)
     pathname.startsWith('/api')
   ) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    response.headers.set("x-ms-domain", host);
+    return response;
   }
 
   const THEME_API_URL = process.env.NEXT_PUBLIC_THEME_SERVICE_URL || 'http://localhost:3008';
   const DEFAULT_DOMAIN = process.env.NEXT_PUBLIC_DEFAULT_DOMAIN || 'www.vestido.shop';
-  const host = request.headers.get('host') || '';
-  let domain = host.split(':')[0];
 
   if (domain === 'localhost' || domain === '127.0.0.1' || domain.includes('.local')) {
     domain = DEFAULT_DOMAIN;
@@ -53,7 +55,9 @@ export async function proxy(request: NextRequest) {
     // return NextResponse.redirect(new URL('/onboarding', request.url));
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set("x-ms-domain", host);
+  return response;
 }
 
 export const config = {
@@ -65,7 +69,7 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    "/((?!api/|_next/|_static/|_vercel|[\\w-]+\\.\\w+).*)",
   ],
 };
 
