@@ -189,8 +189,8 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-stone-800 rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-                <div className="p-6 border-b border-stone-200 dark:border-stone-700 flex justify-between items-center">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+                <div className="p-6 border-b border-stone-200 dark:border-[#2a2a2a] flex justify-between items-center">
                     <h3 className="text-xl font-semibold text-stone-900 dark:text-stone-100">
                         Generar Catálogo QR
                     </h3>
@@ -277,7 +277,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-stone-200 dark:border-stone-700 flex justify-end gap-3 bg-stone-50 dark:bg-stone-900/50">
+                <div className="p-6 border-t border-stone-200 dark:border-[#2a2a2a] flex justify-end gap-3 bg-stone-50 dark:bg-[#0f0f0f]/50">
                     <button
                         onClick={onClose}
                         className="px-4 py-2 rounded-lg text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
@@ -294,9 +294,9 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                     <button
                         onClick={generatePDF}
                         disabled={isGenerating || garments.length === 0}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-lg text-white font-medium transition-colors ${isGenerating || garments.length === 0
+                        className={`flex items-center gap-2 px-6 py-2 rounded-lg text-white dark:text-[#0f0f0f] font-medium transition-colors ${isGenerating || garments.length === 0
                             ? "bg-stone-400 cursor-not-allowed"
-                            : "bg-stone-800 hover:bg-stone-700 dark:bg-stone-600 dark:hover:bg-stone-500"
+                            : "bg-stone-800 hover:bg-stone-700 dark:bg-white dark:hover:bg-stone-200"
                             }`}
                     >
                         {isGenerating ? (

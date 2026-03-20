@@ -102,7 +102,7 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({
         style={{ filter: "drop-shadow(0 25px 50px rgba(0,0,0,0.25))" }}
       >
         <div
-          className="relative bg-color-four dark:bg-color-three w-full pt-12 pb-12 px-6 flex flex-col items-center"
+          className="relative bg-color-four dark:bg-[#1a1a1a] w-full pt-12 pb-12 px-6 flex flex-col items-center"
           style={{
             maskImage: `radial-gradient(circle at top left, transparent 40px, black 41px),
                         radial-gradient(circle at top right, transparent 40px, black 41px),
@@ -122,11 +122,11 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({
         >
           <h2
             id="qr-code-modal-title"
-            className="text-[20px] font-inter font-semibold height-[100%] spacing-[0%] text-color-three dark:text-color-four mb-2 "
+            className="text-[20px] font-inter font-semibold height-[100%] spacing-[0%] text-color-three dark:text-white mb-2 "
           >
             Compartir con QR
           </h2>
-          <p className="text-[15px] font-inter font-normal height-[100%] spacing-[0%] text-color-three dark:text-color-four mb-8 text-center">
+          <p className="text-[15px] font-inter font-normal height-[100%] spacing-[0%] text-color-three dark:text-[#a0a0a0] mb-8 text-center">
             {garment?.title}
           </p>
 
@@ -137,7 +137,7 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({
           <button
             type="button"
             onClick={handleDownload}
-            className="w-[180px] h-[52px] bg-color-three dark:bg-color-four text-color-four dark:text-color-three font-medium rounded-[16px] hover:bg-color-three dark:hover:bg-color-four transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400 font-inter text-[15px] flex items-center justify-center gap-2"
+            className="w-[180px] h-[52px] bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-medium rounded-[16px] hover:bg-color-three dark:hover:bg-stone-200 transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-white font-inter text-[15px] flex items-center justify-center gap-2"
           >
             <DownloadIcon className="w-5 h-5" />
             Descargar

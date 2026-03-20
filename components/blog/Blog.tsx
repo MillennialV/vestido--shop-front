@@ -35,14 +35,14 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onManageCategor
                     <div className="mt-8 flex justify-center gap-4">
                         <button
                             onClick={onAddPost}
-                            className="inline-flex items-center gap-2 bg-stone-800 dark:bg-stone-700 text-white font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 active:bg-stone-900 dark:active:bg-stone-800 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
+                            className="inline-flex items-center gap-2 bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-semibold py-2.5 px-5 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 text-sm shadow-md hover:shadow-lg"
                         >
                             <PlusIcon className="w-4 h-4" />
                             <span>Crear Artículo</span>
                         </button>
                         <button
                             onClick={onManageCategories}
-                            className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-700 font-semibold py-2.5 px-5 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-700/50 active:bg-stone-100 dark:active:bg-stone-900 transition-all duration-200 text-sm shadow-sm hover:shadow-md"
+                            className="inline-flex items-center gap-2 bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white border border-color-three/10 dark:border-[#2a2a2a] font-semibold py-2.5 px-5 rounded-lg hover:bg-color-four/80 dark:hover:bg-[#1a1a1a] transition-all duration-200 text-sm shadow-sm hover:shadow-md"
                         >
                             <EditIcon className="w-4 h-4" />
                             <span>Gestionar Categorías</span>
@@ -53,7 +53,7 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onManageCategor
 
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-[71px]">
-                    <div className="w-8 h-8 border-4 border-stone-200 border-t-stone-800 rounded-full animate-spin mb-4"></div>
+                    <div className="w-8 h-8 border-4 border-color-three/10 border-t-color-three rounded-full animate-spin mb-4"></div>
                     <p className="font-p">Cargando artículos...</p>
                 </div>
             ) : posts && posts.length > 0 ? (
@@ -79,7 +79,7 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onManageCategor
                     )}
                 </>
             ) : (
-                <div className="text-center py-[71px] bg-stone-50 dark:bg-stone-900 rounded-lg">
+                <div className="text-center py-[71px] bg-color-four dark:bg-[#1a1a1a] rounded-lg border border-color-three/10 dark:border-[#2a2a2a]">
                     <p className="font-p">
                         Aún no hemos publicado ningún artículo. ¡Vuelve pronto!
                     </p>

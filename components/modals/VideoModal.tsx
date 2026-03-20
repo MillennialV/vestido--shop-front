@@ -461,7 +461,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
         aria-labelledby="modal-title"
       >
         <div
-          className={`relative bg-color-four dark:bg-color-background-dark rounded-none md:rounded-[25px] shadow-2xl w-full md:max-w-4xl h-full md:max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
+          className={`relative bg-color-four dark:bg-[#1a1a1a] rounded-none md:rounded-[25px] shadow-2xl w-full md:max-w-4xl h-full md:max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -594,7 +594,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
               {/* Internal Thumbnail Strip */}
               {mediaList.length > 1 && (
-                <div className="w-full h-auto min-h-[80px] bg-black z-20 flex items-center gap-2 overflow-x-auto px-4 py-3 custom-scrollbar border-t border-stone-200 dark:border-stone-700 flex-shrink-0">
+                <div className="w-full h-auto min-h-[80px] bg-black z-20 flex items-center gap-2 overflow-x-auto px-4 py-3 custom-scrollbar border-t border-stone-200 dark:border-[#2a2a2a] flex-shrink-0">
                   {mediaList.map((item, index) => (
                     <button
                       key={`${item.id}-${index}`}
@@ -779,7 +779,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
             </div>
           </div>
 
-          <div className="w-full flex-shrink-0 bg-stone-50/50 dark:bg-stone-900/50" ref={thumbnailStripRef}>
+          <div className="w-full flex-shrink-0 bg-color-four/50 dark:bg-[#0f0f0f]/50" ref={thumbnailStripRef}>
             <div
               id="thumbnail-strip-container"
               className={`transition-all duration-500 ease-in-out overflow-hidden w-full ${isThumbnailStripVisible ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}

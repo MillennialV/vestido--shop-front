@@ -32,7 +32,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
     <button
       ref={ref}
       onClick={() => onSelect(garment)}
-      className={`group relative w-[80px] h-[100px] flex-shrink-0 rounded-xl overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white ${isActive
+      className={`group relative w-[80px] h-[100px] flex-shrink-0 rounded-xl overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#1a1a1a] focus:ring-white ${isActive
         ? "ring-2 ring-[#D4A373] scale-100 shadow-xl z-10"
         : "opacity-90 grayscale hover:grayscale-0 hover:opacity-100"
         }`}
@@ -57,7 +57,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
           className="w-full h-full object-cover"
         />
       ) : (
-        <div className="w-full h-full bg-stone-700"></div>
+        <div className="w-full h-full bg-stone-700 dark:bg-[#1a1a1a]"></div>
       )}
       <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
       <div className="absolute inset-0 flex items-center justify-center">

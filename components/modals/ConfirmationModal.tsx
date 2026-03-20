@@ -61,7 +61,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             aria-modal="true"
         >
             <div
-                className={`relative bg-white dark:bg-[#262626] border border-stone-200 dark:border-stone-400 rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.7)] w-full max-w-md overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+                className={`relative bg-white dark:bg-[#1a1a1a] border border-stone-200 dark:border-[#2a2a2a] rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.7)] w-full max-w-md overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6">

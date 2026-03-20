@@ -43,7 +43,14 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description,
-    metadataBase: new URL(metadata?.metadata_base || "https://www.vestido.shop/"),
+    metadataBase: (() => {
+      try {
+        const base = metadata?.metadata_base;
+        return new URL(base && base.startsWith("http") ? base : "https://www.vestido.shop/");
+      } catch {
+        return new URL("https://www.vestido.shop/");
+      }
+    })(),
     keywords: metadata?.keywords || "palabras clave de mi tienda",
     authors: [{ name: storeInfo?.title || "Mi tienda" }],
     alternates: {

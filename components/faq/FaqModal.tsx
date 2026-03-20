@@ -275,7 +275,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
       aria-labelledby="faq-modal-title"
     >
       <div
-        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg shadow-2xl w-full max-w-lg transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative bg-stone-50 dark:bg-[#1a1a1a] rounded-lg shadow-2xl w-full max-w-lg transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -283,7 +283,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
         >
           <h2
             id="faq-modal-title"
-            className="text-2xl font-semibold text-stone-900 dark:text-stone-100 mb-6"
+            className="text-2xl font-semibold text-stone-900 dark:text-white mb-6"
           >
             {getTitle()}
           </h2>
@@ -303,11 +303,11 @@ const FaqModal: React.FC<FaqModalProps> = ({
                     ¿Estás seguro de que quieres eliminar esta pregunta?
                   </p>
                   {faq && (
-                    <div className="bg-stone-100 dark:bg-stone-700 p-4 rounded-md">
-                      <p className="font-semibold text-stone-900 dark:text-stone-100 mb-2">
+                    <div className="bg-stone-100 dark:bg-[#0f0f0f] p-4 rounded-md">
+                      <p className="font-semibold text-stone-900 dark:text-white mb-2">
                         {faq.pregunta}
                       </p>
-                      <p className="text-sm text-stone-600 dark:text-stone-300 line-clamp-2">
+                      <p className="text-sm text-stone-600 dark:text-[#a0a0a0] line-clamp-2">
                         {faq.respuesta}
                       </p>
                     </div>
@@ -323,7 +323,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   aria-label="Cancelar"
                   onClick={onClose}
                   disabled={isLoading}
-                  className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2.5 px-6 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer disabled:cursor-not-allowed"
+                  className="bg-color-four dark:bg-[#0f0f0f] text-color-three/80 dark:text-[#a0a0a0] font-medium py-2.5 px-6 rounded-lg border border-color-three/20 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
                 >
                   Cancelar
                 </button>
@@ -374,9 +374,9 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   }}
                   required
                   disabled={isLoading}
-                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed ${fieldErrors.pregunta
+                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-white focus:border-stone-500 dark:focus:border-[#2a2a2a] text-base bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed ${fieldErrors.pregunta
                     ? "border-red-500 dark:border-red-500"
-                    : "border-stone-300 dark:border-stone-600"
+                    : "border-stone-300 dark:border-[#2a2a2a]"
                     }`}
                   placeholder="Ej: ¿Cómo puedo saber cuál es mi talla correcta?"
                 />
@@ -410,9 +410,9 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   required
                   disabled={isLoading}
                   rows={5}
-                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-stone-400 focus:border-stone-500 dark:focus:border-stone-500 text-base bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed resize-y ${fieldErrors.respuesta
+                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-white focus:border-stone-500 dark:focus:border-[#2a2a2a] text-base bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed resize-y ${fieldErrors.respuesta
                     ? "border-red-500 dark:border-red-500"
-                    : "border-stone-300 dark:border-stone-600"
+                    : "border-stone-300 dark:border-[#2a2a2a]"
                     }`}
                   placeholder="Escribe la respuesta a la pregunta..."
                 />
@@ -428,7 +428,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   aria-label="Cancelar"
                   onClick={onClose}
                   disabled={isLoading}
-                  className="bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 font-medium py-2.5 px-6 rounded-lg border border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="bg-color-four dark:bg-[#0f0f0f] text-color-three/80 dark:text-[#a0a0a0] font-medium py-2.5 px-6 rounded-lg border border-color-three/20 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
                 >
                   Cancelar
                 </button>
@@ -436,7 +436,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   type="submit"
                   aria-label="Guardar"
                   disabled={isLoading}
-                  className="bg-stone-800 dark:bg-stone-700 text-white font-medium py-2.5 px-6 rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                   className="bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-medium py-2.5 px-6 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer shadow-md"
                 >
                   {isLoading ? (
                     <>
@@ -464,7 +464,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
           </button>
         )}
         {isLoading && (
-          <div className="absolute inset-0 bg-stone-50/95 dark:bg-stone-800/95 rounded-lg flex items-center justify-center z-20">
+          <div className="absolute inset-0 bg-stone-50/95 dark:bg-[#1a1a1a]/95 rounded-lg flex items-center justify-center z-20">
             <div className="flex flex-col items-center gap-4">
               <SpinnerIcon className="w-12 h-12 text-stone-800 dark:text-stone-200 animate-spin" />
               <p className="text-stone-700 dark:text-stone-200 font-medium text-lg">

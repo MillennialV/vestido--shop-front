@@ -81,7 +81,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
         <div className="fixed inset-0 z-[999999] flex items-end justify-center bg-black/60 backdrop-blur-sm md:hidden animate-fade-in">
             <div 
                 onTouchEnd={handleTouchEnd}
-                className="bg-white dark:bg-[#1C1C1E] w-full rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl animate-slide-up relative overflow-hidden h-auto"
+                className="bg-white dark:bg-[#1a1a1a] w-full rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl animate-slide-up relative overflow-hidden h-auto"
                 style={{ 
                     transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined, 
                     transition: dragOffset > 0 ? 'none' : dragOffset === 0 ? 'transform 0.2s ease-out' : undefined 
@@ -94,13 +94,13 @@ const FilterModal: React.FC<FilterModalProps> = ({
                     onTouchEnd={handleTouchEnd}
                     className="w-full flex justify-center py-4 flex-shrink-0 cursor-grab active:cursor-grabbing"
                 >
-                    <div className="w-12 h-1.5 bg-stone-200 dark:bg-stone-700 rounded-full" />
+                    <div className="w-12 h-1.5 bg-stone-200 dark:bg-[#2a2a2a] rounded-full" />
                 </div>
 
                 {/* Close Button Only if needed, otherwise handle is enough */}
                 <button 
                     onClick={onClose}
-                    className="absolute top-6 right-6 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 z-10"
+                    className="absolute top-6 right-6 text-stone-400 hover:text-stone-600 dark:text-[#a0a0a0] dark:hover:text-white z-10"
                 >
                     <CloseIcon className="w-6 h-6" />
                 </button>
@@ -109,7 +109,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                     <div className="flex flex-col gap-6">
                         {/* MARCA */}
                         <div className="flex flex-col gap-3">
-                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Marca</h3>
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 dark:text-[#a0a0a0] uppercase">Marca</h3>
                             <BrandFilterContent 
                                 brands={brands}
                                 selectedBrands={localFilters.brand !== "all" ? [localFilters.brand] : []}
@@ -119,7 +119,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
                         {/* TALLA */}
                         <div className="flex flex-col gap-3">
-                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Talla</h3>
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 dark:text-[#a0a0a0] uppercase">Talla</h3>
                             <SizeFilterContent 
                                 sizes={sizes}
                                 selectedSize={localFilters.size}
@@ -129,7 +129,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
                         {/* OCASIÓN */}
                         <div className="flex flex-col gap-3">
-                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">Ocasión</h3>
+                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 dark:text-[#a0a0a0] uppercase">Ocasión</h3>
                             <OccasionFilterContent 
                                 occasions={occasions}
                                 selectedOccasion={localFilters.occasion}
@@ -140,10 +140,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="flex-shrink-0 p-6 bg-white dark:bg-[#1C1C1E] border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-4 z-10">
+                <div className="flex-shrink-0 p-6 bg-white dark:bg-[#1a1a1a] border-t border-stone-100 dark:border-[#2a2a2a] flex items-center justify-between gap-4 z-10">
                     <button 
                         onClick={handleClear}
-                        className="text-stone-500 dark:text-stone-400 font-bold px-8 py-4 hover:underline"
+                        className="text-stone-500 dark:text-[#a0a0a0] font-bold px-8 py-4 hover:underline"
                     >
                         Limpiar
                     </button>

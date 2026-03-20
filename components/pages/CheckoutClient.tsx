@@ -164,7 +164,7 @@ const CheckoutClient = () => {
     summary?: string
   }) => (
     <div 
-      className={`p-6 border-b border-stone-100 dark:border-stone-800 transition-all ${isActive ? 'bg-stone-50/50 dark:bg-stone-900/50' : ''}`}
+      className={`p-6 border-b border-stone-100 dark:border-[#2a2a2a] transition-all ${isActive ? 'bg-stone-50/50 dark:bg-[#1a1a1a]/50' : ''}`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -172,7 +172,7 @@ const CheckoutClient = () => {
             {isCompleted ? <CheckIcon className="w-5 h-5 text-white" /> : number}
           </div>
           <div>
-            <h2 className={`text-lg font-bold ${isActive ? 'text-stone-900 dark:text-white' : 'text-stone-500'}`}>{title}</h2>
+            <h2 className={`text-lg font-bold ${isActive ? 'text-color-three dark:text-white' : 'text-stone-500'}`}>{title}</h2>
             {isCompleted && !isActive && summary && (
               <p className="text-sm text-stone-500 mt-0.5">{summary}</p>
             )}
@@ -181,7 +181,7 @@ const CheckoutClient = () => {
         {isCompleted && !isActive && (
           <button 
             onClick={() => handleEditStep(number)}
-            className="text-sm font-bold text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+            className="text-sm font-bold text-stone-400 hover:text-color-three dark:hover:text-white transition-colors"
           >
             Editar
           </button>
@@ -191,7 +191,7 @@ const CheckoutClient = () => {
   );
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
+    <div className="min-h-screen bg-stone-50 dark:bg-[#0f0f0f]">
       <Header
         isAdmin={false}
         onToggleAdmin={() => {}}
@@ -201,7 +201,7 @@ const CheckoutClient = () => {
 
       <main className="max-w-7xl mx-auto px-4 py-12 md:py-20">
         <div className="mb-12">
-          <h1 className="text-4xl font-extrabold text-stone-900 dark:text-white mb-2 tracking-tight">Finalizar Compra</h1>
+          <h1 className="text-4xl font-extrabold text-color-three dark:text-white mb-2 tracking-tight">Finalizar Compra</h1>
           <p className="text-stone-500 dark:text-stone-400">Completa tus datos para procesar el pedido por WhatsApp.</p>
         </div>
 
@@ -209,12 +209,12 @@ const CheckoutClient = () => {
           {/* Left Column: Flow */}
           <div className="lg:col-span-2 space-y-4">
             {cart.length === 0 ? (
-              <div className="bg-white dark:bg-stone-900 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-800 p-16 text-center">
+              <div className="bg-color-four dark:bg-[#1a1a1a] rounded-3xl shadow-sm border border-stone-100 dark:border-[#2a2a2a] p-16 text-center">
                 <div className="w-20 h-20 bg-stone-50 dark:bg-stone-800 rounded-full flex items-center justify-center mx-auto mb-6">
                   <ShoppingCartIcon className="w-10 h-10 text-stone-300" />
                 </div>
-                <h2 className="text-2xl font-bold text-stone-900 dark:text-white mb-4">Tu carrito está vacío</h2>
-                <p className="text-stone-500 dark:text-stone-400 mb-8 max-w-sm mx-auto">Agrega algunos productos antes de proceder al pago.</p>
+                <h2 className="text-2xl font-bold text-color-three dark:text-white mb-4">Tu carrito está vacío</h2>
+                <p className="text-stone-500 dark:text-[#a0a0a0] mb-8 max-w-sm mx-auto">Agrega algunos productos antes de proceder al pago.</p>
                 <Link 
                   href="/#catalogo" 
                   className="inline-flex px-10 py-4 bg-color-one text-white font-bold rounded-2xl hover:opacity-90 transition-all shadow-xl hover:scale-[1.02] active:scale-[0.98]"
@@ -225,7 +225,7 @@ const CheckoutClient = () => {
             ) : (
               <div className="space-y-6">
                 {/* Step 1: Shipping Address */}
-                <div className="bg-white dark:bg-stone-900 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-800 overflow-hidden transition-all duration-500">
+                <div className="bg-color-four dark:bg-[#1a1a1a] rounded-3xl shadow-sm border border-stone-100 dark:border-[#2a2a2a] overflow-hidden transition-all duration-500">
                   <StepHeader 
                     number={1} 
                     title="Datos de Envío" 
@@ -238,65 +238,65 @@ const CheckoutClient = () => {
                     <div className="p-8 space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="text-xs font-bold uppercase tracking-wider text-stone-400">Nombre</label>
+                          <label className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-[#a0a0a0]">Nombre</label>
                           <input
                             type="text"
                             name="firstName"
                             value={formData.firstName}
                             onChange={handleInputChange}
                             placeholder="Ej. Ana"
-                            className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-stone-800 focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.firstName ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-stone-800'}`}
+                            className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-[#0f0f0f] focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.firstName ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-[#2a2a2a]'}`}
                           />
                           {errors.firstName && <p className="text-[10px] font-bold text-red-500 uppercase ml-2">Campo obligatorio</p>}
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-bold uppercase tracking-wider text-stone-400">Apellido</label>
+                          <label className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-[#a0a0a0]">Apellido</label>
                           <input
                             type="text"
                             name="lastName"
                             value={formData.lastName}
                             onChange={handleInputChange}
                             placeholder="Ej. García"
-                            className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-stone-800 focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.lastName ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-stone-800'}`}
+                            className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-[#0f0f0f] focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.lastName ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-[#2a2a2a]'}`}
                           />
                           {errors.lastName && <p className="text-[10px] font-bold text-red-500 uppercase ml-2">Campo obligatorio</p>}
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="text-xs font-bold uppercase tracking-wider text-stone-400">Teléfono / WhatsApp</label>
+                          <label className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-[#a0a0a0]">Teléfono / WhatsApp</label>
                           <input
                             type="tel"
                             name="phone"
                             value={formData.phone}
                             onChange={handleInputChange}
                             placeholder="Ej. 987 654 321"
-                            className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-stone-800 focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.phone ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-stone-800'}`}
+                            className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-[#0f0f0f] focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.phone ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-[#2a2a2a]'}`}
                           />
                           {errors.phone && <p className="text-[10px] font-bold text-red-500 uppercase ml-2">Campo obligatorio</p>}
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-bold uppercase tracking-wider text-stone-400">Ciudad / Distrito</label>
+                          <label className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-[#a0a0a0]">Ciudad / Distrito</label>
                           <input
                             type="text"
                             name="city"
                             value={formData.city}
                             onChange={handleInputChange}
                             placeholder="Ej. Miraflores, Lima"
-                            className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-stone-800 focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.city ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-stone-800'}`}
+                            className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-[#0f0f0f] focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.city ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-[#2a2a2a]'}`}
                           />
                           {errors.city && <p className="text-[10px] font-bold text-red-500 uppercase ml-2">Campo obligatorio</p>}
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-stone-400">Dirección Completa</label>
+                        <label className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-[#a0a0a0]">Dirección Completa</label>
                         <input
                           type="text"
                           name="address"
                           value={formData.address}
                           onChange={handleInputChange}
                           placeholder="Calle, número, departamento..."
-                          className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-stone-800 focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.address ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-stone-800'}`}
+                          className={`w-full px-5 py-4 rounded-2xl border bg-stone-50 dark:bg-[#0f0f0f] focus:ring-2 focus:ring-stone-900 dark:focus:ring-white outline-none transition-all placeholder:text-stone-300 ${errors.address ? 'border-red-500 ring-1 ring-red-500' : 'border-stone-100 dark:border-[#2a2a2a]'}`}
                         />
                         {errors.address && <p className="text-[10px] font-bold text-red-500 uppercase ml-2">Campo obligatorio</p>}
                       </div>
@@ -314,7 +314,7 @@ const CheckoutClient = () => {
                 </div>
 
                 {/* Step 2: Delivery Method */}
-                <div className="bg-white dark:bg-stone-900 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-800 overflow-hidden transition-all duration-500">
+                <div className="bg-color-four dark:bg-[#1a1a1a] rounded-3xl shadow-sm border border-stone-100 dark:border-[#2a2a2a] overflow-hidden transition-all duration-500">
                   <StepHeader 
                     number={2} 
                     title="Método de Entrega" 
@@ -327,13 +327,13 @@ const CheckoutClient = () => {
                     <div className="p-8 space-y-4">
                       <div 
                         onClick={() => setFormData(p => ({ ...p, deliveryMethod: 'whatsapp_coord' }))}
-                        className={`flex items-center gap-4 p-8 border rounded-3xl cursor-pointer transition-all ${formData.deliveryMethod === 'whatsapp_coord' ? 'border-color-one ring-2 ring-color-one bg-color-one/[0.02]' : 'border-stone-100 dark:border-stone-800 hover:border-stone-300'}`}
+                        className={`flex items-center gap-4 p-8 border rounded-3xl cursor-pointer transition-all ${formData.deliveryMethod === 'whatsapp_coord' ? 'border-color-one ring-2 ring-color-one bg-color-one/[0.02]' : 'border-stone-100 dark:border-[#2a2a2a] hover:border-stone-300'}`}
                       >
                         <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${formData.deliveryMethod === 'whatsapp_coord' ? 'border-color-one' : 'border-stone-200'}`}>
                           {formData.deliveryMethod === 'whatsapp_coord' && <div className="w-4 h-4 rounded-full bg-color-one" />}
                         </div>
                         <div className="flex-1">
-                          <p className="font-bold text-stone-900 dark:text-white text-lg">Coordinar Envío por WhatsApp</p>
+                          <p className="font-bold text-color-three dark:text-white text-lg">Coordinar Envío por WhatsApp</p>
                           <p className="text-stone-500 font-medium leading-relaxed">
                             El costo del envío se ajustará dependiendo de tu zona y se acordará directamente por el chat.
                           </p>
@@ -356,7 +356,7 @@ const CheckoutClient = () => {
                 </div>
 
                 {/* Step 3: Payment/WhatsApp Check */}
-                <div className="bg-white dark:bg-stone-900 rounded-3xl shadow-sm border border-stone-100 dark:border-stone-800 overflow-hidden transition-all duration-500">
+                <div className="bg-color-four dark:bg-[#1a1a1a] rounded-3xl shadow-sm border border-stone-100 dark:border-[#2a2a2a] overflow-hidden transition-all duration-500">
                   <StepHeader 
                     number={3} 
                     title="Confirmación de Pedido" 
@@ -370,8 +370,8 @@ const CheckoutClient = () => {
                          <div className="w-16 h-16 bg-color-one rounded-full flex items-center justify-center mx-auto shadow-lg shadow-color-one/20">
                             <TruckIcon className="w-8 h-8 text-white" />
                          </div>
-                         <h3 className="text-xl font-bold text-stone-900 dark:text-white">¡Casi listo!</h3>
-                         <p className="text-stone-600 dark:text-stone-400 max-w-sm mx-auto leading-relaxed">
+                         <h3 className="text-xl font-bold text-color-three dark:text-white">¡Casi listo!</h3>
+                         <p className="text-stone-600 dark:text-[#a0a0a0] max-w-sm mx-auto leading-relaxed">
                             Al hacer clic en "Enviar pedido por WhatsApp", se generará un mensaje automático con los detalles de tu compra para coordinar la entrega y el pago.
                          </p>
                       </div>
@@ -402,7 +402,7 @@ const CheckoutClient = () => {
                             }
                           }}
                           disabled={!isAccepted}
-                          className={`px-12 py-4 font-bold rounded-2xl transition-all shadow-lg active:scale-[0.98] ${isAccepted ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:opacity-90' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}
+                          className={`px-12 py-4 font-bold rounded-2xl transition-all shadow-lg active:scale-[0.98] ${isAccepted ? 'bg-stone-900 dark:bg-color-four text-white dark:text-[#0f0f0f] hover:opacity-90' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}
                         >
                           Revisar Resumen Final
                         </button>
@@ -416,13 +416,13 @@ const CheckoutClient = () => {
 
           {/* Right Column: Order Summary */}
           <div className="space-y-6">
-            <div className="bg-white dark:bg-stone-900 rounded-[2.5rem] shadow-sm border border-stone-100 dark:border-stone-800 p-10 sticky top-28">
-              <h2 className="text-2xl font-extrabold text-stone-900 dark:text-white mb-8 tracking-tight">Resumen de Orden</h2>
+            <div className="bg-color-four dark:bg-[#1a1a1a] rounded-[2.5rem] shadow-sm border border-stone-100 dark:border-[#2a2a2a] p-10 sticky top-28">
+              <h2 className="text-2xl font-extrabold text-color-three dark:text-white mb-8 tracking-tight">Resumen de Orden</h2>
               
               <div className="space-y-6 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
                 {cart.map((item) => (
                   <div key={`${item.id}-${item.size}`} className="flex gap-5 group">
-                    <div className="relative w-20 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-stone-50 dark:bg-stone-800">
+                    <div className="relative w-20 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-stone-50 dark:bg-[#0f0f0f]">
                        <Image
                         src={item.imagen_principal || (item.imagenes?.[0]) || "/placeholder.png"}
                         alt={item.title}
@@ -432,28 +432,28 @@ const CheckoutClient = () => {
                       />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <h3 className="font-bold text-stone-900 dark:text-white truncate">{item.title}</h3>
-                      <p className="text-xs text-stone-400 font-bold uppercase mt-1">Talla: {item.size} / Cant: {item.quantity}</p>
-                      <p className="font-extrabold text-stone-900 dark:text-white mt-2">S/ {item.price || 0}</p>
+                      <h3 className="font-bold text-color-three dark:text-white truncate">{item.title}</h3>
+                      <p className="text-xs text-stone-400 dark:text-[#a0a0a0] font-bold uppercase mt-1">Talla: {item.size} / Cant: {item.quantity}</p>
+                      <p className="font-extrabold text-color-three dark:text-white mt-2">S/ {item.price || 0}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-10 space-y-4 pt-10 border-t border-stone-50 dark:border-stone-800">
-                <div className="flex justify-between text-stone-500 font-medium">
+              <div className="mt-10 space-y-4 pt-10 border-t border-stone-50 dark:border-[#2a2a2a]">
+                <div className="flex justify-between text-stone-500 dark:text-[#a0a0a0] font-medium">
                   <span>Subtotal</span>
-                  <span className="text-stone-900 dark:text-white font-bold">S/ {cartTotal.toFixed(2)}</span>
+                  <span className="text-color-three dark:text-white font-bold">S/ {cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-stone-500 font-medium">
                   <span>Envío</span>
                   <span className="text-color-one font-bold italic text-sm">Por coordinar vía WhatsApp</span>
                 </div>
-                <div className="flex justify-between text-stone-500 font-medium">
+                <div className="flex justify-between text-stone-500 dark:text-[#a0a0a0] font-medium">
                   <span>Impuestos (IGV)</span>
-                  <span className="text-stone-900 dark:text-white font-bold">S/ 0.00</span>
+                  <span className="text-color-three dark:text-white font-bold">S/ 0.00</span>
                 </div>
-                <div className="flex justify-between text-2xl font-extrabold text-stone-900 dark:text-white pt-6">
+                <div className="flex justify-between text-2xl font-extrabold text-color-three dark:text-white pt-6">
                   <span>Total</span>
                   <span className="tracking-tight">S/ {grandTotal.toFixed(2)}</span>
                 </div>
@@ -462,7 +462,7 @@ const CheckoutClient = () => {
                 onClick={handlePlaceOrder}
                 disabled={isProcessing || !stepsCompleted[3]}
                 className={`w-full mt-10 py-5 rounded-2xl font-extrabold flex items-center justify-center gap-3 transition-all shadow-xl active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
-                  ${stepsCompleted[3] ? 'bg-color-one text-white hover:opacity-90' : 'bg-stone-100 dark:bg-stone-800 text-stone-400'}
+                  ${stepsCompleted[3] ? 'bg-color-one text-white hover:opacity-90' : 'bg-stone-100 dark:bg-[#0f0f0f] text-stone-400'}
                 `}
               >
                 {isProcessing ? (
@@ -478,7 +478,7 @@ const CheckoutClient = () => {
                 )}
               </button>
 
-              <div className="mt-6 flex items-center justify-center gap-2 text-stone-400">
+              <div className="mt-6 flex items-center justify-center gap-2 text-stone-400 dark:text-[#a0a0a0]">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>

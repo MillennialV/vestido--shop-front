@@ -95,33 +95,33 @@ export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerU
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 sm:p-6 overflow-hidden">
-            <div className="bg-white dark:bg-stone-900 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-color-four dark:bg-[#1a1a1a] rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 sm:p-8 border-b border-stone-100 dark:border-stone-800 shrink-0">
+                <div className="flex justify-between items-center p-6 sm:p-8 border-b border-color-three/10 dark:border-[#2a2a2a] shrink-0">
                     <div>
-                        <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Subir Banners</h2>
-                        <p className="text-stone-500 text-sm mt-1">Selecciona imágenes, añade un meta title a cada una y confirma la carga.</p>
+                        <h2 className="text-2xl font-bold text-color-three dark:text-white">Subir Banners</h2>
+                        <p className="text-color-disable text-sm mt-1">Selecciona imágenes, añade un meta title a cada una y confirma la carga.</p>
                     </div>
                     <button
                         onClick={handleClose}
                         disabled={isUploading}
-                        className="text-stone-400 hover:text-stone-600 transition-colors p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 disabled:opacity-50"
+                        className="text-color-disable hover:text-color-three transition-colors p-2 rounded-full hover:bg-color-three/5 dark:hover:bg-[#2a2a2a] disabled:opacity-50"
                     >
                         <CloseIcon className="w-6 h-6" />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className="p-6 sm:p-8 overflow-y-auto flex-1 bg-stone-50/50 dark:bg-stone-900/50">
+                <div className="p-6 sm:p-8 overflow-y-auto flex-1 bg-color-four/50 dark:bg-[#0f0f0f]/50">
                     {items.length === 0 ? (
                         <div
-                            className="border-2 border-dashed border-stone-300 dark:border-stone-700 rounded-2xl p-12 flex flex-col items-center justify-center cursor-pointer hover:border-stone-500 dark:hover:border-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-all text-center"
+                            className="border-2 border-dashed border-color-three/20 dark:border-[#2a2a2a] rounded-2xl p-12 flex flex-col items-center justify-center cursor-pointer hover:border-color-three/40 dark:hover:border-white hover:bg-color-four/80 dark:hover:bg-[#1a1a1a]/50 transition-all text-center"
                             onClick={() => fileInputRef.current?.click()}
                         >
-                            <div className="w-16 h-16 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mb-4 text-stone-400">
+                            <div className="w-16 h-16 bg-color-three/5 dark:bg-[#1a1a1a] rounded-full flex items-center justify-center mb-4 text-color-disable">
                                 <PlusIcon className="w-8 h-8" />
                             </div>
-                            <h3 className="text-lg font-medium text-stone-900 dark:text-stone-200">Seleccionar imágenes</h3>
+                            <h3 className="text-lg font-medium text-color-three dark:text-stone-200">Seleccionar imágenes</h3>
                             <p className="text-stone-500 mt-2 text-sm">Soporta PNG, JPG, WEBP. Todas serán optimizadas a WEBP automáticamente.</p>
                         </div>
                     ) : (
@@ -131,7 +131,7 @@ export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerU
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploading}
-                                    className="text-sm font-medium text-stone-900 dark:text-stone-100 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:bg-stone-100 px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                    className="text-sm font-medium text-color-three dark:text-white bg-color-four dark:bg-[#1a1a1a] border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/5 dark:hover:bg-[#2a2a2a] px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
                                 >
                                     <PlusIcon className="w-4 h-4" /> Agregar más
                                 </button>
@@ -139,8 +139,8 @@ export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerU
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 {items.map((item, idx) => (
-                                    <div key={item.id} className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl p-4 flex gap-4 relative group shadow-sm">
-                                        <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden shrink-0 bg-stone-100 dark:bg-stone-900 border border-stone-100 dark:border-stone-700">
+                                    <div key={item.id} className="bg-color-four dark:bg-[#1a1a1a] border border-color-three/10 dark:border-[#2a2a2a] rounded-xl p-4 flex gap-4 relative group shadow-sm">
+                                        <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden shrink-0 bg-color-three/5 dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a]">
                                             <Image
                                                 src={item.previewUrl}
                                                 alt="Preview"
@@ -157,7 +157,7 @@ export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerU
                                                 type="text"
                                                 value={item.title}
                                                 onChange={(e) => handleTitleChange(item.id, e.target.value)}
-                                                className="w-full bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-sm p-3 rounded-lg border border-stone-200 dark:border-stone-700 focus:border-stone-500 focus:ring-1 focus:ring-stone-500 outline-none transition-all placeholder:text-stone-400"
+                                                className="w-full bg-color-four/50 dark:bg-[#0f0f0f] text-color-three dark:text-white text-sm p-3 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] focus:border-color-one dark:focus:border-white focus:ring-1 focus:ring-color-one dark:focus:ring-white outline-none transition-all placeholder:text-color-disable"
                                                 placeholder="Ej: Vestido de novia colección 2026..."
                                                 disabled={isUploading}
                                             />
@@ -191,18 +191,18 @@ export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerU
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 sm:p-8 border-t border-stone-100 dark:border-stone-800 bg-white dark:bg-stone-900 shrink-0 flex justify-end gap-3">
+                <div className="p-6 sm:p-8 border-t border-color-three/10 dark:border-[#2a2a2a] bg-color-four dark:bg-[#1a1a1a] shrink-0 flex justify-end gap-3">
                     <button
                         onClick={handleClose}
                         disabled={isUploading}
-                        className="px-6 py-3 font-medium text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-xl transition-colors disabled:opacity-50"
+                        className="px-6 py-3 font-medium text-color-three dark:text-[#a0a0a0] bg-color-three/5 dark:bg-[#0f0f0f] hover:bg-color-three/10 dark:hover:bg-[#2a2a2a] rounded-xl transition-colors disabled:opacity-50"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleUploadClick}
                         disabled={items.length === 0 || isUploading}
-                        className="px-8 py-3 font-medium text-white bg-stone-900 dark:bg-stone-100 dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:shadow-none flex items-center justify-center min-w-[140px]"
+                        className="px-8 py-3 font-medium text-color-four bg-color-three dark:bg-white dark:text-[#0f0f0f] hover:opacity-90 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:shadow-none flex items-center justify-center min-w-[140px]"
                     >
                         {isUploading ? (
                             <><SpinnerIcon className="w-5 h-5 mr-2 animate-spin" /> Subiendo ({items.length})...</>

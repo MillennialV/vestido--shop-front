@@ -64,7 +64,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
           return (
             <div
               key={item.id}
-              className="border-b border-stone-200 dark:border-stone-700 transition-all duration-300"
+              className="border-b border-color-three/10 dark:border-[#2a2a2a] transition-all duration-300"
             >
               <div className="flex items-center w-full group">
                 <h2 className="flex-grow">
@@ -72,7 +72,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                     type="button"
                     aria-label={isOpen ? `Cerrar: ${item.pregunta}` : `Abrir: ${item.pregunta}`}
                     onClick={() => setOpenId(isOpen ? null : item.id)}
-                    className="flex justify-between items-center w-full py-5 text-left font-semibold text-color-two dark:text-color-four text-lg"
+                    className="flex justify-between items-center w-full py-5 text-left font-semibold text-color-three dark:text-white text-lg"
                   >
                     <span>{item.pregunta}</span>
                   </button>
@@ -82,7 +82,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                     type="button"
                     aria-label={isOpen ? `Cerrar: ${item.pregunta}` : `Abrir: ${item.pregunta}`}
                     onClick={() => setOpenId(isOpen ? null : item.id)}
-                    className="p-2 cursor-pointer text-color-two dark:text-color-four"
+                    className="p-2 cursor-pointer text-color-three dark:text-white"
                   >
                     {isOpen ? (
                       <MinusIcon className="w-6 h-6" />
@@ -97,7 +97,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                 className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
               >
                 <div className="overflow-hidden">
-                  <p className="pb-5 text-stone-600 dark:text-stone-300">
+                  <p className="pb-5 text-color-disable dark:text-[#a0a0a0]">
                     {item.respuesta}
                   </p>
                 </div>
@@ -131,8 +131,8 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`border-b border-stone-200 dark:border-stone-700 transition-shadow ${snapshot.isDragging
-                          ? "shadow-lg z-50 border-stone-400"
+                        className={`border-b border-color-three/10 dark:border-[#2a2a2a] transition-shadow ${snapshot.isDragging
+                          ? "shadow-lg z-50 border-stone-400 dark:border-white"
                           : ""
                           }`}
                       >
@@ -141,7 +141,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                           {isAdmin && (
                             <div
                               {...provided.dragHandleProps}
-                              className="pr-2 cursor-grab active:cursor-grabbing text-stone-400 hover:text-stone-600"
+                              className="pr-2 cursor-grab active:cursor-grabbing text-color-disable hover:text-color-disable dark:text-[#a0a0a0] dark:hover:text-white"
                               role="button"
                               aria-label={`Reordenar pregunta: ${item.pregunta}`}
                               tabIndex={0}
@@ -155,7 +155,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                               type="button"
                               onClick={() => setOpenId(isOpen ? null : item.id)}
                               aria-label={isOpen ? "Cerrar" : "Abrir"}
-                              className="flex justify-between items-center w-full py-5 text-left font-fqa-quest"
+                              className="flex justify-between items-center w-full py-5 text-left font-fqa-quest dark:text-white"
                             >
                               <span>{item.pregunta}</span>
                             </button>
@@ -168,7 +168,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                                   type="button"
                                   onClick={() => onEdit?.(item)}
                                   aria-label="Editar"
-                                  className="p-1.5 rounded-md hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-200 cursor-pointer"
+                                  className="p-1.5 rounded-md hover:bg-stone-200 dark:hover:bg-[#2a2a2a] text-color-disable dark:text-[#a0a0a0] cursor-pointer"
                                 >
                                   <EditIcon className="w-5 h-5" />
                                 </button>
@@ -186,7 +186,7 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                               type="button"
                               onClick={() => setOpenId(isOpen ? null : item.id)}
                               aria-label={isOpen ? "Cerrar" : "Abrir"}
-                              className="p-2 cursor-pointer"
+                              className="p-2 cursor-pointer dark:text-white"
                             >
                               {isOpen ? (
                                 <MinusIcon className="w-6 h-6" />
@@ -197,11 +197,11 @@ const FaqAccordion: React.FC<FaqAccordionProps> = ({
                           </div>
                         </div>
 
-                        <div
+                         <div
                           className={`grid transition-all duration-300 ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
                         >
                           <div className="overflow-hidden">
-                            <p className="pb-5 font-fqa-ans ">
+                            <p className="pb-5 font-fqa-ans dark:text-[#a0a0a0]">
                               {item.respuesta}
                             </p>
                           </div>

@@ -77,39 +77,39 @@ const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
       aria-labelledby="whatsapp-modal-title"
     >
       <div
-        className={`relative bg-color-four dark:bg-color-three rounded-lg shadow-2xl w-full max-w-sm transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative bg-color-four dark:bg-[#1a1a1a] rounded-lg shadow-2xl w-full max-w-sm transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8">
           <div className="flex items-center justify-between mb-4">
             <h2
               id="whatsapp-modal-title"
-              className="text-2xl font-semibold font-serif text-color-three dark:text-color-four flex items-center gap-2"
+              className="text-2xl font-semibold font-serif text-color-three dark:text-white flex items-center gap-2"
             >
               <WhatsappIcon className="w-6 h-6 text-[#25D366]" />
               Registra el número
             </h2>
             <button
               onClick={onClose}
-              className="text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+              className="text-color-disable hover:text-color-three transition-colors"
               aria-label="Cerrar"
             >
               <CloseIcon className="w-6 h-6" />
             </button>
           </div>
-          <p className="text-stone-500 dark:text-stone-400 mb-6 text-sm">
+          <p className="text-color-three/60 dark:text-stone-400 mb-6 text-sm">
             Ingresa el número de WhatsApp que se usará para las consultas.
           </p>
           <div className="space-y-4">
             <div>
               <label
                 htmlFor="whatsapp-number-input"
-                className="block text-sm font-semibold text-stone-500 dark:text-stone-400 mb-2"
+                className="block text-sm font-semibold text-color-three/60 dark:text-stone-400 mb-2"
               >
                 Número de WhatsApp
               </label>
               <div className="flex items-center">
-                <span className="px-4 py-2.5 bg-stone-100 dark:bg-stone-800 border border-r-0 border-stone-300 dark:border-stone-700 rounded-l-lg text-sm font-semibold text-stone-700 dark:text-stone-200">
+                <span className="px-4 py-2.5 bg-color-three/5 dark:bg-[#0f0f0f] border border-r-0 border-color-three/20 dark:border-[#2a2a2a] rounded-l-lg text-sm font-semibold text-color-three dark:text-white">
                   +51
                 </span>
                 <input
@@ -119,17 +119,17 @@ const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
                   onChange={handleWhatsappNumberChange}
                   placeholder="956382746"
                   maxLength={9}
-                  className="input-primary flex-1 px-4 py-2.5 border border-stone-300 dark:border-stone-600 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#25D366] text-sm"
+                  className="input-primary flex-1 px-4 py-2.5 border border-color-three/20 dark:border-[#2a2a2a] rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#25D366] text-sm"
                 />
               </div>
-              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+              <p className="mt-1 text-xs text-color-disable dark:text-stone-400">
                 Ingresa solo el número local (9 dígitos)
               </p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={onClose}
-                className="flex-1 bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-semibold py-2.5 px-4 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-sm"
+                className="flex-1 bg-color-three/5 dark:bg-stone-800 text-color-three dark:text-stone-200 font-semibold py-2.5 px-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/10 dark:hover:bg-stone-700 transition-colors text-sm"
               >
                 Cancelar
               </button>

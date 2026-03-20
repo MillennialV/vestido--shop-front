@@ -66,7 +66,7 @@ const CartModal: React.FC = () => {
             ref={modalRef}
             className="fixed top-16  xl:top-24 right-[85px] sm:right-[120px] md:right-6 xl:right-6  2xl:right-12  w-[calc(100vw-100px)] sm:w-full max-w-[420px] z-50 pointer-events-auto"
         >
-            <div className="relative w-full max-h-[calc(100vh-100px)] bg-color-four/70 dark:bg-color-three/70 backdrop-blur-lg rounded-[20px] shadow-2xl flex flex-col overflow-hidden animate-fade-in-down z-10 transition-all">
+            <div className="relative w-full max-h-[calc(100vh-100px)] bg-color-four/70 dark:bg-[#1a1a1a]/70 backdrop-blur-lg rounded-[20px] shadow-2xl flex flex-col overflow-hidden animate-fade-in-down z-10 transition-all">
 
                 {/* Items List */}
                 <div className="flex-1 overflow-y-auto px-4 py-[12px] custom-scrollbar max-h-[calc(100vh-100px)]">
@@ -75,7 +75,7 @@ const CartModal: React.FC = () => {
                             <p className="text-lg">Tu cesta está vacía</p>
                             <button
                                 onClick={toggleCart}
-                                className="mt-4 text-white font-medium underline opacity-80 hover:opacity-100"
+                                className="mt-4 text-color-three dark:text-white font-medium underline opacity-80 hover:opacity-100"
                             >
                                 Continuar comprando
                             </button>
@@ -94,16 +94,16 @@ const CartModal: React.FC = () => {
 
                 {/* Footer fixed */}
                 {cart.length > 0 && (
-                    <div className="p-6 bg-color-four dark:bg-color-two rounded-b-[24px]">
+                    <div className="p-6 bg-color-four dark:bg-[#1a1a1a] rounded-b-[24px]">
                         <div className="flex justify-between items-center mb-6">
-                            <span className="text-[20px] font-[500] text-color-three dark:text-color-four font-inter">Total:</span>
-                            <span className="text-[22px] font-[600] text-color-three dark:text-color-four font-inter">
+                            <span className="text-[20px] font-[500] text-color-three dark:text-white font-inter">Total:</span>
+                            <span className="text-[22px] font-[600] text-color-three dark:text-white font-inter">
                                 S/. {cartTotal.toFixed(0)}
                             </span>
                         </div>
                         <button
                             onClick={handleCheckout}
-                            className="w-full bg-color-three dark:bg-color-four text-color-four dark:text-color-three py-4 rounded-[16px] text-[20px] font-[500] font-inter hover:bg-stone-200 transition-colors shadow-lg active:scale-[0.98]"
+                            className="w-full bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] py-4 rounded-[16px] text-[20px] font-[500] font-inter hover:bg-stone-200 dark:hover:bg-white/90 transition-colors shadow-lg active:scale-[0.98]"
                         >
                             Comprar
                         </button>

@@ -175,7 +175,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
       onClick={onClose}
     >
       <div
-        className={`relative bg-stone-50 dark:bg-stone-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative bg-stone-50 dark:bg-[#1a1a1a] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -187,50 +187,50 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
         </button>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <h2 className="text-2xl font-bold">{post ? "Editar Artículo" : "Nuevo Artículo"}</h2>
+          <h2 className="text-2xl font-bold dark:text-white">{post ? "Editar Artículo" : "Nuevo Artículo"}</h2>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Título *</label>
+              <label className="block text-sm font-medium mb-1 dark:text-[#a0a0a0]">Título *</label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleTitleChange}
-                className="w-full p-2 border rounded dark:bg-stone-700"
+                className="w-full p-2 border border-stone-300 dark:border-[#2a2a2a] rounded dark:bg-[#0f0f0f] dark:text-white outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-white"
               />
               {errors.title && <span className="text-red-500 text-xs">{errors.title}</span>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Categoría *</label>
+                <label className="block text-sm font-medium mb-1 dark:text-[#a0a0a0]">Categoría *</label>
                 <select
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded dark:bg-stone-700"
+                  className="w-full p-2 border border-stone-300 dark:border-[#2a2a2a] rounded dark:bg-[#0f0f0f] dark:text-white outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-white"
                 >
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {categories.map(c => <option key={c.id} value={c.id} className="dark:bg-[#1a1a1a]">{c.name}</option>)}
                 </select>
                 {errors.categoryId && <span className="text-red-500 text-xs">{errors.categoryId}</span>}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Lectura (min)</label>
+                <label className="block text-sm font-medium mb-1 dark:text-[#a0a0a0]">Lectura (min)</label>
                 <input
                   type="number"
                   min="1"
                   name="reading_time"
                   value={formData.reading_time}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded dark:bg-stone-700"
+                  className="w-full p-2 border border-stone-300 dark:border-[#2a2a2a] rounded dark:bg-[#0f0f0f] dark:text-white outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-white"
                 />
                 {errors.reading_time && <span className="text-red-500 text-xs">{errors.reading_time}</span>}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Imagen Destacada *</label>
+              <label className="block text-sm font-medium mb-1 dark:text-[#a0a0a0]">Imagen Destacada *</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -238,11 +238,11 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
                   value={imageFile ? imageFile.name : formData.featured_image_url}
                   disabled={!!imageFile}
                   onChange={handleChange}
-                  className="flex-grow p-2 border rounded dark:bg-stone-700"
+                  className="flex-grow p-2 border border-stone-300 dark:border-[#2a2a2a] rounded dark:bg-[#0f0f0f] dark:text-white outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-white"
                   placeholder="URL o sube un archivo"
                 />
-                <label className="p-2 bg-stone-200 dark:bg-stone-600 rounded cursor-pointer">
-                  <UploadIcon className="w-5 h-5" />
+                <label className="p-2 bg-stone-200 dark:bg-[#0f0f0f] border border-transparent dark:border-[#2a2a2a] rounded cursor-pointer hover:bg-stone-300 dark:hover:bg-[#2a2a2a] transition-colors">
+                  <UploadIcon className="w-5 h-5 dark:text-white" />
                   <input type="file" className="hidden" onChange={handleFileChange} />
                 </label>
               </div>
@@ -250,47 +250,48 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Contenido</label>
-              <div className="bg-white dark:bg-stone-700 rounded overflow-hidden">
+              <label className="block text-sm font-medium mb-1 dark:text-[#a0a0a0]">Contenido</label>
+              <div className="bg-white dark:bg-[#0f0f0f] border border-stone-200 dark:border-[#2a2a2a] rounded overflow-hidden">
                 <ReactQuill
                   theme="snow"
                   value={formData.content}
                   onChange={(val) => setFormData(f => ({ ...f, content: val }))}
                   modules={modules}
-                  className="h-64 mb-12"
+                  className="h-64 mb-12 dark:text-white"
                 />
               </div>
               {errors.content && <span className="text-red-500 text-xs">{errors.content}</span>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Descripción SEO</label>
+              <label className="block text-sm font-medium mb-1 dark:text-[#a0a0a0]">Descripción SEO</label>
               <textarea
                 name="seo_description"
                 value={formData.seo_description}
                 onChange={handleChange}
-                className="w-full p-2 border rounded dark:bg-stone-700"
+                className="w-full p-2 border border-stone-300 dark:border-[#2a2a2a] rounded dark:bg-[#0f0f0f] dark:text-white outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-white"
                 rows={2}
               />
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer group">
               <input
                 type="checkbox"
                 name="is_published"
                 checked={formData.is_published}
                 onChange={(e) => setFormData(f => ({ ...f, is_published: e.target.checked }))}
+                className="w-4 h-4 rounded border-stone-300 dark:border-[#2a2a2a] dark:bg-[#0f0f0f] checked:bg-stone-800 dark:checked:bg-white"
               />
-              <span className="text-sm">Publicar artículo</span>
+              <span className="text-sm dark:text-[#a0a0a0] group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Publicar artículo</span>
             </label>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 hover:bg-stone-200 rounded">Cancelar</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 text-stone-600 dark:text-[#a0a0a0] hover:bg-stone-100 dark:hover:bg-[#2a2a2a] rounded transition-colors">Cancelar</button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2 bg-stone-800 text-white rounded hover:bg-black disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2 bg-stone-800 dark:bg-white text-white dark:text-[#0f0f0f] rounded hover:bg-black dark:hover:bg-stone-200 disabled:opacity-50 transition-all shadow-md flex items-center gap-2 font-medium"
             >
               {isSubmitting && <SpinnerIcon className="w-4 h-4 animate-spin" />}
               {post ? "Actualizar" : "Guardar"}
