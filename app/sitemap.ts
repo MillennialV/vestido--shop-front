@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { PUBLIC_URL } from '@/lib/seo';
 import { getDomain } from '@/lib/get-domain';
+import { slugify } from '@/lib/slugify';
 
 const INVENTARIO_BASE_API = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
 
@@ -38,12 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [garments, posts] = await Promise.all([getGarments(), getPosts()]);
 
     const productEntries = garments.map((garment: any) => {
-        let slug = garment.slug;
-        if (!slug) {
-            slug = garment.title
-                ? `${garment.title.toLowerCase().replace(/["']/g, '').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-')}-${garment.id}`
-                : `prenda-${garment.id}`;
-        }
+        const slug = slugify(garment.title);
 
         return {
             url: `${PUBLIC_URL}/producto/${slug}`,

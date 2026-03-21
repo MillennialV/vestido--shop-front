@@ -1,5 +1,6 @@
 import type { Garment } from '@/types/Garment';
 import type { Post } from '@/types/post';
+import { slugify } from './slugify';
 
 const PRODUCT_SCHEMA_ID = 'product-schema';
 const ARTICLE_SCHEMA_ID = 'article-schema';
@@ -122,7 +123,7 @@ export const setGarmentPageSeo = (garment: Garment) => {
         return;
     }
 
-    const url = getCanonicalUrl(`/#/${garment.slug}`);
+    const url = getCanonicalUrl(`/producto/${slugify(garment.title)}`);
     const title = `${garment.title} | ${garment.brand} - Mi tienda`;
 
     setCoreMetaTags(title, garment.description, url);
@@ -157,7 +158,7 @@ export const setGarmentPageSeo = (garment: Garment) => {
 
 export const setBlogIndexPageSeo = () => {
     clearPageSpecificSchemas();
-    const url = getCanonicalUrl('/#/blog');
+    const url = getCanonicalUrl('/blog');
     const title = 'Blog | Inspiración y Estilo - Mi tienda';
     const description = 'Descubre las historias detrás de nuestros productos, consejos y las últimas tendencias en nuestro blog oficial.';
 
@@ -175,7 +176,7 @@ export const setPostPageSeo = (post: Post) => {
         return;
     }
 
-    const url = getCanonicalUrl(`/#/blog/${post.slug}`);
+    const url = getCanonicalUrl(`/blog/${post.slug}`);
     const title = `${post.title} | Blog - Mi tienda`;
 
     setCoreMetaTags(title, post.seo_description || post.content.substring(0, 160), url);
@@ -209,7 +210,7 @@ export const setPostPageSeo = (post: Post) => {
 
     injectBreadcrumbSchema([
         { name: 'Inicio', url: getCanonicalUrl('/') },
-        { name: 'Blog', url: getCanonicalUrl('/#/blog') },
+        { name: 'Blog', url: getCanonicalUrl('/blog') },
         { name: post.title, url: url }
     ]);
 };
