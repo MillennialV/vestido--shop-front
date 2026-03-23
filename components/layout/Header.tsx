@@ -114,19 +114,24 @@ const Header: React.FC<HeaderProps> = ({
           )}
 
           <div className="hidden md:flex items-center gap-6">
-            <button
-              onClick={() => scrollToSection('catalogo')}
-              className="dark font-primary">
+            <a
+              href="#catalogo"
+              onClick={(e) => { e.preventDefault(); scrollToSection('catalogo'); }}
+              className="dark font-primary cursor-pointer hover:opacity-80 transition-opacity">
               Catálogo
-            </button>
-            <button onClick={() => scrollToSection('blog')}
-              className="dark font-primary">
+            </a>
+            <a
+              href="#blog"
+              onClick={(e) => { e.preventDefault(); scrollToSection('blog'); }}
+              className="dark font-primary cursor-pointer hover:opacity-80 transition-opacity">
               Blog
-            </button>
-            <button onClick={() => scrollToSection('faq')}
-              className="dark font-primary">
+            </a>
+            <a
+              href="#faq"
+              onClick={(e) => { e.preventDefault(); scrollToSection('faq'); }}
+              className="dark font-primary cursor-pointer hover:opacity-80 transition-opacity">
               Preguntas
-            </button>
+            </a>
           </div>
 
           <div className="text-center">
@@ -142,12 +147,12 @@ const Header: React.FC<HeaderProps> = ({
                 {organization?.organization_display_name || organization?.organization_name}
               </span>
               {isHome ? (
-                <h1 className="sr-only">
-                  {storeInfo?.title || "Vestidos de Fiesta Importados en Lima | Womanity Boutique San Isidro"}
-                </h1>
+                <span className="sr-only">
+                  {storeInfo?.title || "Abrepe | Vestidos de Fiesta, Noche y Cóctel en Lima"}
+                </span>
               ) : (
                 <span className="sr-only">
-                  {storeInfo?.title || "Womanity Boutique"}
+                  {storeInfo?.title || "Abrepe"}
                 </span>
               )}
             </a>

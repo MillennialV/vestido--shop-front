@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useRemoteTheme } from '@/context/RemoteThemeContext';
 import { CloseIcon, SpinnerIcon, InfoIcon } from '@/components/ui/Icons';
 import { ThemeColors, StoreInfo, StoreMetadata } from '@/types/theme';
+import { DEFAULT_STORE_INFO } from '@/lib/constants';
 
 const LabelWithInfo: React.FC<{ label: string, info: string, htmlFor: string }> = ({ label, info, htmlFor }) => {
     const [showTooltip, setShowTooltip] = useState(false);
@@ -197,7 +198,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
         try {
             await updateStoreInfo({
                 ...localSocial,
-                title: storeInfo?.title || localMetadata.title || "Mi Tienda"
+                title: storeInfo?.title || localMetadata.title || DEFAULT_STORE_INFO.title
             });
             setMessage({ type: 'success', text: 'Redes actualizadas correctamente' });
             onClose();
@@ -527,7 +528,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                             const newTitle = e.target.value;
                                             setLocalMetadata({ ...localMetadata, title: newTitle });
                                             if (typeof document !== 'undefined') {
-                                                document.title = newTitle || storeInfo?.title || "Mi Tienda";
+                                                document.title = newTitle || storeInfo?.title || DEFAULT_STORE_INFO.title;
                                             }
                                         }}
                                         className="input-primary w-full border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-3 text-sm"

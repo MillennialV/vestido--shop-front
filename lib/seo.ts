@@ -1,16 +1,17 @@
 import type { Garment } from '@/types/Garment';
 import type { Post } from '@/types/post';
+import { PUBLIC_URL, DEFAULT_SEO, DEFAULT_OG_IMAGE, SCHEMA_DEFAULTS } from './constants';
 import { slugify } from './slugify';
 
 const PRODUCT_SCHEMA_ID = 'product-schema';
 const ARTICLE_SCHEMA_ID = 'article-schema';
 const BREADCRUMB_SCHEMA_ID = 'breadcrumb-schema';
 
-export const PUBLIC_URL = 'https://www.vestido.shop';
+const DEFAULT_TITLE = DEFAULT_SEO.title;
+const DEFAULT_DESCRIPTION = DEFAULT_SEO.description;
+const DEFAULT_IMAGE_URL = DEFAULT_OG_IMAGE;
 
-const DEFAULT_TITLE = 'Mi tienda | Tienda online';
-const DEFAULT_DESCRIPTION = 'Descubre nuestra colección exclusiva de productos en nuestra tienda online.';
-const DEFAULT_IMAGE_URL = 'https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg';
+export { PUBLIC_URL };
 
 const getCanonicalUrl = (path: string = ''): string => {
     return new URL(path, PUBLIC_URL).toString();
@@ -124,7 +125,7 @@ export const setGarmentPageSeo = (garment: Garment) => {
     }
 
     const url = getCanonicalUrl(`/producto/${slugify(garment.title)}`);
-    const title = `${garment.title} | ${garment.brand} - Mi tienda`;
+    const title = `${garment.title} | ${garment.brand} - ${DEFAULT_SEO.siteName}`;
 
     setCoreMetaTags(title, garment.description, url);
 
@@ -159,7 +160,7 @@ export const setGarmentPageSeo = (garment: Garment) => {
 export const setBlogIndexPageSeo = () => {
     clearPageSpecificSchemas();
     const url = getCanonicalUrl('/blog');
-    const title = 'Blog | Inspiración y Estilo - Mi tienda';
+    const title = `${DEFAULT_SEO.siteName} | Blog - Inspiración y Estilo`;
     const description = 'Descubre las historias detrás de nuestros productos, consejos y las últimas tendencias en nuestro blog oficial.';
 
     setCoreMetaTags(title, description, url);
@@ -177,7 +178,7 @@ export const setPostPageSeo = (post: Post) => {
     }
 
     const url = getCanonicalUrl(`/blog/${post.slug}`);
-    const title = `${post.title} | Blog - Mi tienda`;
+    const title = `${post.title} | Blog - ${DEFAULT_SEO.siteName}`;
 
     setCoreMetaTags(title, post.seo_description || post.content.substring(0, 160), url);
 
@@ -190,15 +191,15 @@ export const setPostPageSeo = (post: Post) => {
         'datePublished': post.updated_at || post.created_at,
         'author': {
             '@type': 'Organization',
-            'name': 'Mi tienda',
+            'name': DEFAULT_SEO.siteName,
             'url': getCanonicalUrl('/')
         },
         'publisher': {
             '@type': 'Organization',
-            'name': 'Mi tienda',
+            'name': DEFAULT_SEO.siteName,
             'logo': {
                 '@type': 'ImageObject',
-                'url': 'https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png'
+                'url': SCHEMA_DEFAULTS.logo
             }
         },
         'mainEntityOfPage': {

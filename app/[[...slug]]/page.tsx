@@ -1,13 +1,17 @@
 import HomeClient from "@/components/pages/HomeClient";
 import { Metadata } from "next";
-import { PUBLIC_URL } from "@/lib/seo";
 import { getDomain } from "@/lib/get-domain";
 import { slugify } from "@/lib/slugify";
+import { 
+    DEFAULT_SEO, 
+    DEFAULT_OG_IMAGE, 
+    STATIC_PAGE_DEFAULTS, 
+    PUBLIC_URL 
+} from "@/lib/constants";
 
 const INVENTARIO_BASE_API = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
 const BLOG_BASE_API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
 const FAQS_BASE_API = process.env.NEXT_PUBLIC_API_PREGUNTAS_BASE_URL || 'http://localhost:3005';
-const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
 
 async function fetchInitialData() {
     const revalidate = 60;
@@ -43,20 +47,7 @@ async function fetchInitialData() {
     }
 }
 
-const STATIC_PAGES: Record<string, { title: string, description: string }> = {
-    'envios': {
-        title: 'Envíos y Devoluciones | Mi tienda',
-        description: 'Información sobre plazos de entrega, costos de envío y nuestra política de cambios y devoluciones.'
-    },
-    'privacidad': {
-        title: 'Política de Privacidad | Mi tienda',
-        description: 'Conoce cómo protegemos tus datos personales y tu privacidad.'
-    },
-    'terminos': {
-        title: 'Términos y Condiciones | Mi tienda',
-        description: 'Términos Legales y condiciones de uso de nuestro sitio web y servicios.'
-    }
-};
+const STATIC_PAGES: Record<string, { title: string, description: string }> = STATIC_PAGE_DEFAULTS;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string[] }> }): Promise<Metadata> {
     const resolvedParams = await params;
@@ -76,8 +67,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     // 1. Home Page o fallback
     if (!slug || slug === "producto") {
         return {
-            title: "Mi tienda | Tienda online",
-            description: "Encuentra productos exclusivos en nuestra tienda online.",
+            title: DEFAULT_SEO.title,
+            description: DEFAULT_SEO.description,
             alternates: {
                 canonical: PUBLIC_URL,
             },
@@ -90,7 +81,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
                 card: "summary_large_image",
                 images: [DEFAULT_OG_IMAGE],
             },
-            robots: "index, follow",
+            robots: DEFAULT_SEO.robots,
         };
     }
 
@@ -111,7 +102,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
                 description: page.description,
                 images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
             },
-            robots: "index, follow",
+            robots: DEFAULT_SEO.robots,
         };
     }
 
@@ -120,11 +111,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     const product = await getProduct(slug);
 
     const productTitle = product?.title
-        ? `${product.title} | Mi tienda`
-        : `${slug.replace(/-/g, ' ')} | Tienda online`;
+        ? `${product.title} | ${DEFAULT_SEO.siteName}`
+        : `${slug.replace(/-/g, ' ')} | ${DEFAULT_SEO.title}`;
 
     const productDescription = product?.description
-        || "Encuentra productos elegantes e importados en nuestra tienda online.";
+        || DEFAULT_SEO.description;
 
     const productImage: string =
         product?.imagen_principal ||
@@ -152,8 +143,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
                     alt: product?.title || slug,
                 },
             ],
-            siteName: "Mi tienda",
-            locale: "es_PE",
+            siteName: DEFAULT_SEO.siteName,
+            locale: DEFAULT_SEO.locale,
         },
         twitter: {
             card: "summary_large_image",
@@ -161,6 +152,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
             description: productDescription,
             images: [productImage],
         },
+        robots: DEFAULT_SEO.robots,
     };
 }
 
@@ -194,16 +186,16 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
     ]);
 
     // Bug 1: solo generar schema si el producto tiene slug válido
-    const productJsonLd = (product && product.slug) ? {
+    const productJsonLd = (product && (product.slug || slug)) ? {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": product.title,
         // Bug 2: usar imagen real del producto, no la URL del video
         "image": product.imagen_principal || product.imagenes?.[0] || DEFAULT_OG_IMAGE,
-        "description": product.description || `${product.title} disponible en nuestra tienda online.`,
+        "description": product.description || `${product.title} disponible en nuestra tienda online con envío express.`,
         "brand": {
             "@type": "Brand",
-            "name": product.brand || "Mi tienda"
+            "name": product.brand || DEFAULT_SEO.siteName
         },
         // Bug 4: agregar sku si existe
         ...(product.sku ? { "sku": product.sku } : {}),
@@ -213,7 +205,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
             "priceCurrency": "PEN",
             // Bug 3: solo incluir price si tiene valor real
             ...(product.price ? { "price": String(product.price) } : {}),
-            "availability": "https://schema.org/InStock",
+            "availability": product.cantidad && product.cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             // Bug 5: agregar itemCondition requerido por Google Shopping
             "itemCondition": "https://schema.org/NewCondition"
         }
@@ -221,6 +213,15 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
 
     return (
         <>
+            {/* Visible H1 for SEO - Server Side Rendered */}
+            <div className="sr-only">
+                {product ? (
+                    <h1>{product.title}</h1>
+                ) : (
+                    <h1>Vestidos de Fiesta Importados en Lima | Womanity Boutique</h1>
+                )}
+            </div>
+
             {productJsonLd && (
                 <script
                     type="application/ld+json"

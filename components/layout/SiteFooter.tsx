@@ -16,15 +16,15 @@ const SiteFooter: React.FC = () => {
 
     return (
         <footer className="bg-color-one text-color-three dark:bg-[#1a1a1a] dark:text-white pt-[45px] pb-[25px] transition-colors duration-300">
-            <div className="container mx-auto px-[23px]">
+            <div className="container mx-auto px-[23px] dark:text-white">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-[40px] mb-[60px]">
                     {/* Logo y Descripción */}
                     <div className="flex flex-col sm:items-start sm:text-left">
-                        <h2 className="font-footer mb-[40px] uppercase">
-                            {storeInfo?.title || 'WOMANITY'}
+                        <h2 className="font-footer mb-[40px] uppercase dark:text-white">
+                            {storeInfo?.title || ''}
                         </h2>
                         <p className="font-p-footer max-w-[300px]">
-                            {storeInfo?.description || 'Tu destino premium en Lima para vestidos importados de USA. Calidad, estilo y exclusividad en San Isidro.'}
+                            {storeInfo?.description || ''}
                         </p>
                         <div className="flex gap-[16px] mt-[24px]">
                             {facebookUrl && (
@@ -47,66 +47,66 @@ const SiteFooter: React.FC = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-[40px]">
                         {/* Navegacion */}
-                        <div className="font-p-footer flex flex-col">
-                            <p className="mb-[24px] font-bold">
+                        <div className="font-p-footer flex flex-col dark:text-white">
+                            <p className="mb-[24px] font-bold dark:text-white">
                                 Navegacion
                             </p>
                             <ul className="flex flex-col gap-[16px]">
                                 <li>
-                                    <Link href="/#catalogo" className="hover:underline">Catálogo</Link>
+                                    <Link href="/#catalogo" className="hover:underline dark:text-white">Catálogo</Link>
                                 </li>
                                 <li>
-                                    <Link href="/#blog" className="hover:underline">Nuestro blog</Link>
+                                    <Link href="/#blog" className="hover:underline dark:text-white">Nuestro blog</Link>
                                 </li>
                                 <li>
-                                    <Link href="/#faq" className="hover:underline">Preguntas frecuentes</Link>
+                                    <Link href="/#faq" className="hover:underline dark:text-white">Preguntas frecuentes</Link>
                                 </li>
                             </ul>
                         </div>
 
                         {/* Soporte */}
-                        <div className="font-p-footer flex flex-col ">
-                            <p className="mb-[24px] font-bold">
+                        <div className="font-p-footer flex flex-col dark:text-white">
+                            <p className="mb-[24px] font-bold dark:text-white">
                                 Soporte
                             </p>
                             <ul className="flex flex-col gap-[16px]">
                                 {storeInfo?.terms_url && (
                                     <li>
-                                        <Link href={storeInfo.terms_url} className="hover:underline">Términos y condiciones</Link>
+                                        <Link href={storeInfo.terms_url} className="hover:underline dark:text-white">Términos y condiciones</Link>
                                     </li>
                                 )}
                                 {storeInfo?.privacy_url && (
                                     <li>
-                                        <Link href={storeInfo.privacy_url} className="hover:underline">Política de privacidad</Link>
+                                        <Link href={storeInfo.privacy_url} className="hover:underline dark:text-white">Política de privacidad</Link>
                                     </li>
                                 )}
                                 {storeInfo?.shipping_url && (
                                     <li>
-                                        <Link href={storeInfo.shipping_url} className="hover:underline">Envío y devoluciones</Link>
+                                        <Link href={storeInfo.shipping_url} className="hover:underline dark:text-white">Envío y devoluciones</Link>
                                     </li>
                                 )}
                             </ul>
                         </div>
 
                         {/* Visitanos */}
-                        <div className="font-p-footer flex flex-col ">
-                            <p className="mb-[24px] font-bold">
+                        <div className="font-p-footer flex flex-col dark:text-white">
+                            <p className="mb-[24px] font-bold dark:text-white">
                                 Visitanos
                             </p>
                             <div className="flex flex-col gap-[16px]">
                                 <div>
-                                    <p className="opacity-70 text-xs">Dirección</p>
-                                    <p>{storeInfo?.address || 'Av. Paz Soldán 255 Sótano A24, San Isidro'}</p>
+                                    <p className="opacity-70 text-xs dark:text-white/70">Dirección</p>
+                                    <p className="dark:text-white">{storeInfo?.address || ''}</p>
                                 </div>
                                 {whatsappNumber && (
                                     <div>
-                                        <p className="opacity-70 text-xs">WhatsApp</p>
-                                        <p>{whatsappNumber}</p>
+                                        <p className="opacity-70 text-xs dark:text-white/70">WhatsApp</p>
+                                        <p className="dark:text-white">{whatsappNumber}</p>
                                     </div>
                                 )}
                                 <div>
-                                    <p className="opacity-70 text-xs">Horario</p>
-                                    <p>{storeInfo?.schedule || 'Lun - Sáb: 10:00 AM - 8:00 PM'}</p>
+                                    <p className="opacity-70 text-xs dark:text-white/70">Horario</p>
+                                    <p className="dark:text-white">{storeInfo?.schedule || ''}</p>
                                 </div>
                             </div>
                         </div>

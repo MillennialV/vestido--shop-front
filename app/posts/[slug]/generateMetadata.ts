@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import { PUBLIC_URL } from "@/lib/seo";
 import { getDomain } from "@/lib/get-domain";
+import { 
+    BLOG_CONSTANTS, 
+    DEFAULT_OG_IMAGE, 
+    PUBLIC_URL,
+    DEFAULT_SEO
+} from "@/lib/constants";
 
-const DEFAULT_IMAGE_URL = "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg";
 // Usamos la URL directa del servicio de blog para evitar llamadas a la propia API (que fallan en Vercel durante el render)
 const BLOG_API_URL = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://blog-millennial.iaimpacto.com';
 
@@ -20,32 +24,31 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         if (!res.ok) {
             console.warn(`Error fetching metadata posts: ${res.status}`);
             return {
-                title: "Post no encontrado | Mi tienda",
-                description: "No se encontró el post solicitado.",
+                title: BLOG_CONSTANTS.postNotFoundTitle,
+                description: BLOG_CONSTANTS.postNotFoundDescription,
                 robots: "noindex, nofollow",
             };
         }
 
         const result = await res.json();
-        // La estructura directa del backend es { data: { posts: [...] } }
         const postsArray = result.data?.posts || [];
 
         const post = postsArray.find((p: any) => p.slug === slug);
 
         if (!post) {
             return {
-                title: "Post no encontrado | Mi tienda",
-                description: "No se encontró el post solicitado.",
+                title: BLOG_CONSTANTS.postNotFoundTitle,
+                description: BLOG_CONSTANTS.postNotFoundDescription,
                 robots: "noindex, nofollow",
             };
         }
 
-        const description = post.seo_description || post.content?.replace(/<[^>]*>?/gm, '').slice(0, 160) || "Post de blog de nuestra tienda online.";
-        const image = post.featured_image_url || DEFAULT_IMAGE_URL;
+        const description = post.seo_description || post.content?.replace(/<[^>]*>?/gm, '').slice(0, 160) || BLOG_CONSTANTS.indexDescription;
+        const image = post.featured_image_url || DEFAULT_OG_IMAGE;
         const url = `${PUBLIC_URL}/posts/${post.slug}`;
 
         return {
-            title: `${post.title} | Mi tienda`,
+            title: `${post.title} | ${DEFAULT_SEO.siteName}`,
             description,
             alternates: {
                 canonical: url,
@@ -62,16 +65,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
                         height: 630,
                     },
                 ],
-                locale: "es_PE",
+                locale: DEFAULT_SEO.locale,
             },
-            robots: "index, follow",
+            robots: DEFAULT_SEO.robots,
         };
     } catch (error) {
         console.error("Error in generateMetadata:", error);
         return {
-            title: "Mi tienda",
-            description: "Productos exclusivos en nuestra tienda online.",
-            robots: "index, follow",
+            title: DEFAULT_SEO.title,
+            description: DEFAULT_SEO.description,
+            robots: DEFAULT_SEO.robots,
         };
     }
-}
+}

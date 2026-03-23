@@ -148,6 +148,10 @@
     color: var(--color-color-three);
 }
 
+.dark .font-footer {
+    color: var(--color-bk-text) !important;
+}
+
 .font-p-footer {
     font-family: var(--font-inter), sans-serif;
     font-size: 12px;
@@ -155,6 +159,10 @@
     line-height: 120%;
     letter-spacing: -3%;
     color: var(--color-color-three);
+}
+
+.dark .font-p-footer {
+    color: var(--color-bk-text) !important;
 }
 
 /*Color principal de textos*/
@@ -165,6 +173,10 @@
     line-height: 100%;
     letter-spacing: 0%;
     color: var(--color-color-three);
+}
+
+.dark .font-primary {
+    color: var(--color-bk-text) !important;
 }
 
 .font-primary:hover {
