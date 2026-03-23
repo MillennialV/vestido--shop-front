@@ -25,6 +25,8 @@ export interface StoreInfo {
     shipping_url?: string;
     footer_license?: string;
     is_carousel_enabled?: boolean;
+    logo_url?: string;
+    brand_prompt?: string;
     created_at?: string;
     updated_at?: string;
 }

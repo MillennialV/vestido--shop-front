@@ -6,13 +6,15 @@ import { FacebookIcon, InstagramIcon, WhatsappIcon } from "@/components/ui/Icons
 import { useRemoteTheme } from "@/context/RemoteThemeContext";
 
 const SiteFooter: React.FC = () => {
-    const { storeInfo } = useRemoteTheme();
+    const { storeInfo, organization } = useRemoteTheme();
     const currentYear = new Date().getFullYear();
 
     const facebookUrl = storeInfo?.facebook_url;
     const instagramUrl = storeInfo?.instagram_url;
     const whatsappNumber = storeInfo?.whatsapp;
     const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}` : null;
+
+    const siteTitle = organization?.organization_display_name || organization?.organization_name || 'WOMANITY';
 
     return (
         <footer className="bg-color-one text-color-three dark:bg-[#1a1a1a] dark:text-white pt-[45px] pb-[25px] transition-colors duration-300">
@@ -21,7 +23,7 @@ const SiteFooter: React.FC = () => {
                     {/* Logo y Descripción */}
                     <div className="flex flex-col sm:items-start sm:text-left">
                         <h2 className="font-footer mb-[40px] uppercase dark:text-white">
-                            {storeInfo?.title || ''}
+                            {siteTitle}
                         </h2>
                         <p className="font-p-footer max-w-[300px]">
                             {storeInfo?.description || ''}
@@ -115,7 +117,7 @@ const SiteFooter: React.FC = () => {
 
                 <div className="text-center w-full pt-8 border-t border-color-three/10 dark:border-[#2a2a2a]">
                     <p className="font-p-footer uppercase text-[10px] tracking-widest">
-                        {storeInfo?.footer_license || `${currentYear} ${storeInfo?.title || 'WOMANITY BOUTIQUE'}. TODOS LOS DERECHOS RESERVADOS`}
+                        {storeInfo?.footer_license || `${currentYear} ${siteTitle}. TODOS LOS DERECHOS RESERVADOS`}
                     </p>
                 </div>
             </div>

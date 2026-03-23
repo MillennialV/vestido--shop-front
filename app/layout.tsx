@@ -55,6 +55,10 @@ export async function generateMetadata(): Promise<Metadata> {
     })(),
     keywords: metadata?.keywords || DEFAULT_SEO.keywords,
     authors: [{ name: storeInfo?.title || ABREPE_DISPLAY_NAME }],
+    icons: {
+      icon: storeInfo?.logo_url || '/favicon.ico',
+      apple: storeInfo?.logo_url || '/favicon.ico',
+    },
     alternates: {
       canonical: "/",
     },
