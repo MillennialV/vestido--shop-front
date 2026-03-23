@@ -38,23 +38,30 @@ async function getPosts() {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [garments, posts] = await Promise.all([getGarments(), getPosts()]);
 
+    console.log(`[Sitemap] Summary: Found ${garments?.length || 0} products and ${posts?.length || 0} posts.`);
+
     const productEntries = garments.map((garment: any) => {
         const slug = slugify(garment.title);
-
+        const url = `${PUBLIC_URL}/producto/${slug}`;
+        
         return {
-            url: `${PUBLIC_URL}/producto/${slug}`,
-            lastModified: garment.created_at ? new Date(garment.created_at) : new Date(),
+            url,
+            lastModified: garment.updated_at || garment.created_at ? new Date(garment.updated_at || garment.created_at) : new Date(),
             changeFrequency: 'weekly' as const,
             priority: 0.7,
         };
     });
 
-    const blogEntries = posts.map((post: any) => ({
-        url: `${PUBLIC_URL}/posts/${post.slug}`,
-        lastModified: post.updated_at ? new Date(post.updated_at) : new Date(),
-        changeFrequency: 'monthly' as const,
-        priority: 0.8,
-    }));
+    const blogEntries = posts.map((post: any) => {
+        const url = `${PUBLIC_URL}/posts/${post.slug}`;
+        
+        return {
+            url,
+            lastModified: post.updated_at || post.created_at ? new Date(post.updated_at || post.created_at) : new Date(),
+            changeFrequency: 'monthly' as const,
+            priority: 0.8,
+        };
+    });
 
     return [
         {

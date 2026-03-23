@@ -56,14 +56,19 @@ const PaginationComponent: React.FC<PaginationProps> = ({
       aria-label="Paginación de productos"
       className="flex justify-center items-center gap-2 mt-12"
     >
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="p-2 text-color-three dark:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+      <a
+        href={currentPage > 1 ? `?page=${currentPage - 1}` : undefined}
+        onClick={(e) => {
+          if (currentPage > 1) {
+            e.preventDefault();
+            onPageChange(currentPage - 1);
+          }
+        }}
+        className={`p-2 text-color-three dark:text-white transition-colors ${currentPage === 1 ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''}`}
         aria-label="Página anterior"
       >
         <ChevronLeftIcon className="w-5 h-5" />
-      </button>
+      </a>
 
       <div className="flex items-center gap-1.5">
         {visiblePages.map((page, index) =>
@@ -72,29 +77,38 @@ const PaginationComponent: React.FC<PaginationProps> = ({
               ...
             </span>
           ) : (
-            <button
+            <a
               key={page}
-              onClick={() => onPageChange(page as number)}
+              href={`?page=${page}`}
+              onClick={(e) => {
+                e.preventDefault();
+                onPageChange(page as number);
+              }}
               className={`min-w-[20px] h-8 px-3 text-sm font-medium rounded-full transition-all duration-200 flex items-center justify-center ${currentPage === page
-                ? "bg-color-one text-color-four dark:text-[#1a1a1a] shadow-sm cursor-default"
+                ? "bg-color-one text-color-four dark:text-[#1a1a1a] shadow-sm cursor-default pointer-events-none"
                 : "bg-color-four dark:bg-[#1a1a1a] text-color-three dark:text-[#a0a0a0] border border-gray-300 dark:border-[#2a2a2a] hover:bg-color-one hover:text-color-four dark:hover:text-[#1a1a1a]"
                 }`}
               aria-current={currentPage === page ? "page" : undefined}
             >
               {page}
-            </button>
+            </a>
           ),
         )}
       </div>
 
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="p-2 text-color-three dark:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+      <a
+        href={currentPage < totalPages ? `?page=${currentPage + 1}` : undefined}
+        onClick={(e) => {
+          if (currentPage < totalPages) {
+            e.preventDefault();
+            onPageChange(currentPage + 1);
+          }
+        }}
+        className={`p-2 text-color-three dark:text-white transition-colors ${currentPage === totalPages ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''}`}
         aria-label="Página siguiente"
       >
         <ChevronRightIcon className="w-5 h-5" />
-      </button>
+      </a>
     </nav>
   );
 };

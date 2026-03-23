@@ -12,6 +12,8 @@ import { RemoteThemeProvider } from "@/context/RemoteThemeContext";
 import CartModal from "@/components/modals/CartModal";
 import { Chatbot } from "@/components/ui/Chatbot";
 import { getRemoteThemeData } from "@/lib/theme-data";
+import { StoreNotFound } from "@/components/ui/StoreNotFound";
+import { DEFAULT_SEO, DEFAULT_STORE_INFO, SOCIAL_DEFAULTS, SCHEMA_DEFAULTS, ABREPE_DISPLAY_NAME, DEFAULT_OG_IMAGE } from "@/lib/constants";
 
 const allrounder = localFont({
   src: [
@@ -37,22 +39,22 @@ const allrounder = localFont({
 export async function generateMetadata(): Promise<Metadata> {
   const { storeInfo, metadata } = await getRemoteThemeData();
 
-  const title = storeInfo?.title || "Mi tienda";
-  const description = storeInfo?.description || "Descripción de mi tienda";
+  const title = storeInfo?.title || DEFAULT_SEO.title;
+  const description = storeInfo?.description || DEFAULT_SEO.description;
 
   return {
     title,
     description,
     metadataBase: (() => {
       try {
-        const base = metadata?.metadata_base;
-        return new URL(base && base.startsWith("http") ? base : "https://www.vestido.shop/");
+        const base = metadata?.metadata_base || DEFAULT_SEO.canonical;
+        return new URL(base && base.startsWith("http") ? base : DEFAULT_SEO.canonical);
       } catch {
-        return new URL("https://www.vestido.shop/");
+        return new URL(DEFAULT_SEO.canonical);
       }
     })(),
-    keywords: metadata?.keywords || "palabras clave de mi tienda",
-    authors: [{ name: storeInfo?.title || "Mi tienda" }],
+    keywords: metadata?.keywords || DEFAULT_SEO.keywords,
+    authors: [{ name: storeInfo?.title || ABREPE_DISPLAY_NAME }],
     alternates: {
       canonical: "/",
     },
@@ -60,18 +62,18 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       title,
       description,
-      siteName: storeInfo?.title || "Mi tienda",
-      images: metadata?.og_image_default ? [{ url: metadata.og_image_default }] : [{ url: "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg" }],
+      siteName: storeInfo?.title || DEFAULT_SEO.siteName,
+      images: metadata?.og_image_default ? [{ url: metadata.og_image_default }] : [{ url: DEFAULT_OG_IMAGE }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      site: metadata?.twitter_site || "@womanityboutique",
-      creator: metadata?.twitter_creator || "@womanityboutique",
-      images: metadata?.og_image_default ? [metadata.og_image_default] : ["https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg"],
+      site: metadata?.twitter_site || SOCIAL_DEFAULTS.twitter,
+      creator: metadata?.twitter_creator || SOCIAL_DEFAULTS.twitterCreator,
+      images: metadata?.og_image_default ? [metadata.og_image_default] : [DEFAULT_OG_IMAGE],
     },
-    robots: "index, follow",
+    robots: DEFAULT_SEO.robots,
     verification: {
       google: metadata?.google_site_verification,
     }
@@ -118,10 +120,21 @@ export default async function RootLayout({
     console.error("Error fetching org in layout:", e);
   }
 
-  const siteTitle = storeInfo?.title || "Mi tienda";
-  const siteDesc = storeInfo?.description || "Tienda online";
-  const siteAddress = storeInfo?.address || "Dirección de la tienda";
-  const sitePhone = storeInfo?.whatsapp || "51999888777";
+  const siteTitle = storeInfo?.title || DEFAULT_STORE_INFO.title;
+  const siteDesc = storeInfo?.description || DEFAULT_STORE_INFO.description;
+  const siteAddress = storeInfo?.address || DEFAULT_STORE_INFO.address;
+  const sitePhone = storeInfo?.whatsapp || DEFAULT_STORE_INFO.phone;
+
+  // Si no hay información de la tienda, mostrar la página de "No Encontrado"
+  if (!storeInfo) {
+    return (
+      <html lang="es" className={`${allrounder.variable}`} suppressHydrationWarning>
+        <body className={`${inter.variable} ${cormorant.variable} bg-stone-50 font-sans`}>
+          <StoreNotFound />
+        </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="es" className={`${allrounder.variable}`} suppressHydrationWarning>
@@ -172,13 +185,13 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: siteTitle,
-              url: "https://www.vestido.shop/",
+              url: DEFAULT_SEO.canonical,
               potentialAction: {
                 "@type": "SearchAction",
                 target: {
                   "@type": "EntryPoint",
                   urlTemplate:
-                    "https://www.vestido.shop/?q={search_term_string}",
+                    `${DEFAULT_SEO.canonical}/?q={search_term_string}`,
                 },
                 "query-input": "required name=search_term_string",
               },
@@ -187,7 +200,7 @@ export default async function RootLayout({
                 name: siteTitle,
                 logo: {
                   "@type": "ImageObject",
-                  url: metadata?.json_ld_logo || "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
+                  url: metadata?.json_ld_logo || SCHEMA_DEFAULTS.logo,
                 },
               },
               description: siteDesc,
@@ -206,7 +219,7 @@ export default async function RootLayout({
                   "@type": "ListItem",
                   position: 1,
                   name: "Inicio",
-                  item: "https://www.vestido.shop/",
+                  item: DEFAULT_SEO.canonical,
                 },
               ],
             }),
@@ -220,9 +233,9 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": "ClothingStore",
               "name": siteTitle,
-              "image": metadata?.og_image_default || "https://storage.googleapis.com/aistudio-hosting/VENICE-og-image.jpg",
-              "url": "https://www.vestido.shop/",
-              "logo": metadata?.json_ld_logo || "https://storage.googleapis.com/aistudio-hosting/VENICE-logo.png",
+              "image": metadata?.og_image_default || DEFAULT_OG_IMAGE,
+              "url": DEFAULT_SEO.canonical,
+              "logo": metadata?.json_ld_logo || SCHEMA_DEFAULTS.logo,
               "description": siteDesc,
               "address": {
                 "@type": "PostalAddress",

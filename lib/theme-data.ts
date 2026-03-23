@@ -71,9 +71,51 @@ export async function getRemoteThemeData(): Promise<{
             }
         }
 
+        // Fallback final si no hay información de la tienda (útil para desarrollo local)
+        if (!storeInfo) {
+            console.log(`[getRemoteThemeData] Using local fallback for domain: ${domain}`);
+            const { DEFAULT_STORE_INFO } = await import('./constants');
+            storeInfo = {
+                organization_id: 0,
+                title: DEFAULT_STORE_INFO.title,
+                description: DEFAULT_STORE_INFO.description,
+                address: DEFAULT_STORE_INFO.address,
+                phone: DEFAULT_STORE_INFO.phone,
+                whatsapp: DEFAULT_STORE_INFO.whatsapp,
+                email: DEFAULT_STORE_INFO.email,
+            } as StoreInfo;
+
+            if (!colors) {
+                colors = {
+                    organization_id: 0,
+                    color_one: '#1a1a1a',
+                    color_two: '#ffffff',
+                    color_three: '#4a4a4a',
+                    color_four: '#f5f5f4',
+                } as ThemeColors;
+            }
+        }
+
         return { colors, storeInfo, metadata };
     } catch (error) {
         console.error(`[getRemoteThemeData] Error for domain ${domain}:`, error);
-        return { colors: null, storeInfo: null, metadata: null };
+        
+        // Fallback en caso de error crítico de red
+        const { DEFAULT_STORE_INFO } = await import('./constants');
+        return { 
+            colors: {
+                organization_id: 0,
+                color_one: '#1a1a1a',
+                color_two: '#ffffff',
+                color_three: '#4a4a4a',
+                color_four: '#f5f5f4',
+            } as ThemeColors,
+            storeInfo: {
+                organization_id: 0,
+                title: DEFAULT_STORE_INFO.title,
+                description: DEFAULT_STORE_INFO.description,
+            } as StoreInfo, 
+            metadata: null 
+        };
     }
 }

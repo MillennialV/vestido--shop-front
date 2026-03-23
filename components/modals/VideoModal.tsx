@@ -383,7 +383,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   };
 
   const isHome = pathname === "/" || pathname === "";
-  const TitleTag = isHome ? "h2" : "h1";
+  const TitleTag = "h1";
 
   if (!garment) return null;
 
