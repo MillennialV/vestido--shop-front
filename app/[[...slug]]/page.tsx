@@ -233,6 +233,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
                 initialPagination={initialData.pagination}
                 initialPosts={initialData.posts}
                 initialFaqs={initialData.faqs}
+                seoTitle={product ? product.title : "Vestidos de Fiesta Importados en Lima"}
             />
         </>
     );

@@ -49,12 +49,14 @@ export default function HomeClient({
   initialGarments,
   initialPagination,
   initialPosts,
-  initialFaqs
+  initialFaqs,
+  seoTitle
 }: {
   initialGarments: Garment[];
   initialPagination?: any;
   initialPosts: Post[];
   initialFaqs: FaqItem[];
+  seoTitle?: string;
 }) {
   // const processedSlugRef = useRef<string | null>(null); // Movido a global
   const prevGarmentRef = useRef<Garment | null>(null);
@@ -1239,7 +1241,7 @@ export default function HomeClient({
         variant="danger"
         isProcessing={isDeletingProduct}
       />
-      <SiteFooter />
+      <SiteFooter seoTitle={seoTitle} />
     </div>
   );
 }

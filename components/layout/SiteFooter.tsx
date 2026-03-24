@@ -5,7 +5,11 @@ import Link from "next/link";
 import { FacebookIcon, InstagramIcon, WhatsappIcon } from "@/components/ui/Icons";
 import { useRemoteTheme } from "@/context/RemoteThemeContext";
 
-const SiteFooter: React.FC = () => {
+interface SiteFooterProps {
+    seoTitle?: string;
+}
+
+const SiteFooter: React.FC<SiteFooterProps> = ({ seoTitle }) => {
     const { storeInfo, organization } = useRemoteTheme();
     const currentYear = new Date().getFullYear();
 
@@ -14,7 +18,7 @@ const SiteFooter: React.FC = () => {
     const whatsappNumber = storeInfo?.whatsapp;
     const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}` : null;
 
-    const siteTitle = organization?.organization_display_name || organization?.organization_name || 'WOMANITY';
+    const siteTitle = organization?.organization_name || 'WOMANITY';
 
     return (
         <footer className="bg-color-one text-color-three dark:bg-[#1a1a1a] dark:text-white pt-[45px] pb-[25px] transition-colors duration-300">
@@ -22,9 +26,26 @@ const SiteFooter: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-[40px] mb-[60px]">
                     {/* Logo y Descripción */}
                     <div className="flex flex-col sm:items-start sm:text-left">
-                        <h2 className="font-footer mb-[40px] uppercase dark:text-white">
-                            {siteTitle}
-                        </h2>
+                        {seoTitle && (
+                            <h1 className="text-xl font-serif mb-4 text-color-three dark:text-white">
+                                {seoTitle}
+                            </h1>
+                        )}
+                        {storeInfo?.logo_url ? (
+                            <div className="mb-[40px]">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={storeInfo.logo_url} alt={`Logo ${siteTitle}`} className="max-h-[80px] w-auto object-contain dark:brightness-110" />
+                                {!storeInfo.logo_url && (
+                                    <h2 className="font-footer mt-2 text-sm uppercase dark:text-white opacity-80">
+                                        {siteTitle}
+                                    </h2>
+                                )}
+                            </div>
+                        ) : (
+                            <h2 className="font-footer mb-[40px] uppercase dark:text-white">
+                                {siteTitle}
+                            </h2>
+                        )}
                         <p className="font-p-footer max-w-[300px]">
                             {storeInfo?.description || ''}
                         </p>
