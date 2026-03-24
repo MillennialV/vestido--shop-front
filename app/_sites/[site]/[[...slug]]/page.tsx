@@ -75,19 +75,8 @@ export async function generateMetadata({ params }: { params: Promise<{ site: str
     // 1. Home Page o fallback
     if (!slug || slug === "producto") {
         return {
-            title: "Mi tienda | Tienda online",
-            description: "Encuentra productos exclusivos en nuestra tienda online.",
             alternates: {
                 canonical: `https://${domain}`,
-            },
-            openGraph: {
-                url: `https://${domain}`,
-                type: "website",
-                images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
-            },
-            twitter: {
-                card: "summary_large_image",
-                images: [DEFAULT_OG_IMAGE],
             },
             robots: "index, follow",
         };

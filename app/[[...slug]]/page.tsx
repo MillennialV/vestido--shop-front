@@ -67,19 +67,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     // 1. Home Page o fallback
     if (!slug || slug === "producto") {
         return {
-            title: DEFAULT_SEO.title,
-            description: DEFAULT_SEO.description,
             alternates: {
                 canonical: PUBLIC_URL,
-            },
-            openGraph: {
-                url: PUBLIC_URL,
-                type: "website",
-                images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
-            },
-            twitter: {
-                card: "summary_large_image",
-                images: [DEFAULT_OG_IMAGE],
             },
             robots: DEFAULT_SEO.robots,
         };
