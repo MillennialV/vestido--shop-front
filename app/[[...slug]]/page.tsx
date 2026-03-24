@@ -213,15 +213,6 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
 
     return (
         <>
-            {/* Visible H1 for SEO - Server Side Rendered */}
-            <div className="sr-only">
-                {product ? (
-                    <h1>{product.title}</h1>
-                ) : (
-                    <h1>Vestidos de Fiesta Importados en Lima | Womanity Boutique</h1>
-                )}
-            </div>
-
             {productJsonLd && (
                 <script
                     type="application/ld+json"
@@ -233,6 +224,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
                 initialPagination={initialData.pagination}
                 initialPosts={initialData.posts}
                 initialFaqs={initialData.faqs}
+                seoTitle={product ? product.title : "Vestidos de Fiesta Importados en Lima"}
             />
         </>
     );

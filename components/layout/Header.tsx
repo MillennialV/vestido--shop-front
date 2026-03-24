@@ -2,6 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { SettingsIcon, AdminIcon, ExitIcon, SunIcon, MoonIcon, ShoppingCartIcon, SearchIcon, MinusIcon } from "@/components/ui/Icons";
 import FilterModal from "@/components/catalog/FilterModal";
 import { ConfigModal } from "@/components/modals/ConfigModal";
@@ -113,31 +114,45 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          <div className="hidden md:flex items-center gap-6">
-            <a
-              href="#catalogo"
-              onClick={(e) => { e.preventDefault(); scrollToSection('catalogo'); }}
+          <nav aria-label="Navegación principal" className="hidden md:flex items-center gap-6">
+            <Link
+              href="/#catalogo"
+              onClick={(e) => {
+                if (isHome) {
+                  e.preventDefault();
+                  scrollToSection('catalogo');
+                }
+              }}
               className="dark font-primary cursor-pointer hover:opacity-80 transition-opacity">
               Catálogo
-            </a>
-            <a
-              href="#blog"
-              onClick={(e) => { e.preventDefault(); scrollToSection('blog'); }}
+            </Link>
+            <Link
+              href="/#blog"
+              onClick={(e) => {
+                if (isHome) {
+                  e.preventDefault();
+                  scrollToSection('blog');
+                }
+              }}
               className="dark font-primary cursor-pointer hover:opacity-80 transition-opacity">
               Blog
-            </a>
-            <a
-              href="#faq"
-              onClick={(e) => { e.preventDefault(); scrollToSection('faq'); }}
+            </Link>
+            <Link
+              href="/#faq"
+              onClick={(e) => {
+                if (isHome) {
+                  e.preventDefault();
+                  scrollToSection('faq');
+                }
+              }}
               className="dark font-primary cursor-pointer hover:opacity-80 transition-opacity">
               Preguntas
-            </a>
-          </div>
+            </Link>
+          </nav>
 
           <div className="text-center">
-            <a
+            <Link
               href="/"
-              onClick={(e) => handleLinkClick(e, "/")}
               className="font-header"
             >
               <span
@@ -155,7 +170,7 @@ const Header: React.FC<HeaderProps> = ({
                   {storeInfo?.title || "Abrepe"}
                 </span>
               )}
-            </a>
+            </Link>
           </div>
 
           <div className="flex items-center justify-end gap-4 md:gap-[41px]">
