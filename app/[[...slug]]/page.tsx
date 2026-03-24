@@ -99,9 +99,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     // Solo buscamos producto si el slug no es una página estática
     const product = await getProduct(slug);
 
+    const domain = await getDomain();
+    const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'https://auth.vestido.shop';
+    let orgName = DEFAULT_SEO.siteName;
+    try {
+        const orgRes = await fetch(`${AUTH_SERVICE_URL}/api/organizations/domain/${domain}`, { cache: 'no-store' });
+        if (orgRes.ok) {
+            const orgData = await orgRes.json();
+            const organization = orgData.data?.organization;
+            if (organization) {
+                orgName = organization.organization_display_name || organization.organization_name || orgName;
+            }
+        }
+    } catch (e) {}
+
     const productTitle = product?.title
-        ? `${product.title} | ${DEFAULT_SEO.siteName}`
-        : `${slug.replace(/-/g, ' ')} | ${DEFAULT_SEO.title}`;
+        ? `${product.title} | ${orgName}`
+        : `${slug.replace(/-/g, ' ')} | ${orgName}`;
 
     const productDescription = product?.description
         || DEFAULT_SEO.description;
@@ -132,7 +146,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
                     alt: product?.title || slug,
                 },
             ],
-            siteName: DEFAULT_SEO.siteName,
+            siteName: orgName,
             locale: DEFAULT_SEO.locale,
         },
         twitter: {
@@ -174,6 +188,20 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
         (slug && slug !== "producto") ? getProduct(slug) : Promise.resolve(null)
     ]);
 
+    const domain = await getDomain();
+    const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'https://auth.vestido.shop';
+    let orgName = DEFAULT_SEO.siteName;
+    try {
+        const orgRes = await fetch(`${AUTH_SERVICE_URL}/api/organizations/domain/${domain}`, { cache: 'no-store' });
+        if (orgRes.ok) {
+            const orgData = await orgRes.json();
+            const organization = orgData.data?.organization;
+            if (organization) {
+                orgName = organization.organization_display_name || organization.organization_name || orgName;
+            }
+        }
+    } catch (e) {}
+
     // Bug 1: solo generar schema si el producto tiene slug válido
     const productJsonLd = (product && (product.slug || slug)) ? {
         "@context": "https://schema.org",
@@ -184,7 +212,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
         "description": product.description || `${product.title} disponible en nuestra tienda online con envío express.`,
         "brand": {
             "@type": "Brand",
-            "name": product.brand || DEFAULT_SEO.siteName
+            "name": product.brand || orgName
         },
         // Bug 4: agregar sku si existe
         ...(product.sku ? { "sku": product.sku } : {}),
@@ -207,7 +235,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
                 {product ? (
                     <h1>{product.title}</h1>
                 ) : (
-                    <h1>Vestidos de Fiesta Importados en Lima | Womanity Boutique</h1>
+                    <h1>{orgName}</h1>
                 )}
             </div>
 
@@ -222,7 +250,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
                 initialPagination={initialData.pagination}
                 initialPosts={initialData.posts}
                 initialFaqs={initialData.faqs}
-                seoTitle={product ? product.title : "Vestidos de Fiesta Importados en Lima"}
+                seoTitle={product ? product.title : orgName}
             />
         </>
     );

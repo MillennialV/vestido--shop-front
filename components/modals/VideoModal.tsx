@@ -258,7 +258,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     if (!garment) return;
     const currentSlug = slugify(garment.title);
     const shareUrl = `${PUBLIC_URL}/producto/${currentSlug}`;
-    const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
+    const shareText = `Mira este producto: ${garment.title}.`;
 
     try {
       const shareItem = {
@@ -306,7 +306,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
         await navigator.share({
           files: [file],
           title: `${garment.title}`,
-          text: `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`,
+          text: `Mira este producto: ${garment.title}.`,
         });
       } else {
         throw new Error("Share with files not supported");
@@ -387,7 +387,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   if (!garment) return null;
 
-  let message = `Hola, me interesa la siguiente prenda:\n\n`;
+  let message = `Hola, me interesa el producto:\n\n`;
   message += `*Producto:* ${garment.title}\n`;
   if (garment.brand && garment.brand !== "No identificable") {
     message += `*Marca:* ${garment.brand}\n`;
@@ -632,7 +632,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
             <div className="flex w-full md:w-1/2 p-6 md:p-8 lg:pt-[48px] lg:pb-[0px] lg:pr-[33px] lg:pl-[0px] flex flex-col md:overflow-y-auto custom-scrollbar">
               <div>
-                <p className="font-info-product" >COD: {garment.id ? garment.id : "No disponible"} / Stock: {garment.cantidad ? garment.cantidad : "0"}</p>
+                <p className="font-info-product" >Stock: {garment.cantidad ? garment.cantidad : "0"}</p>
               </div>
               <div className="flex-shrink-0">
                 <TitleTag
