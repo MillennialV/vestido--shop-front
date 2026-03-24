@@ -50,40 +50,40 @@
     }
 
     /* Black Theme Overrides for Tailwind classes */
-    .dark body, 
-    .dark .bg-stone-50 { 
-        @apply bg-[#0f0f0f]!; 
+    .dark body,
+    .dark .bg-stone-50 {
+        background-color: #0f0f0f !important;
     }
-    
+
     .dark .bg-white,
-    .dark .bg-stone-100 { 
-        @apply bg-[#1a1a1a]!; 
+    .dark .bg-stone-100 {
+        background-color: #1a1a1a !important;
     }
-    
+
     .dark .border-stone-100,
-    .dark .border-stone-200 { 
-        @apply border-[#2a2a2a]!; 
+    .dark .border-stone-200 {
+        border-color: #2a2a2a !important;
     }
-    
+
     .dark .text-stone-900,
-    .dark .text-stone-800 { 
-        @apply text-white!; 
+    .dark .text-stone-800 {
+        color: #ffffff !important;
     }
-    
+
     .dark .text-stone-700,
     .dark .text-stone-600,
-    .dark .text-stone-500 { 
-        @apply text-[#a0a0a0]!; 
+    .dark .text-stone-500 {
+        color: #a0a0a0 !important;
     }
 }
 
 @theme {
     --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
-        --font-allrounder: var(--font-allrounder), sans-serif;
-    --font-allrounder-monument-test-book: var(--font-allrounder), sans-serif;
-        --font-allrounder-monument-test-medium: var(--font-allrounder), sans-serif;
-        --font-allrounder-monument-test-regular: var(--font-allrounder), sans-serif;
+    --font-allrounder: var(--font-allrounder), var(--font-cormorant), serif;
+    --font-allrounder-monument-test-book: var(--font-allrounder), var(--font-cormorant), serif;
+    --font-allrounder-monument-test-medium: var(--font-allrounder), var(--font-cormorant), serif;
+    --font-allrounder-monument-test-regular: var(--font-allrounder), var(--font-cormorant), serif;
 
     --color-color-one: var(--color-one);
     --color-color-two: var(--color-two);
@@ -111,12 +111,12 @@
    ============================================= */
 .dark {
     --color-bk-background: #0f0f0f;
-    --color-bk-surface:    #1a1a1a;
-    --color-bk-border:     #2a2a2a;
-    --color-bk-text:       #ffffff;
+    --color-bk-surface: #1a1a1a;
+    --color-bk-border: #2a2a2a;
+    --color-bk-text: #ffffff;
     --color-bk-text-muted: #a0a0a0;
     /* El color principal de marca se preserva sin cambios */
-    --color-bk-accent:     var(--color-one);
+    --color-bk-accent: var(--color-one);
 }
 
 /* Fondo y color de texto base en modo oscuro */
@@ -356,7 +356,7 @@
     font-weight: 400;
     line-height: 1.6;
     letter-spacing: -3%;
-    color: var(--color-color-three);
+    color: #ffffff;
 }
 
 .dark .font-title-card {
@@ -369,7 +369,7 @@
     font-weight: 400;
     line-height: 120%;
     letter-spacing: -3%;
-    color: var(--color-color-three);
+    color: #ffffff;
 }
 
 .dark .font-subtitle-card {
@@ -463,6 +463,7 @@
             opacity: 0;
             transform: translateY(20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -470,21 +471,28 @@
     }
 
     @keyframes fade-in-out {
-        0%, 100% {
+
+        0%,
+        100% {
             opacity: 0;
             transform: translate(-50%, 10px);
         }
-        10%, 90% {
+
+        10%,
+        90% {
             opacity: 1;
             transform: translate(-50%, 0);
         }
     }
 
     @keyframes bounce-slow {
-        0%, 100% {
+
+        0%,
+        100% {
             transform: translateY(-5%);
             animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
         }
+
         50% {
             transform: translateY(0);
             animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
@@ -647,14 +655,17 @@ input[type="color"].rounded-full::-webkit-color-swatch-wrapper {
     padding: 0;
     border-radius: 50%;
 }
+
 input[type="color"].rounded-full::-webkit-color-swatch {
     border: none;
     border-radius: 50%;
 }
+
 input[type="color"].rounded-full::-moz-color-swatch {
     border: none;
     border-radius: 50%;
 }
+
 /* Forced Circular color inputs */
 input[type="color"].rounded-full {
     -webkit-appearance: none;

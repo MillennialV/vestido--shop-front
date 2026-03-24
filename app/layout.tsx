@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
 import localFont from "next/font/local";
-import "./globals.css";
+import "@/app/globals.css";
 import React from "react";
 import Script from "next/script";
 import { AuthProvider } from "@/provider/AuthProvider";

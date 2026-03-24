@@ -163,11 +163,11 @@ const Header: React.FC<HeaderProps> = ({
               </span>
               {isHome ? (
                 <span className="sr-only">
-                  {storeInfo?.title || "Abrepe | Vestidos de Fiesta, Noche y Cóctel en Lima"}
+                  {storeInfo?.title || ""}
                 </span>
               ) : (
                 <span className="sr-only">
-                  {storeInfo?.title || "Abrepe"}
+                  {storeInfo?.title || ""}
                 </span>
               )}
             </Link>

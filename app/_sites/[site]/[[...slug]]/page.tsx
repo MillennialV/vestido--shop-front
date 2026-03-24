@@ -106,8 +106,21 @@ export async function generateMetadata({ params }: { params: Promise<{ site: str
     // 3. Productos
     const product = await getProduct(slug, domain);
 
+    const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'https://auth.vestido.shop';
+    let orgName = "Mi tienda";
+    try {
+        const orgRes = await fetch(`${AUTH_SERVICE_URL}/api/organizations/domain/${domain}`, { cache: 'no-store' });
+        if (orgRes.ok) {
+            const orgData = await orgRes.json();
+            const organization = orgData.data?.organization;
+            if (organization) {
+                orgName = organization.organization_display_name || organization.organization_name || orgName;
+            }
+        }
+    } catch (e) {}
+
     const productTitle = product?.title
-        ? `${product.title} | Mi tienda`
+        ? `${product.title} | ${orgName}`
         : `${slug.replace(/-/g, ' ')} | Tienda online`;
 
     const productDescription = product?.description
@@ -139,7 +152,7 @@ export async function generateMetadata({ params }: { params: Promise<{ site: str
                     alt: product?.title || slug,
                 },
             ],
-            siteName: "Mi tienda",
+            siteName: orgName,
             locale: "es_PE",
         },
         twitter: {
@@ -179,6 +192,19 @@ export default async function CatchAllPage({ params }: { params: Promise<{ site:
         (slug && slug !== "producto") ? getProduct(slug, domain) : Promise.resolve(null)
     ]);
 
+    const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'https://auth.vestido.shop';
+    let orgName = "Mi tienda";
+    try {
+        const orgRes = await fetch(`${AUTH_SERVICE_URL}/api/organizations/domain/${domain}`, { cache: 'no-store' });
+        if (orgRes.ok) {
+            const orgData = await orgRes.json();
+            const organization = orgData.data?.organization;
+            if (organization) {
+                orgName = organization.organization_display_name || organization.organization_name || orgName;
+            }
+        }
+    } catch (e) {}
+
     const productJsonLd = (product && product.slug) ? {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -187,7 +213,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ site:
         "description": product.description || `${product.title} disponible en nuestra tienda online.`,
         "brand": {
             "@type": "Brand",
-            "name": product.brand || "Mi tienda"
+            "name": product.brand || orgName
         },
         ...(product.sku ? { "sku": product.sku } : {}),
         "offers": {
@@ -202,6 +228,15 @@ export default async function CatchAllPage({ params }: { params: Promise<{ site:
 
     return (
         <>
+            {/* Visible H1 for SEO - Server Side Rendered */}
+            <div className="sr-only">
+                {product ? (
+                    <h1>{product.title}</h1>
+                ) : (
+                    <h1>{orgName}</h1>
+                )}
+            </div>
+            
             {productJsonLd && (
                 <script
                     type="application/ld+json"
@@ -213,6 +248,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ site:
                 initialPagination={initialData.pagination}
                 initialPosts={initialData.posts}
                 initialFaqs={initialData.faqs}
+                seoTitle={product ? product.title : orgName}
             />
         </>
     );
