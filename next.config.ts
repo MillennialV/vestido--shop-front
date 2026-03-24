@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
         // Optimize package imports to reduce bundle size
         optimizePackageImports: ['react-quill-new', '@hello-pangea/dnd', 'lucide-react'],
         // Enable CSS optimization
-        optimizeCss: true,
+        optimizeCss: false,
     },
     async headers() {
         return [
