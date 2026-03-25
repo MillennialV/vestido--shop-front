@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
             return value && value !== 'all' && value.trim() !== '';
         };
 
-        const hasActiveFilters = isRealFilter('brand') || isRealFilter('size') || isRealFilter('color') || isRealFilter('title') || isRealFilter('occasion');
+        const hasActiveFilters = Array.from(searchParams.keys()).some(key => 
+            !['page', 'limit', 'sort', 'order', 'domain'].includes(key) && isRealFilter(key)
+        );
 
         const domain = await getDomain();
         let endpoint = hasActiveFilters ? '/api/producto/filtrar-busqueda' : '/api/producto/obtener-listado-productos';

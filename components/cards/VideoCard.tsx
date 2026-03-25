@@ -205,7 +205,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
       onMouseLeave={!isSelectionMode ? handleMouseLeave : undefined}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      role="button"
+      role={isSelectionMode ? "button" : undefined}
       tabIndex={0}
       aria-label={`${actionLabel}: ${cardDescription}`}
       aria-pressed={isSelectionMode ? isSelected : undefined}
@@ -330,8 +330,24 @@ const VideoCard: React.FC<VideoCardProps> = ({
         <div
           className={`transform transition-transform duration-500 ease-in-out ${!isSelectionMode ? "group-hover:-translate-y-2" : ""}`}
         >
-          <h3 className="font-title-card text-center sm:px-[25%]">
-            {garment.title || "Sin título"}
+          <h3 className="font-title-card text-center sm:px-[25%] relative z-20">
+            {isSelectionMode ? (
+              <>{garment.title || "Sin título"}</>
+            ) : (
+              <Link 
+                href={`/producto/${currentSlug}`} 
+                className="hover:underline"
+                onClick={(e) => {
+                  if (onSelect) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onSelect(garment);
+                  }
+                }}
+              >
+                {garment.title || "Sin título"}
+              </Link>
+            )}
           </h3>
 
           <p className="font-subtitle-card text-center pt-[17px]">
@@ -353,16 +369,9 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
   if (!isSelectionMode) {
     return (
-      <Link
-        href={`/producto/${currentSlug}`}
-        onClick={(e) => {
-          e.preventDefault();
-          handleClick();
-        }}
-        className="w-full flex"
-      >
+      <div className="w-full flex">
         {cardContent}
-      </Link>
+      </div>
     );
   }
 

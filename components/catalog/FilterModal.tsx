@@ -3,11 +3,10 @@ import { SearchIcon, ChevronDownIcon, CloseIcon, CheckCircleIcon } from "@/compo
 import { BrandFilterContent, SizeFilterContent, OccasionFilterContent } from "./FilterDropdown";
 
 interface FilterModalProps {
-    brands: string[];
-    sizes: string[];
-    occasions: string[];
-    filters: { brand: string; size: string; occasion: string; };
-    onFilterChange: (filters: { brand?: string; size?: string; occasion?: string; }) => void;
+    activeFilterKeys: string[];
+    filterOptions: Record<string, string[]>;
+    filters: Record<string, string>;
+    onFilterChange: (filters: Record<string, string>) => void;
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isVisible: boolean;
@@ -16,9 +15,8 @@ interface FilterModalProps {
 }
 
 const FilterModal: React.FC<FilterModalProps> = ({
-    brands,
-    sizes,
-    occasions = [],
+    activeFilterKeys,
+    filterOptions,
     filters,
     onFilterChange,
     searchQuery,
@@ -106,36 +104,49 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </button>
 
                 <div className="overflow-y-auto px-6 pt-4 pb-0 custom-scrollbar">
-                    <div className="flex flex-col gap-6">
-                        {/* MARCA */}
-                        <div className="flex flex-col gap-3">
-                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 dark:text-[#a0a0a0] uppercase">Marca</h3>
-                            <BrandFilterContent 
-                                brands={brands}
-                                selectedBrands={localFilters.brand !== "all" ? [localFilters.brand] : []}
-                                onChange={(brand) => setLocalFilters({...localFilters, brand: localFilters.brand === brand ? "all" : brand})}
-                            />
-                        </div>
+                    <div className="flex flex-col gap-8">
+                        {activeFilterKeys.map(key => {
+                            const label = key.charAt(0).toUpperCase() + key.slice(1);
+                            const options = filterOptions[key] || [];
+                            const currentValue = localFilters[key] || "all";
 
-                        {/* TALLA */}
-                        <div className="flex flex-col gap-3">
-                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 dark:text-[#a0a0a0] uppercase">Talla</h3>
-                            <SizeFilterContent 
-                                sizes={sizes}
-                                selectedSize={localFilters.size}
-                                onChange={(size) => setLocalFilters({...localFilters, size: localFilters.size === size ? "all" : size})}
-                            />
-                        </div>
-
-                        {/* OCASIÓN */}
-                        <div className="flex flex-col gap-3">
-                            <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 dark:text-[#a0a0a0] uppercase">Ocasión</h3>
-                            <OccasionFilterContent 
-                                occasions={occasions}
-                                selectedOccasion={localFilters.occasion}
-                                onChange={(occasion) => setLocalFilters({...localFilters, occasion: localFilters.occasion === occasion ? "all" : occasion})}
-                            />
-                        </div>
+                            return (
+                                <div key={key} className="flex flex-col gap-4">
+                                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 dark:text-[#a0a0a0] uppercase">
+                                        {label === 'Brand' ? 'Marca' : label}
+                                    </h3>
+                                    
+                                    {key === 'brand' ? (
+                                        <BrandFilterContent 
+                                            brands={options}
+                                            selectedBrands={currentValue !== "all" ? [currentValue] : []}
+                                            onChange={(brand) => setLocalFilters({
+                                                ...localFilters, 
+                                                [key]: currentValue === brand ? "all" : brand
+                                            })}
+                                        />
+                                    ) : key === 'size' ? (
+                                        <SizeFilterContent 
+                                            sizes={options}
+                                            selectedSize={currentValue}
+                                            onChange={(size) => setLocalFilters({
+                                                ...localFilters, 
+                                                [key]: currentValue === size ? "all" : size
+                                            })}
+                                        />
+                                    ) : (
+                                        <OccasionFilterContent 
+                                            occasions={options}
+                                            selectedOccasion={currentValue}
+                                            onChange={(val) => setLocalFilters({
+                                                ...localFilters, 
+                                                [key]: currentValue === val ? "all" : val
+                                            })}
+                                        />
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 

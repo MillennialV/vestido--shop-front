@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { FilterDropdown, BrandFilterContent, OccasionFilterContent, SizeFilterContent } from "./FilterDropdown";
-import { CloseIcon, SearchIcon, MinusIcon } from "@/components/ui/Icons";
+import { CloseIcon, SearchIcon, MinusIcon, PlusIcon } from "@/components/ui/Icons";
 
 interface FilterBarProps {
-    brands: string[];
-    sizes: string[];
-    occasions: string[];
-    filters: { brand: string; size: string; occasion: string; };
-    onFilterChange: (filters: { brand?: string; size?: string; occasion?: string; }) => void;
+    activeFilterKeys: string[];
+    filterOptions: Record<string, string[]>;
+    filters: Record<string, string>;
+    onFilterChange: (filters: Record<string, string>) => void;
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isFilterVisible: boolean;
@@ -16,12 +15,13 @@ interface FilterBarProps {
     gridColumns: number;
     onGridColumnsChange: (cols: number) => void;
     totalProducts?: number;
+    isAdmin?: boolean;
+    onOpenConfig?: () => void;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
-    brands,
-    sizes,
-    occasions,
+    activeFilterKeys,
+    filterOptions,
     filters,
     onFilterChange,
     searchQuery,
@@ -32,6 +32,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
     gridColumns,
     onGridColumnsChange,
     totalProducts = 0,
+    isAdmin = false,
+    onOpenConfig,
 }) => {
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -39,12 +41,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
         setOpenDropdown(openDropdown === name ? null : name);
     };
 
-    const hasFilters = filters.brand !== "all" || filters.size !== "all" || filters.occasion !== "all" || searchQuery !== "";
+    const activeFiltersCount = Object.entries(filters).filter(([key, val]) => val !== "all").length;
+    const hasFilters = activeFiltersCount > 0 || searchQuery !== "";
 
-    const selectedFilterTags: { key: string; label: string; }[] = [];
-    if (filters.brand !== "all") selectedFilterTags.push({ key: "brand", label: filters.brand });
-    if (filters.size !== "all") selectedFilterTags.push({ key: "size", label: filters.size });
-    if (filters.occasion !== "all") selectedFilterTags.push({ key: "occasion", label: filters.occasion });
+    const selectedFilterTags = Object.entries(filters)
+        .filter(([_, val]) => val !== "all")
+        .map(([key, val]) => ({ key, label: val }));
 
     return (
         <div className="flex flex-col gap-4 mb-4 xl:mb-8 w-full">
@@ -66,55 +68,63 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     )}
                 </div>
 
-                {/* Dropdowns Row (Solo Desktop) */}
-                <div className="hidden md:flex items-center gap-6 flex-grow ">
-                    <FilterDropdown
-                        label="Marca"
-                        isOpen={openDropdown === "marca"}
-                        onToggle={() => toggleDropdown("marca")}
-                        activeCount={filters.brand !== "all" ? 1 : 0}
-                    >
-                        <BrandFilterContent
-                            brands={brands}
-                            selectedBrands={filters.brand !== "all" ? [filters.brand] : []}
-                            onChange={(brand) => {
-                                onFilterChange({ brand: filters.brand === brand ? "all" : brand });
-                                setOpenDropdown(null);
-                            }}
-                        />
-                    </FilterDropdown>
+                {/* Dropdowns Row (Dinámico) */}
+                <div className="hidden md:flex flex-wrap items-center gap-3 py-1 relative">
+                    {activeFilterKeys.map((key) => {
+                        const label = key.charAt(0).toUpperCase() + key.slice(1);
+                        const options = filterOptions[key] || [];
+                        const currentValue = filters[key] || "all";
 
-                    <FilterDropdown
-                        label="Talla"
-                        isOpen={openDropdown === "size"}
-                        onToggle={() => toggleDropdown("size")}
-                        activeCount={filters.size !== "all" ? 1 : 0}
-                    >
-                        <SizeFilterContent
-                            sizes={sizes}
-                            selectedSize={filters.size}
-                            onChange={(size) => {
-                                onFilterChange({ size: filters.size === size ? "all" : size });
-                                setOpenDropdown(null);
-                            }}
-                        />
-                    </FilterDropdown>
+                        return (
+                            <FilterDropdown
+                                key={key}
+                                label={label === 'Brand' ? 'Marca' : label}
+                                isOpen={openDropdown === key}
+                                onToggle={() => toggleDropdown(key)}
+                                activeCount={currentValue !== "all" ? 1 : 0}
+                            >
+                                {key === 'brand' ? (
+                                    <BrandFilterContent
+                                        brands={options}
+                                        selectedBrands={currentValue !== "all" ? [currentValue] : []}
+                                        onChange={(brand) => {
+                                            onFilterChange({ [key]: currentValue === brand ? "all" : brand });
+                                            setOpenDropdown(null);
+                                        }}
+                                    />
+                                ) : key === 'size' ? (
+                                    <SizeFilterContent
+                                        sizes={options}
+                                        selectedSize={currentValue}
+                                        onChange={(size) => {
+                                            onFilterChange({ [key]: currentValue === size ? "all" : size });
+                                            setOpenDropdown(null);
+                                        }}
+                                    />
+                                ) : (
+                                    <OccasionFilterContent
+                                        occasions={options}
+                                        selectedOccasion={currentValue}
+                                        onChange={(val) => {
+                                            onFilterChange({ [key]: currentValue === val ? "all" : val });
+                                            setOpenDropdown(null);
+                                        }}
+                                    />
+                                )}
+                            </FilterDropdown>
+                        );
+                    })}
 
-                    <FilterDropdown
-                        label="Ocasión"
-                        isOpen={openDropdown === "occasion"}
-                        onToggle={() => toggleDropdown("occasion")}
-                        activeCount={filters.occasion !== "all" ? 1 : 0}
-                    >
-                        <OccasionFilterContent
-                            occasions={occasions}
-                            selectedOccasion={filters.occasion}
-                            onChange={(occasion) => {
-                                onFilterChange({ occasion: filters.occasion === occasion ? "all" : occasion });
-                                setOpenDropdown(null);
-                            }}
-                        />
-                    </FilterDropdown>
+                    {/* Botón de Configuración (Solo Admin) */}
+                    {isAdmin && (
+                        <button
+                            onClick={onOpenConfig}
+                            className="flex items-center justify-center w-9 h-9 rounded-full bg-stone-100 dark:bg-[#1a1a1a] text-stone-400 hover:text-[#D4B57E] hover:bg-stone-200 dark:hover:bg-[#2a2a2a] transition-all border border-dashed border-stone-300 dark:border-[#3a3a3a] group"
+                            title="Configurar Filtros"
+                        >
+                            <PlusIcon className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+                        </button>
+                    )}
                 </div>
 
                 {/* Right side: Count and Grid */}
