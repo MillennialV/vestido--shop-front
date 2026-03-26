@@ -71,14 +71,20 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 {/* Dropdowns Row (Dinámico) */}
                 <div className="hidden md:flex flex-wrap items-center gap-3 py-1 relative">
                     {activeFilterKeys.map((key) => {
-                        const label = key.charAt(0).toUpperCase() + key.slice(1);
+                        const rawLabel = key.charAt(0).toUpperCase() + key.slice(1);
+                        const translatedLabel = 
+                            key === 'brand' ? 'Marca' : 
+                            key === 'size' ? 'Talla' : 
+                            key === 'occasion' ? 'Ocasión' : 
+                            rawLabel;
+                            
                         const options = filterOptions[key] || [];
                         const currentValue = filters[key] || "all";
 
                         return (
                             <FilterDropdown
                                 key={key}
-                                label={label === 'Brand' ? 'Marca' : label}
+                                label={translatedLabel}
                                 isOpen={openDropdown === key}
                                 onToggle={() => toggleDropdown(key)}
                                 activeCount={currentValue !== "all" ? 1 : 0}
@@ -91,6 +97,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                             onFilterChange({ [key]: currentValue === brand ? "all" : brand });
                                             setOpenDropdown(null);
                                         }}
+                                        placeholder={`Buscar ${translatedLabel}...`}
                                     />
                                 ) : key === 'size' ? (
                                     <SizeFilterContent
@@ -100,6 +107,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                             onFilterChange({ [key]: currentValue === size ? "all" : size });
                                             setOpenDropdown(null);
                                         }}
+                                        placeholder={`Buscar ${translatedLabel}...`}
                                     />
                                 ) : (
                                     <OccasionFilterContent
@@ -109,6 +117,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                             onFilterChange({ [key]: currentValue === val ? "all" : val });
                                             setOpenDropdown(null);
                                         }}
+                                        placeholder={`Buscar ${translatedLabel}...`}
                                     />
                                 )}
                             </FilterDropdown>
