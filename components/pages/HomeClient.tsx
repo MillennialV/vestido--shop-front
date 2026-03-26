@@ -38,7 +38,13 @@ import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import Blog from "@/components/blog/Blog";
 import VideoCard from "@/components/cards/VideoCard";
 import SiteFooter from "@/components/layout/SiteFooter";
-import { PlusIcon } from "@/components/ui/Icons";
+import {
+  CircleIcon,
+  CheckCircleIcon,
+  PlusIcon,
+  SearchIcon,
+  SpinnerIcon
+} from "@/components/ui/Icons";
 import { useAuth } from "@/hooks/useAuth";
 import CartModal from "@/components/modals/CartModal";
 
@@ -1117,10 +1123,11 @@ export default function HomeClient({
               />
 
               {filteredGarments.length > 0 ? (
-                <div className={`grid grid-cols-1 transition-all duration-300 ${gridColumns === 2 ? "md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 md:gap-12" :
-                  gridColumns === 3 ? "md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8 md:gap-12" :
-                    gridColumns === 4 ? "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 md:gap-8" :
-                      "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
+                <div className={`grid transition-all duration-300 gap-4 md:gap-6 lg:gap-8
+                  ${gridColumns === 2 ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2" :
+                    gridColumns === 3 ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3" :
+                      gridColumns === 4 ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4" :
+                        "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                   }`}>
                   {filteredGarments.map((garment, index) => (
                     <VideoCard
@@ -1137,6 +1144,11 @@ export default function HomeClient({
                       priority={index < 6}
                     />
                   ))}
+                </div>
+              ) : isLoading ? (
+                <div className="flex flex-col items-center justify-center py-24 gap-4">
+                  <SpinnerIcon className="w-10 h-10 text-stone-400 animate-spin" />
+                  <p className="text-stone-500 animate-pulse">Cargando productos...</p>
                 </div>
               ) : (
                 <p className="text-center text-lg text-stone-500 dark:text-[#a0a0a0] py-16">
