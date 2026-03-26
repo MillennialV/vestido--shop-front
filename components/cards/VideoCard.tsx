@@ -188,6 +188,29 @@ const VideoCard: React.FC<VideoCardProps> = ({
   // Mostrar contenido siempre que esté visible, incluso si el video falla
   const showContent = isVisible && !showSpinner;
   const brandDisplay = garment.brand && garment.brand !== "No identificable" ? garment.brand : null;
+
+  const dynamicFields = Object.entries(garment)
+    .filter(([key, value]) => {
+      const standardKeys = [
+        'id', 'brand', 'title', 'description', 'videoUrl', 'imagen_principal', 'imagenes',
+        'price', 'slug', 'cantidad', 'disponible', 'sku', 'estado', 'categoria_id',
+        'subcategoria', 'tags', 'precio_original', 'precio_descuento', 'porcentaje_descuento',
+        'cantidad_minima', 'ubicacion', 'costo', 'margen_ganancia', 'meta_title',
+        'meta_description', 'keywords', 'destacado', 'nuevo', 'codigo_barras',
+        'garantia', 'qr', 'sticker', 'created_at', 'updated_at', 'created_by', 'size', 'occasion', 
+        'imagen_principal_base64', 'atributos_dinamicos'
+      ];
+      return !standardKeys.includes(key) && value && String(value).trim() !== "" && typeof value !== 'object';
+    })
+    .map(([_, value]) => String(value))
+    .join(' - ');
+
+  const productAlt = [
+    garment.title,
+    dynamicFields,
+    brandDisplay
+  ].filter(Boolean).join(' - ');
+
   const currentSlug = slugify(garment.title);
 
   const cardDescription = `${garment.title}${brandDisplay ? ` por ${brandDisplay}` : ""}, Talla ${garment.size}, Color ${garment.color}`;
@@ -259,12 +282,12 @@ const VideoCard: React.FC<VideoCardProps> = ({
           onCanPlay={handleCanPlay}
           onError={handleError}
           className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""}`}
-          title={`Vista previa en video de ${garment.title}`}
+          title={`Vista previa en video de ${productAlt}`}
         />
       ) : garment.imagen_principal ? (
         <Image
           src={garment.imagen_principal}
-          alt={garment.title}
+          alt={productAlt}
           fill
           unoptimized
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
