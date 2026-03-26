@@ -168,12 +168,14 @@ export default function HomeClient({
     return Array.from(keys);
   }, [allProductsForFilters, initialGarments]);
 
-  // Calcular opciones de cada filtro dinámicamente basado en los productos disponibles
+  // Calcular opciones de cada filtro dinámicamente basado en TODOS los productos disponibles
   const filterOptions = useMemo(() => {
     const options: Record<string, Set<string>> = {};
     activeFilterKeys.forEach(key => options[key] = new Set<string>());
 
-    garments.forEach((garment: any) => {
+    const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
+
+    sourceData.forEach((garment: any) => {
       activeFilterKeys.forEach(key => {
         const val = garment[key];
         if (val && val !== '') {
@@ -187,7 +189,7 @@ export default function HomeClient({
       result[key] = Array.from(options[key]).sort();
     });
     return result;
-  }, [garments, activeFilterKeys]);
+  }, [allProductsForFilters, initialGarments, activeFilterKeys]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Map<number, Garment>>(new Map());
@@ -307,8 +309,91 @@ export default function HomeClient({
       return dateB - dateA;
     });
   };
-  const filteredGarments = garments;
-  const totalPages = pagination.totalPages;
+  const filteredGarments = useMemo(() => {
+    // Si NO hay filtros ni búsqueda, usamos tal cual lo que viene del hook (paginado por API)
+    const hasActiveFilters = Object.values(filters).some(v => v !== 'all') || searchQuery !== "";
+    
+    if (!hasActiveFilters) {
+      return garments;
+    }
+
+    // Si HAY filtros, intentamos el filtrado local sobre todos los productos
+    const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
+    
+    const filtered = sourceData.filter(g => {
+      // Filtrar por Marca
+      if (filters.brand && filters.brand !== 'all') {
+        if (g.brand !== filters.brand) return false;
+      }
+
+      // Filtrar por otros atributos dinámicos activos
+      for (const key of activeFilterKeys) {
+        if (key === 'brand') continue;
+        const filterVal = filters[key];
+        if (filterVal && filterVal !== 'all') {
+          if (String((g as any)[key]) !== filterVal) return false;
+        }
+      }
+      
+      // Filtrar por búsqueda de texto
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return (
+          g.title?.toLowerCase().includes(q) || 
+          g.description?.toLowerCase().includes(q) ||
+          g.brand?.toLowerCase().includes(q)
+        );
+      }
+      
+      return true;
+    });
+
+    // Paginación local
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filtered.slice(start, start + ITEMS_PER_PAGE);
+  }, [garments, allProductsForFilters, initialGarments, filters, searchQuery, currentPage, ITEMS_PER_PAGE, activeFilterKeys]);
+
+  const totalPages = useMemo(() => {
+    const hasActiveFilters = Object.values(filters).some(v => v !== 'all') || searchQuery !== "";
+    if (!hasActiveFilters) return pagination.totalPages;
+
+    const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
+    const filteredCount = sourceData.filter(g => {
+      if (filters.brand && filters.brand !== 'all' && g.brand !== filters.brand) return false;
+      for (const key of activeFilterKeys) {
+        if (key === 'brand') continue;
+        const filterVal = filters[key];
+        if (filterVal && filterVal !== 'all' && String((g as any)[key]) !== filterVal) return false;
+      }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return g.title?.toLowerCase().includes(q) || g.description?.toLowerCase().includes(q) || g.brand?.toLowerCase().includes(q);
+      }
+      return true;
+    }).length;
+
+    return Math.ceil(filteredCount / ITEMS_PER_PAGE) || 1;
+  }, [pagination.totalPages, allProductsForFilters, initialGarments, filters, searchQuery, ITEMS_PER_PAGE, activeFilterKeys]);
+
+  const totalProducts = useMemo(() => {
+    const hasActiveFilters = Object.values(filters).some(v => v !== 'all') || searchQuery !== "";
+    if (!hasActiveFilters) return pagination.total;
+
+    const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
+    return sourceData.filter(g => {
+      if (filters.brand && filters.brand !== 'all' && g.brand !== filters.brand) return false;
+      for (const key of activeFilterKeys) {
+        if (key === 'brand') continue;
+        const filterVal = filters[key];
+        if (filterVal && filterVal !== 'all' && String((g as any)[key]) !== filterVal) return false;
+      }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return g.title?.toLowerCase().includes(q) || g.description?.toLowerCase().includes(q) || g.brand?.toLowerCase().includes(q);
+      }
+      return true;
+    }).length;
+  }, [pagination.total, allProductsForFilters, initialGarments, filters, searchQuery, activeFilterKeys]);
   const onFilterChange = useCallback((newFilter: Record<string, string>) => {
     // 1. Calcular el NUEVO estado completo basado en los filtros actuales y los nuevos
     const updatedFilters = { ...filters, ...newFilter };
@@ -1026,7 +1111,7 @@ export default function HomeClient({
                     });
                   }
                 }}
-                totalProducts={pagination.total}
+                totalProducts={totalProducts}
                 isAdmin={authenticated}
                 onOpenConfig={() => setIsFilterConfigModalOpen(true)}
               />

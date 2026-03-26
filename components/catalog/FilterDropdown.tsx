@@ -74,7 +74,8 @@ export const BrandFilterContent: React.FC<{
     brands: string[];
     selectedBrands: string[];
     onChange: (brand: string) => void;
-}> = ({ brands, selectedBrands, onChange }) => {
+    placeholder?: string;
+}> = ({ brands, selectedBrands, onChange, placeholder = "Buscar Marca..." }) => {
     const [search, setSearch] = useState("");
     const filteredBrands = brands.filter(b => b.toLowerCase().includes(search.toLowerCase()));
 
@@ -84,7 +85,7 @@ export const BrandFilterContent: React.FC<{
                 <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <input
                     type="text"
-                    placeholder="Buscar Marca"
+                    placeholder={placeholder}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full bg-color-four dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a] rounded-2xl py-3 pl-11 pr-4 text-sm text-color-three dark:text-white placeholder:text-color-three/40 dark:placeholder-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-color-one/50 transition-all"
@@ -124,23 +125,44 @@ export const OccasionFilterContent: React.FC<{
     occasions: string[];
     selectedOccasion: string;
     onChange: (occasion: string) => void;
-}> = ({ occasions, selectedOccasion, onChange }) => {
+    placeholder?: string;
+}> = ({ occasions, selectedOccasion, onChange, placeholder = "Buscar..." }) => {
+    const [search, setSearch] = useState("");
+    const filteredOccasions = occasions.filter(o => o.toLowerCase().includes(search.toLowerCase()));
+
     return (
-        <div className="flex flex-col gap-2 max-w-full max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
-            {occasions.map(occasion => (
-                <button
-                    key={occasion}
-                    onClick={() => onChange(occasion)}
-                    className={`w-full px-5 py-3 rounded-xl border text-sm font-medium transition-all flex justify-between items-center gap-2 text-left ${
-                        selectedOccasion === occasion
-                            ? "bg-color-one/10 border-color-one text-color-one"
-                            : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-one/30 hover:text-color-three dark:hover:text-white"
-                    }`}
-                >
-                    <span>{occasion}</span>
-                    {selectedOccasion === occasion && <div className="w-4 h-4 flex items-center justify-center flex-shrink-0"><CheckCircleIcon className="w-full h-full" /></div>}
-                </button>
-            ))}
+        <div className="flex flex-col gap-3">
+            <div className="relative">
+                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <input
+                    type="text"
+                    placeholder={placeholder}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full bg-color-four dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a] rounded-2xl py-3 pl-11 pr-4 text-sm text-color-three dark:text-white placeholder:text-color-three/40 dark:placeholder-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-color-one/50 transition-all"
+                />
+            </div>
+            <div className="flex flex-col gap-2 max-w-full max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
+                {filteredOccasions.map(occasion => (
+                    <button
+                        key={occasion}
+                        onClick={() => onChange(occasion)}
+                        className={`w-full px-5 py-3 rounded-xl border text-sm font-medium transition-all flex justify-between items-center gap-2 text-left ${
+                            selectedOccasion === occasion
+                                ? "bg-color-one/10 border-color-one text-color-one"
+                                : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-one/30 hover:text-color-three dark:hover:text-white"
+                        }`}
+                    >
+                        <span>{occasion}</span>
+                        {selectedOccasion === occasion && <div className="w-4 h-4 flex items-center justify-center flex-shrink-0"><CheckCircleIcon className="w-full h-full" /></div>}
+                    </button>
+                ))}
+                {filteredOccasions.length === 0 && (
+                    <div className="py-4 text-center text-xs text-stone-400">
+                        No se encontraron opciones
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
@@ -149,45 +171,69 @@ export const SizeFilterContent: React.FC<{
     sizes: string[];
     selectedSize: string;
     onChange: (size: string) => void;
-}> = ({ sizes, selectedSize, onChange }) => {
-    const alphaSizes = sizes.filter(s => isNaN(Number(s)));
-    const numericSizes = sizes.filter(s => !isNaN(Number(s)));
+    placeholder?: string;
+}> = ({ sizes, selectedSize, onChange, placeholder = "Buscar Talla..." }) => {
+    const [search, setSearch] = useState("");
+    const filteredSizes = sizes.filter(s => s.toLowerCase().includes(search.toLowerCase()));
+    
+    const alphaSizes = filteredSizes.filter(s => isNaN(Number(s)));
+    const numericSizes = filteredSizes.filter(s => !isNaN(Number(s)));
 
     return (
-        <div className="flex flex-col gap-6 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
-            <div className="flex flex-wrap gap-3">
-                {alphaSizes.map(size => (
-                    <button
-                        key={size}
-                        onClick={() => onChange(size)}
-                        className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
-                            selectedSize === size
-                                ? "bg-color-one/10 border-color-one text-color-one"
-                                : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-one/30 dark:hover:text-white"
-                        }`}
-                    >
-                        {size}
-                    </button>
-                ))}
+        <div className="flex flex-col gap-4">
+            <div className="relative">
+                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <input
+                    type="text"
+                    placeholder={placeholder}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full bg-color-four dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a] rounded-2xl py-3 pl-11 pr-4 text-sm text-color-three dark:text-white placeholder:text-color-three/40 dark:placeholder-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-color-one/50 transition-all"
+                />
             </div>
+            <div className="flex flex-col gap-6 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
+                {alphaSizes.length > 0 && (
+                    <div className="flex flex-wrap gap-3">
+                        {alphaSizes.map(size => (
+                            <button
+                                key={size}
+                                onClick={() => onChange(size)}
+                                className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
+                                    selectedSize === size
+                                        ? "bg-color-one/10 border-color-one text-color-one"
+                                        : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-one/30 dark:hover:text-white"
+                                }`}
+                            >
+                                {size}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
-            {numericSizes.length > 0 && (
-                <div className="flex flex-wrap gap-3">
-                    {numericSizes.map(size => (
-                        <button
-                            key={size}
-                            onClick={() => onChange(size)}
-                            className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
-                                selectedSize === size
-                                    ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D3A24D]"
-                                    : "bg-stone-50 dark:bg-[#0f0f0f] border-stone-100 dark:border-[#2a2a2a] text-stone-600 dark:text-[#a0a0a0] dark:hover:text-white"
-                            }`}
-                        >
-                            {size}
-                        </button>
-                    ))}
-                </div>
-            )}
+                {numericSizes.length > 0 && (
+                    <div className="flex flex-wrap gap-3">
+                        {numericSizes.map(size => (
+                            <button
+                                key={size}
+                                onClick={() => onChange(size)}
+                                className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
+                                    selectedSize === size
+                                        ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D3A24D]"
+                                        : "bg-stone-50 dark:bg-[#0f0f0f] border-stone-100 dark:border-[#2a2a2a] text-stone-600 dark:text-[#a0a0a0] dark:hover:text-white"
+                                }`}
+                            >
+                                {size}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {filteredSizes.length === 0 && (
+                    <div className="py-4 text-center text-xs text-stone-400">
+                        No se encontraron opciones
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
