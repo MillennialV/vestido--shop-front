@@ -63,17 +63,13 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
   const [formData, setFormData] = useState({
     title: "",
     brand: "",
-    size: "",
-    color: "",
     description: "",
     price: "",
-    material: "",
-    occasion: "",
-    style_notes: "",
     videoUrl: "", // URL manual de video como alternativa
     imagen_principal: "", // URL manual de imagen principal
     cantidad: "",
   });
+  const [customFields, setCustomFields] = useState<{ id: string, key: string, value: string }[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [imagePrincipalFile, setImagePrincipalFile] = useState<File | null>(null);
@@ -96,17 +92,26 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       setFormData({
         title: garment.title,
         brand: garment.brand,
-        size: garment.size,
-        color: garment.color,
         description: garment.description,
         price: garment.price ? String(garment.price) : "",
-        material: garment.material || "",
-        occasion: garment.occasion || "",
-        style_notes: garment.style_notes || "",
         videoUrl: garment.videoUrl || "",
         imagen_principal: garment.imagen_principal || "",
         cantidad: garment.cantidad !== undefined && garment.cantidad !== null ? String(garment.cantidad) : "0",
       });
+      
+      const initialCustom: { id: string, key: string, value: string }[] = [];
+      if (garment.size) initialCustom.push({ id: `cf-size-${Date.now()}`, key: "size", value: String(garment.size) });
+      if (garment.color) initialCustom.push({ id: `cf-color-${Date.now()}`, key: "color", value: String(garment.color) });
+      
+      if (garment.atributos_dinamicos) {
+        Object.entries(garment.atributos_dinamicos).forEach(([k, v], i) => {
+          if (k !== 'size' && k !== 'color') {
+            initialCustom.push({ id: `cf-${i}-${Date.now()}`, key: k, value: String(v) });
+          }
+        });
+      }
+      setCustomFields(initialCustom);
+      
       setPreviewUrl(garment.videoUrl || garment.imagen_principal || null);
       setExtraImages((garment.imagenes || []).slice(0, 3).map(url => ({ preview: url, isNew: false })));
 
@@ -119,17 +124,13 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       setFormData({
         title: "",
         brand: "",
-        size: "M",
-        color: "",
         description: "",
         price: "",
-        material: "",
-        occasion: "",
-        style_notes: "",
         videoUrl: "",
         imagen_principal: "",
         cantidad: "1",
       });
+      setCustomFields([]);
       setPreviewUrl(null);
       setVideoFile(null);
       setImagePrincipalFile(null);
@@ -187,8 +188,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     const errors: Record<string, string> = {};
     if (!formData.title) errors.title = "El título es requerido";
     if (!formData.brand) errors.brand = "La marca es requerida";
-    if (!formData.size) errors.size = "La talla es requerida";
-    if (!formData.color) errors.color = "El color es requerido";
     if (!formData.description) errors.description = "La descripción es requerida";
 
     if (Object.keys(errors).length > 0) {
@@ -223,22 +222,23 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         .filter(img => !img.isNew)
         .map(img => img.preview);
 
-      const dataToSave = {
+      const dataToSave: any = {
         title: formData.title,
         brand: formData.brand,
-        size: formData.size,
-        color: formData.color,
         description: formData.description,
         price: priceAsNumber,
         cantidad: cantidadAsNumber,
-        material: formData.material,
-        occasion: formData.occasion,
-        style_notes: formData.style_notes,
         imagenes: existingImageUrls,
         ...(formData.videoUrl && !videoFile
           ? { videoUrl: formData.videoUrl }
           : {}),
       };
+
+      customFields.forEach(cf => {
+        if (cf.key.trim() && cf.value.trim()) {
+          dataToSave[cf.key.trim()] = cf.value.trim();
+        }
+      });
 
       // Determinar si es crear o actualizar
       // Nota: imagePrincipalFile y newImageFiles ya son WebP gracias a los handlers de selección
@@ -472,12 +472,25 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         throw new Error("No hay una fuente visual válida para que la IA analice la prenda.");
       }
 
-      // Llamar al API route de Next.js para análisis de prenda
+        const baseSchema: Record<string, any> = {
+          title: "nombre creativo del vestido",
+          brand: "Identifica la marca",
+          description: "breve descripción",
+          price: 0,
+        };
+        
+        // Agregar campos existentes al esquema para que la IA los llene
+        customFields.forEach(cf => {
+          if (cf.key.trim() && !baseSchema[cf.key.trim()]) {
+            baseSchema[cf.key.trim()] = "valor detectado o null";
+          }
+        });
       const response = await fetch("/api/ia/analyze-garment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...(base64Image ? { imageBase64: base64Image } : { imageUrl: imageUrlToSend })
+          ...(base64Image ? { imageBase64: base64Image } : { imageUrl: imageUrlToSend }),
+          dynamicSchema: baseSchema
         }),
       });
 
@@ -499,13 +512,24 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
           ...prev,
           title: result.title || prev.title,
           brand: result.brand || prev.brand,
-          color: result.color || prev.color,
           description: result.description || prev.description,
           price: priceString,
-          material: result.material || prev.material,
-          occasion: result.occasion || prev.occasion,
-          style_notes: result.style_notes || prev.style_notes,
         };
+      });
+
+      // Update customFields WITH case-insensitivity
+      setCustomFields(prevKeys => {
+         const newKeys = [...prevKeys];
+         newKeys.forEach(cf => {
+            if (cf.key) {
+               // Buscar en result de forma insensible
+               const resultKey = Object.keys(result).find(rk => rk.toLowerCase() === cf.key.toLowerCase());
+               if (resultKey && result[resultKey] !== undefined && result[resultKey] !== null) {
+                  cf.value = String(result[resultKey]);
+               }
+            }
+         });
+         return newKeys;
       });
     } catch (error) {
       const errorMessage =
@@ -772,42 +796,6 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
               />
               {formErrors.brand && <p className="text-red-500 text-xs mt-1">{formErrors.brand}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="size"
-                  className="block text-sm font-medium text-color-three dark:text-stone-300 mb-1"
-                >
-                  Talla
-                </label>
-                <input
-                  type="text"
-                  name="size"
-                  id="size"
-                  value={formData.size}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md focus:ring-stone-500 dark:focus:ring-white focus:border-stone-500 dark:focus:border-[#2a2a2a] bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white"
-                />
-                {formErrors.size && <p className="text-red-500 text-xs mt-1">{formErrors.size}</p>}
-              </div>
-              <div>
-                <label
-                  htmlFor="color"
-                  className="block text-sm font-medium text-color-three dark:text-stone-300 mb-1"
-                >
-                  Color
-                </label>
-                <input
-                  type="text"
-                  name="color"
-                  id="color"
-                  value={formData.color}
-                  onChange={handleChange}
-                  className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
-                />
-                {formErrors.color && <p className="text-red-500 text-xs mt-1">{formErrors.color}</p>}
-              </div>
-            </div>
             <div>
               <label
                 htmlFor="price"
@@ -851,7 +839,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 placeholder="10"
                 className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
               />
-              {formErrors.cantidad && <p className="text-red-500 text-xs mt-1">{formErrors.cantidad}</p>}
+               {formErrors.cantidad && <p className="text-red-500 text-xs mt-1">{formErrors.cantidad}</p>}
             </div>
 
             <div>
@@ -871,59 +859,67 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
               />
               {formErrors.description && <p className="text-red-500 text-xs mt-1">{formErrors.description}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="material"
-                  className="block text-sm font-medium text-color-three dark:text-stone-300 mb-1"
-                >
-                  Materiales
+            <div className="pt-4 border-t border-color-three/10 dark:border-[#2a2a2a]">
+              <div className="flex justify-between items-center mb-4">
+                <label className="block text-sm font-semibold text-color-three dark:text-white">
+                  Campos Personalizados (Dinámicos)
                 </label>
-                <input
-                  type="text"
-                  name="material"
-                  id="material"
-                  value={formData.material}
-                  onChange={handleChange}
-                  placeholder="Ej: Seda, Lino"
-                  className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="occasion"
-                  className="block text-sm font-medium text-color-three dark:text-stone-300 mb-1"
+                <button
+                  type="button"
+                  onClick={() => setCustomFields([...customFields, { id: `cf-${Date.now()}`, key: "", value: "" }])}
+                  className="text-xs text-color-one dark:text-white hover:underline focus:outline-none bg-color-three/10 dark:bg-[#1a1a1a] px-3 py-1.5 rounded-full"
                 >
-                  Ocasión Ideal
-                </label>
-                <input
-                  type="text"
-                  name="occasion"
-                  id="occasion"
-                  value={formData.occasion}
-                  onChange={handleChange}
-                  placeholder="Ej: Boda de día, Gala"
-                  className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
-                />
+                  + Añadir Campo Libre
+                </button>
               </div>
-            </div>
-            <div>
-              <label
-                htmlFor="style_notes"
-                className="block text-sm font-medium text-color-three dark:text-stone-300 mb-1"
-              >
-                Notas de Estilo
-              </label>
-              <input
-                type="text"
-                name="style_notes"
-                id="style_notes"
-                value={formData.style_notes}
-                onChange={handleChange}
-                placeholder="Ej: Corte sirena, Espalda descubierta"
-                className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
-              />
-              {formErrors.style_notes && <p className="text-red-500 text-xs mt-1">{formErrors.style_notes}</p>}
+              {customFields.length === 0 ? (
+                <p className="text-xs text-stone-500 mb-4">No hay campos extra automáticos para esta prenda. Pulsa en "+ Añadir" si necesitas (ej. Voltaje, Detalles).</p>
+              ) : (
+                <div className="space-y-3 mb-4">
+                  {customFields.map((cf, idx) => (
+                    <div key={cf.id} className="flex gap-3 items-start">
+                      <div className="w-1/3">
+                        <input
+                          type="text"
+                          placeholder="Propiedad (ej. Material)"
+                          value={cf.key}
+                          onChange={e => {
+                            const updated = [...customFields];
+                            updated[idx].key = e.target.value;
+                            setCustomFields(updated);
+                          }}
+                          className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md text-sm"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="Valor (ej. Algodón)"
+                          value={cf.value}
+                          onChange={e => {
+                            const updated = [...customFields];
+                            updated[idx].value = e.target.value;
+                            setCustomFields(updated);
+                          }}
+                          className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md text-sm"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...customFields];
+                          updated.splice(idx, 1);
+                          setCustomFields(updated);
+                        }}
+                        className="text-red-500 hover:text-red-700 p-2 mt-0.5"
+                        title="Quitar campo"
+                      >
+                        <CloseIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             {formErrors.general && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 rounded-lg">

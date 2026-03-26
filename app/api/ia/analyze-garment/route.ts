@@ -6,6 +6,7 @@ export async function POST(req: NextRequest) {
     const contentType = req.headers.get('content-type') || '';
     const model = 'gemini-2.5-flash-image';
 
+    let dynamicSchema: any = null;
     let promptFromClient = '';
     let imageBase64 = '';
     let maxLength: string | undefined = undefined;
@@ -18,16 +19,21 @@ export async function POST(req: NextRequest) {
       const body = await req.json();
       imageBase64 = body.imageBase64;
       promptFromClient = body.prompt;
+      dynamicSchema = body.dynamicSchema; // Nueva propiedad
       const imageUrlInput = body.imageUrl;
       maxLength = body.maxLength;
 
       if (imageUrlInput && !imageBase64) {
-        return handleExternalImage(imageUrlInput, model, maxLength, token);
+        return handleExternalImage(imageUrlInput, model, maxLength, token, dynamicSchema);
       }
     } else if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       imageBase64 = formData.get('imageBase64') as string;
       promptFromClient = formData.get('prompt') as string;
+      const schemaStr = formData.get('dynamicSchema') as string;
+      if (schemaStr) {
+        try { dynamicSchema = JSON.parse(schemaStr); } catch (e) {}
+      }
       const maxLengthValue = formData.get('maxLength');
       maxLength = typeof maxLengthValue === 'string' ? maxLengthValue : undefined;
     } else {
@@ -43,13 +49,24 @@ export async function POST(req: NextRequest) {
       : imageBase64;
 
     const url = process.env.NEXT_PUBLIC_IA_URL || 'http://localhost:3004';
-    const defaultPrompt = `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "Sin marca",\n  "color": "color principal",\n  "size": "M",\n  "description": "breve descripción",\n  "price": 0,\n  "material": "No identificable",\n  "occasion": "Boda",\n  "style_notes": "detalles"\n}`;
+    
+    // Si el cliente envía un esquema dinámico, construimos el prompt basado en él.
+    // Si no, usamos un esquema genérico de "producto" en lugar de "vestido".
+    const defaultSchema = {
+      title: "nombre creativo del producto",
+      brand: "Sin marca",
+      description: "breve descripción",
+      price: 0
+    };
+
+    const finalSchema = dynamicSchema || defaultSchema;
+    const finalPrompt = promptFromClient || `Analiza el producto en esta imagen. Responde SOLO con un JSON válido en español siguiendo exactamente esta estructura:\n${JSON.stringify(finalSchema, null, 2)}`;
 
     const body: any = {
       imageBase64: cleanBase64,
       model: model,
       maxLength: maxLength ? Number(maxLength) : 200,
-      prompt: promptFromClient || defaultPrompt
+      prompt: finalPrompt
     };
 
     console.log(`[AnalyzeGarment] Calling IA Microservice at: ${url}/api/ai/image-to-text`);
@@ -119,9 +136,18 @@ export async function POST(req: NextRequest) {
     }, { status: 500 });
   }
 }
-async function handleExternalImage(imageUrl: string, model: string, maxLength: any, token?: string) {
+async function handleExternalImage(imageUrl: string, model: string, maxLength: any, token?: string, dynamicSchema?: any) {
   const url = process.env.NEXT_PUBLIC_IA_URL || 'http://localhost:3004';
-  const prompt = `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "Sin marca",\n  "color": "color principal",\n  "size": "M",\n  "description": "breve descripción",\n  "price": 0,\n  "material": "No identificable",\n  "occasion": "Boda",\n  "style_notes": "detalles"\n}`;
+  
+  const defaultSchema = {
+    title: "nombre creativo del producto",
+    brand: "Sin marca",
+    description: "breve descripción",
+    price: 0
+  };
+
+  const finalSchema = dynamicSchema || defaultSchema;
+  const prompt = `Analiza el producto en esta imagen. Responde SOLO con un JSON válido en español siguiendo exactamente esta estructura:\n${JSON.stringify(finalSchema, null, 2)}`;
 
   const body: any = {
     imageUrl: imageUrl,

@@ -19,11 +19,10 @@ interface HeaderProps {
   navigate: (path: string) => void;
   isFilterVisible?: boolean;
   onToggleFilters?: () => void;
-  brands?: string[];
-  sizes?: string[];
-  occasions?: string[];
-  filters?: { brand: string; size: string; occasion: string; };
-  onFilterChange?: (filters: { brand?: string; size?: string; occasion?: string; }) => void;
+  activeFilterKeys?: string[];
+  filterOptions?: Record<string, string[]>;
+  filters?: Record<string, string>;
+  onFilterChange?: (filters: Record<string, string>) => void;
   onClearFilters?: () => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
@@ -37,9 +36,8 @@ const Header: React.FC<HeaderProps> = ({
   navigate,
   isFilterVisible,
   onToggleFilters,
-  brands,
-  sizes,
-  occasions,
+  activeFilterKeys,
+  filterOptions,
   filters,
   onFilterChange,
   onClearFilters,
@@ -100,10 +98,9 @@ const Header: React.FC<HeaderProps> = ({
 
               {/* Mobile Filter Modal - Attached to Header */}
               <FilterModal
-                brands={brands || []}
-                sizes={sizes || []}
-                occasions={occasions || []}
-                filters={filters || { brand: "all", size: "all", occasion: "all" }}
+                activeFilterKeys={activeFilterKeys || []}
+                filterOptions={filterOptions || {}}
+                filters={filters || { brand: "all" }}
                 onFilterChange={onFilterChange || (() => { })}
                 searchQuery={searchQuery || ""}
                 onSearchChange={onSearchChange || (() => { })}

@@ -15,4 +15,6 @@ export interface Garment {
     cantidad?: number;
     imagen_principal?: string;
     imagenes?: string[];
+    atributos_dinamicos?: Record<string, any>;
+    [key: string]: any;
 }

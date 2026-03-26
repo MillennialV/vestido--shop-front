@@ -49,14 +49,11 @@ interface UploadableFile {
     title: string;
     brand: string;
     description: string;
-    size: string;
-    color: string;
     price: string;
-    material: string;
-    occasion: string;
-    style_notes: string;
     cantidad: string;
+    [key: string]: string;
   };
+  customFields?: { id: string; key: string; value: string }[];
   videoUrl?: string;
   imageUrl?: string;
   videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -156,14 +153,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             title: fileToProcess.name.replace(/\.[^/.]+$/, "").replace(/_ai$/, ""),
             brand: "",
             description: "",
-            size: "",
-            color: "",
             price: "",
-            material: "",
-            occasion: "",
-            style_notes: "",
             cantidad: "1",
           },
+          customFields: [],
           videoRef: React.createRef<HTMLVideoElement>(),
         };
       }));
@@ -190,9 +183,51 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
       if (jsonData.length === 0) return;
 
+      const newKeysFound = new Set<string>();
+      const standardKeys = ["Producto", "title", "Marca", "brand", "Descripción", "description", "Precio", "price", "Stock", "cantidad", "URL Imagen", "imageUrl", "URL Video", "videoUrl", "Link", "link", "Atributos Dinámicos", "atributos_dinamicos"];
+      
+      jsonData.forEach(row => {
+        Object.keys(row).forEach(k => {
+          if (!standardKeys.includes(k) && row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== "") {
+            newKeysFound.add(k.toLowerCase());
+          }
+        });
+      });
+
+      if (newKeysFound.size > 0) {
+        // En lugar de setCustomFieldKeys, las llaves ya se extraen por fila y se guardan en garmentData
+      }
+
       setFiles((prev) => {
         const newFiles = [...prev];
         const rowsToCreate: any[] = [];
+
+        const extractCustom = (r: any) => {
+            const custom: Record<string, string> = {};
+            
+            // 1. Extraer del JSON "Atributos Dinámicos" si existe
+            const rawAttrs = r["Atributos Dinámicos"] || r["atributos_dinamicos"];
+            if (rawAttrs) {
+               try {
+                  const parsed = typeof rawAttrs === 'string' ? JSON.parse(rawAttrs) : rawAttrs;
+                  if (typeof parsed === 'object' && parsed !== null) {
+                     Object.entries(parsed).forEach(([k, v]) => {
+                        custom[k.toLowerCase()] = String(v);
+                     });
+                  }
+               } catch (e) {
+                  console.error("Error parsing Atributos Dinámicos", e);
+               }
+            }
+
+            // 2. Extraer de columnas individuales del Excel
+            Object.keys(r).forEach(k => {
+               if (!standardKeys.includes(k) && r[k] !== undefined && r[k] !== null && String(r[k]).trim() !== "") {
+                  custom[k.toLowerCase()] = String(r[k]);
+               }
+            });
+            return custom;
+         };
 
         jsonData.forEach((row, rowIndex) => {
           // Intentar encontrar por título (Producto) o por índice
@@ -208,6 +243,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             );
           }
 
+          const extractedCustomFields = Object.entries(extractCustom(row))
+            .map(([k, v], i) => ({ id: `cf-excel-${crypto.randomUUID()}-${i}`, key: k, value: String(v) }));
+
           if (fileIndex !== -1) {
             const currentFile = newFiles[fileIndex];
             newFiles[fileIndex] = {
@@ -220,11 +258,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 size: row["Talla"] || row["size"] || currentFile.garmentData.size,
                 color: row["Color"] || row["color"] || currentFile.garmentData.color,
                 price: String(row["Precio"] || row["price"] || currentFile.garmentData.price),
-                material: row["Material"] || row["material"] || currentFile.garmentData.material,
-                occasion: row["Ocasión"] || row["occasion"] || currentFile.garmentData.occasion,
-                style_notes: row["Notas de Estilo"] || row["style_notes"] || currentFile.garmentData.style_notes,
                 cantidad: String(row["Stock"] || row["cantidad"] || currentFile.garmentData.cantidad),
               },
+              customFields: extractedCustomFields,
               imageUrl: row["URL Imagen"] || row["imageUrl"] || currentFile.imageUrl,
               videoUrl: row["URL Video"] || row["videoUrl"] || currentFile.videoUrl,
             };
@@ -244,11 +280,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 size: row["Talla"] || row["size"] || "",
                 color: row["Color"] || row["color"] || "",
                 price: String(row["Precio"] || row["price"] || ""),
-                material: row["Material"] || row["material"] || "",
-                occasion: row["Ocasión"] || row["occasion"] || "",
-                style_notes: row["Notas de Estilo"] || row["style_notes"] || "",
                 cantidad: String(row["Stock"] || row["cantidad"] || "1"),
               },
+              customFields: extractedCustomFields,
               videoRef: React.createRef<HTMLVideoElement>(),
             });
           }
@@ -690,12 +724,40 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         }
 
         // Llamar al API route de Next.js para análisis de prenda
+        const baseSchema: Record<string, any> = {
+          title: "nombre creativo del producto",
+          brand: "Identifica la marca",
+          description: "breve descripción",
+          price: 0
+        };
+        const standardFields = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color'];
+        
+        // Identificar campos heredados del PRIMER producto de la lista (si no es este el primero)
+        const firstFile = files[0];
+        const inheritedFields = firstFile?.customFields || [];
+
+        // Agregar campos heredados al esquema base
+        inheritedFields.forEach(cf => {
+           if (cf.key.trim() && !baseSchema[cf.key.trim()]) {
+              baseSchema[cf.key.trim()] = "valor detectado o null";
+           }
+        });
+
+        // Add existing custom fields OF THIS FILE to the schema for AI to fill
+        if (file.customFields) {
+          file.customFields.forEach(cf => {
+            if (cf.key.trim() && !baseSchema[cf.key.trim()]) {
+              baseSchema[cf.key.trim()] = "valor detectado o null";
+            }
+          });
+        }
+
         const response = await fetch("/api/ia/analyze-garment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             imageBase64: base64Image,
-            prompt: `Analiza el vestido en esta imagen. Responde SOLO con JSON válido en español.\n\nJSON requerido:\n{\n  "title": "nombre creativo del vestido",\n  "brand": "Identifica la marca",\n  "color": "color principal",\n  "size": "Identifica la talla",\n  "description": "breve descripción",\n  "price": 0,\n  "material": "No identificable",\n  "occasion": "Boda",\n  "style_notes": "detalles"\n}`
+            dynamicSchema: baseSchema
           }),
           signal,
         });
@@ -718,7 +780,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         setFiles((prev) => {
           const firstFile = prev[0];
           const globalBrand = firstFile?.garmentData.brand;
-          const globalSize = firstFile?.garmentData.size;
 
           return prev.map((f, index) => {
             if (f.id === file.id) {
@@ -734,7 +795,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               // Esto cumple el requerimiento: "si en el primer elemento agrego marca/talla, quiero que los demas se actualicen"
               if (index > 0) {
                 if (globalBrand && globalBrand.trim() !== "") updatedData.brand = globalBrand;
-                if (globalSize && globalSize.trim() !== "") updatedData.size = globalSize;
               }
 
               // Update fields if they are empty or if the title is still the default (filename).
@@ -754,23 +814,54 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               }
 
               const shouldFillBrand = globalBrand === undefined || globalBrand.trim() !== "";
-              const shouldFillSize = globalSize === undefined || globalSize.trim() !== "";
 
               if (shouldFillBrand && !updatedData.brand && result.brand) updatedData.brand = result.brand;
               if (!updatedData.description && result.description) updatedData.description = result.description;
-              if (!updatedData.color && result.color) updatedData.color = result.color;
               if (!updatedData.price && priceString) updatedData.price = priceString;
-              if (!updatedData.material && result.material) updatedData.material = result.material;
-              if (!updatedData.occasion && result.occasion) updatedData.occasion = result.occasion;
-              if (!updatedData.style_notes && result.style_notes) updatedData.style_notes = result.style_notes;
 
-              if (shouldFillSize && (!updatedData.size || updatedData.size === "M" || updatedData.size.trim() === "") && result.size) {
-                updatedData.size = result.size;
+              const standardFields2 = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color', 'usage', 'error', 'success'];
+              const aiCustomFields: { id: string, key: string, value: string }[] = [...(f.customFields || [])];
+              
+              // Si no es el primer archivo, también heredamos los campos vacíos del primero si faltan en este
+              if (index > 0) {
+                 const firstCustomFields = prev[0]?.customFields || [];
+                 firstCustomFields.forEach(cf1 => {
+                    const exists = aiCustomFields.some(cfx => cfx.key.toLowerCase() === cf1.key.toLowerCase());
+                    if (!exists && cf1.key.trim()) {
+                       aiCustomFields.push({ id: `cf-inherited-${Date.now()}-${cf1.key}`, key: cf1.key, value: "" });
+                    }
+                 });
               }
+
+              // Update customFields WITH case-insensitivity
+              aiCustomFields.forEach(cf => {
+                if (cf.key) {
+                  const rkFound = Object.keys(result).find(rk => rk.toLowerCase() === cf.key.toLowerCase());
+                  if (rkFound && result[rkFound] !== undefined && result[rkFound] !== null) {
+                    cf.value = String(result[rkFound]);
+                  }
+                }
+              });
+
+              // Add new custom fields from AI result if they were requested in baseSchema and not already present
+              Object.keys(result).forEach(rk => {
+                 const keyResult = rk.trim();
+                 const valResult = result[rk];
+                 if (keyResult && !standardFields2.includes(keyResult) && valResult !== undefined && valResult !== null) {
+                    const alreadyPresent = aiCustomFields.some(cf => cf.key.toLowerCase() === keyResult.toLowerCase());
+                    if (!alreadyPresent) {
+                       const isRequested = Object.keys(baseSchema).some(bk => bk.toLowerCase() === keyResult.toLowerCase());
+                       if (isRequested) {
+                          aiCustomFields.push({ id: `cf-ia-${Date.now()}-${keyResult}`, key: keyResult, value: String(valResult) });
+                       }
+                    }
+                 }
+              });
 
               return {
                 ...f,
                 garmentData: updatedData,
+                customFields: aiCustomFields,
                 status: (f.status === "edited" ? "ready" : "analyzed") as UploadStatus,
                 imagen_principal_base64: base64Image // Guardar el frame capturado
               };
@@ -817,9 +908,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     // Una prenda está lista para el proceso de guardado si tiene campos obligatorios: título, marca, talla y color
     const filesToProcess = files.filter((f) =>
       f.garmentData.title &&
-      f.garmentData.brand &&
-      f.garmentData.size &&
-      f.garmentData.color
+      f.garmentData.brand
     );
 
     if (filesToProcess.length === 0) {
@@ -873,13 +962,29 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             formData.append("title", f.garmentData.title);
             formData.append("brand", f.garmentData.brand);
             formData.append("description", f.garmentData.description);
-            formData.append("size", f.garmentData.size);
-            formData.append("color", f.garmentData.color);
+            if (f.garmentData.size) formData.append("size", f.garmentData.size);
+            if (f.garmentData.color) formData.append("color", f.garmentData.color);
             if (f.garmentData.price) formData.append("price", f.garmentData.price);
-            formData.append("material", f.garmentData.material);
-            formData.append("occasion", f.garmentData.occasion);
-            formData.append("style_notes", f.garmentData.style_notes);
             formData.append("cantidad", f.garmentData.cantidad || "0");
+            
+            // Atributos dinámicos combinados
+            const standardFields = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color'];
+            
+            // 1. Del garmentData original (ej. Excel)
+            Object.entries(f.garmentData).forEach(([k, v]) => {
+              if (!standardFields.includes(k) && v && String(v).trim()) {
+                formData.append(k, String(v));
+              }
+            });
+
+            // 2. Del customFields (UI)
+            if (f.customFields) {
+              f.customFields.forEach(cf => {
+                if (cf.key.trim() && cf.value.trim()) {
+                  formData.append(cf.key.trim().toLowerCase(), String(cf.value));
+                }
+              });
+            }
 
             response = await fetch("/api/products", {
               method: "POST",
@@ -933,9 +1038,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
   const readyToSaveCount = files.filter((f) =>
     f.garmentData.title &&
-    f.garmentData.brand &&
-    f.garmentData.size &&
-    f.garmentData.color
+    f.garmentData.brand
   ).length;
 
   const pendingAutocompleteCount = files.filter((f) =>
@@ -1102,6 +1205,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 )}
               </div>
 
+
+
               <div className="space-y-4">
                 {files.map((file) => (
                   <div
@@ -1156,7 +1261,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                         )}
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 gap-3">
                         <div className="space-y-1">
                           <input
                             type="text"
@@ -1170,38 +1275,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                           {file.validationErrors?.brand && (
                             <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
                               {file.validationErrors.brand}
-                            </span>
-                          )}
-                        </div>
-                        <div className="space-y-1">
-                          <input
-                            type="text"
-                            placeholder="Talla"
-                            value={file.garmentData.size}
-                            onChange={(e) =>
-                              handleInputChange(file.id, "size", e.target.value)
-                            }
-                            className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.size ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-color-three/20 dark:border-[#2a2a2a] focus:ring-1 focus:ring-color-one dark:focus:ring-white'}`}
-                          />
-                          {file.validationErrors?.size && (
-                            <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
-                              {file.validationErrors.size}
-                            </span>
-                          )}
-                        </div>
-                        <div className="space-y-1">
-                          <input
-                            type="text"
-                            placeholder="Color"
-                            value={file.garmentData.color}
-                            onChange={(e) =>
-                              handleInputChange(file.id, "color", e.target.value)
-                            }
-                            className={`w-full p-2 border rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors ${file.validationErrors?.color ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-color-three/20 dark:border-[#2a2a2a] focus:ring-1 focus:ring-color-one dark:focus:ring-white'}`}
-                          />
-                          {file.validationErrors?.color && (
-                            <span className="text-[10px] text-red-500 dark:text-red-400 font-medium block px-1">
-                              {file.validationErrors.color}
                             </span>
                           )}
                         </div>
@@ -1266,37 +1339,75 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                         )}
                       </div>
 
-                      <input
-                        type="text"
-                        placeholder="Materiales (ej: Seda, Lino)"
-                        value={file.garmentData.material}
-                        onChange={(e) =>
-                          handleInputChange(file.id, "material", e.target.value)
-                        }
-                        className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Ocasión (ej: Boda, Gala)"
-                        value={file.garmentData.occasion}
-                        onChange={(e) =>
-                          handleInputChange(file.id, "occasion", e.target.value)
-                        }
-                        className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Notas de Estilo (ej: Corte sirena)"
-                        value={file.garmentData.style_notes}
-                        onChange={(e) =>
-                          handleInputChange(
-                            file.id,
-                            "style_notes",
-                            e.target.value,
-                          )
-                        }
-                        className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-md text-sm bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors"
-                      />
+                      {file.customFields?.map((cf, idx) => (
+                        <div key={cf.id} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            placeholder="Nombre (ej. Talla)"
+                            value={cf.key}
+                            onChange={(e) => {
+                               setFiles(prev => prev.map(f => {
+                                 if (f.id === file.id && f.customFields) {
+                                    const newCustom = [...f.customFields];
+                                    newCustom[idx].key = e.target.value;
+                                    return { ...f, customFields: newCustom };
+                                 }
+                                 return f;
+                               }));
+                            }}
+                            className="w-1/3 p-2 border border-stone-300 dark:border-stone-700 rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white font-medium"
+                          />
+                          <div className="flex-1 relative group flex items-center">
+                            <input
+                              type="text"
+                              placeholder="Valor"
+                              value={cf.value}
+                              onChange={(e) => {
+                                setFiles(prev => prev.map(f => {
+                                  if (f.id === file.id && f.customFields) {
+                                     const newCustom = [...f.customFields];
+                                     newCustom[idx].value = e.target.value;
+                                     return { ...f, customFields: newCustom };
+                                  }
+                                  return f;
+                                }));
+                              }}
+                              className="w-full p-2 border border-stone-300 dark:border-stone-700 rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 transition-colors pr-8"
+                            />
+                            <button
+                              onClick={() => {
+                                setFiles(prev => prev.map(f => {
+                                  if (f.id === file.id && f.customFields) {
+                                    const newCustom = [...f.customFields];
+                                    newCustom.splice(idx, 1);
+                                    return { ...f, customFields: newCustom };
+                                  }
+                                  return f;
+                                }));
+                              }}
+                              className="absolute right-2 text-stone-400 hover:text-red-500 transition-colors"
+                              title="Eliminar atributo"
+                            >
+                              <CloseIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <button
+                        onClick={() => {
+                           setFiles(prev => prev.map(f => {
+                              if (f.id === file.id) {
+                                 const newCustom = [...(f.customFields || []), { id: `cf-${Date.now()}`, key: "", value: "" }];
+                                 return { ...f, customFields: newCustom };
+                              }
+                              return f;
+                           }));
+                        }}
+                        className="text-[12px] text-sky-500 hover:text-sky-600 dark:text-sky-400 font-medium text-left bg-sky-50 dark:bg-sky-900/10 px-3 py-2 rounded-md transition-colors w-fit border border-sky-100 dark:border-sky-800"
+                      >
+                        + Añadir campo a este producto
+                      </button>
 
                       {file.status === "uploading" && (
                         <ProgressBar progress={file.progress} />

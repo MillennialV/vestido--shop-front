@@ -27,6 +27,7 @@ const QrBatchConfigModal = dynamic(() => import("@/components/modals/QrBatchConf
 const DownloadAllModal = dynamic(() => import("@/components/modals/DownloadAllModal"), { ssr: false });
 const BannerUploadModal = dynamic(() => import("@/components/modals/BannerUploadModal"), { ssr: false });
 const BannerEditModal = dynamic(() => import("@/components/modals/BannerEditModal"), { ssr: false });
+const FilterConfigModal = dynamic(() => import("@/components/modals/FilterConfigModal"), { ssr: false });
 const CategoryManagerModal = dynamic(() => import("@/components/blog/CategoryManagerModal"), { ssr: false });
 import { BannerUploadItem } from "@/components/modals/BannerUploadModal";
 
@@ -97,7 +98,96 @@ export default function HomeClient({
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({ brand: "all", size: "all", occasion: "all" });
+  const [activeFilterKeys, setActiveFilterKeys] = useState<string[]>(['brand']);
+  const [filters, setFilters] = useState<Record<string, string>>({ brand: "all" });
+  const [isFilterConfigModalOpen, setIsFilterConfigModalOpen] = useState(false);
+  const [allProductsForFilters, setAllProductsForFilters] = useState<Garment[]>([]);
+
+  // Obtener configuración de filtros al montar
+  useEffect(() => {
+    const loadFilterConfig = async () => {
+      try {
+        const res = await fetch('/api/products/filter-config');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.campos_activos) {
+            setActiveFilterKeys(data.campos_activos);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading filter config:", error);
+      }
+    };
+    loadFilterConfig();
+  }, []);
+
+  useEffect(() => {
+    const loadAllProductsForFilters = async () => {
+      try {
+        // Fetch a large number of products to get all available filter options
+        // Ideally this should be a dedicated "facets" endpoint, but fetching all works for now
+        const res = await fetch('/api/products?limit=1000&sort=created_at&order=desc');
+        if (res.ok) {
+          const data = await res.json();
+          const all = Array.isArray(data) ? data : data.products || [];
+          setAllProductsForFilters(all);
+        }
+      } catch (error) {
+        console.error("Error loading filter options:", error);
+      }
+    };
+    loadAllProductsForFilters();
+  }, []);
+  // Detectar todos los atributos dinámicos posibles de TODOS los productos disponibles
+  const availableAttributes = useMemo(() => {
+    const keys = new Set<string>();
+    keys.add('brand');
+    
+    const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
+    
+    sourceData.forEach(garment => {
+      const standardKeys = [
+        'id', 'brand', 'title', 'description', 'videoUrl', 'imagen_principal', 'imagenes',
+        'price', 'slug', 'cantidad', 'disponible', 'sku', 'estado', 'categoria_id',
+        'subcategoria', 'tags', 'precio_original', 'precio_descuento', 'porcentaje_descuento',
+        'cantidad_minima', 'ubicacion', 'costo', 'margen_ganancia', 'meta_title',
+        'meta_description', 'keywords', 'destacado', 'nuevo', 'codigo_barras',
+        'garantia', 'qr', 'sticker', 'created_at', 'updated_at', 'created_by', 'size', 'occasion'
+      ];
+      
+      Object.keys(garment).forEach(key => {
+        if (!standardKeys.includes(key)) {
+          keys.add(key);
+        }
+      });
+      
+      if (garment.size) keys.add('size');
+      if (garment.occasion) keys.add('occasion');
+    });
+    
+    return Array.from(keys);
+  }, [allProductsForFilters, initialGarments]);
+
+  // Calcular opciones de cada filtro dinámicamente basado en los productos disponibles
+  const filterOptions = useMemo(() => {
+    const options: Record<string, Set<string>> = {};
+    activeFilterKeys.forEach(key => options[key] = new Set<string>());
+
+    garments.forEach((garment: any) => {
+      activeFilterKeys.forEach(key => {
+        const val = garment[key];
+        if (val && val !== '') {
+          options[key].add(String(val));
+        }
+      });
+    });
+
+    const result: Record<string, string[]> = {};
+    Object.keys(options).forEach(key => {
+      result[key] = Array.from(options[key]).sort();
+    });
+    return result;
+  }, [garments, activeFilterKeys]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Map<number, Garment>>(new Map());
@@ -219,65 +309,46 @@ export default function HomeClient({
   };
   const filteredGarments = garments;
   const totalPages = pagination.totalPages;
-  const [allProductsForFilters, setAllProductsForFilters] = useState<Garment[]>([]);
-
-  useEffect(() => {
-    const loadAllProductsForFilters = async () => {
-      try {
-        // Fetch a large number of products to get all available filter options
-        // Ideally this should be a dedicated "facets" endpoint, but fetching all works for now
-        const res = await fetch('/api/products?limit=1000&sort=created_at&order=desc');
-        if (res.ok) {
-          const data = await res.json();
-          const all = Array.isArray(data) ? data : data.products || [];
-          setAllProductsForFilters(all);
-        }
-      } catch (error) {
-        console.error("Error loading filter options:", error);
-      }
-    };
-    loadAllProductsForFilters();
-  }, []);
-
-  const uniqueFilters = useMemo(() => {
-    const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
-    const getUnique = (arr: (string | undefined | null)[]) =>
-      [...new Set(arr.filter(v => v != null).map(v => String(v).trim()))].filter(Boolean).sort();
-
-    const filterOccasions = sourceData.flatMap((g) =>
-      g.occasion ? g.occasion.split(/[,/]/).map(o => o.trim()) : []
-    );
-
-    const normalizedOccasionsMap = new Map<string, string>();
-    filterOccasions.forEach((o) => {
-      const norm = o.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      if (!normalizedOccasionsMap.has(norm)) {
-        normalizedOccasionsMap.set(norm, o);
-      }
-    });
-
-    return {
-      brands: getUnique(sourceData.map((g) => g.brand)),
-      sizes: getUnique(sourceData.map((g) => g.size)),
-      occasions: Array.from(normalizedOccasionsMap.values()).sort(),
-    };
-  }, [allProductsForFilters, initialGarments]);
-  const handleFilterChange = useCallback((newFilters: { brand?: string; size?: string; occasion?: string }) => {
-    const updatedFilters = { ...filters, ...newFilters };
+  const onFilterChange = useCallback((newFilter: Record<string, string>) => {
+    // 1. Calcular el NUEVO estado completo basado en los filtros actuales y los nuevos
+    const updatedFilters = { ...filters, ...newFilter };
+    
+    // 2. Actualizar el estado inmediatamente
     setFilters(updatedFilters);
     setCurrentPage(1);
 
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
+    // 3. Ejecutar la búsqueda con los filtros recién calculados
     fetchProducts({
       page: 1,
       limit: ITEMS_PER_PAGE,
       ...updatedFilters,
       title: searchQuery
     });
-  }, [filters, searchQuery, fetchProducts, ITEMS_PER_PAGE]);
+  }, [filters, fetchProducts, ITEMS_PER_PAGE, searchQuery]);
+
+  const handleSaveFilterConfig = async (newKeys: string[]) => {
+    try {
+      const res = await fetch('/api/products/filter-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campos_activos: newKeys })
+      });
+
+      if (res.ok) {
+        setActiveFilterKeys(newKeys);
+        setFilters(prev => {
+          const clean: Record<string, string> = { brand: prev.brand || 'all' };
+          newKeys.forEach(k => { clean[k] = prev[k] || 'all'; });
+          return clean;
+        });
+      }
+    } catch (error) {
+      console.error("Error saving filter config:", error);
+    }
+  };
+  if (searchTimeoutRef.current) {
+    clearTimeout(searchTimeoutRef.current);
+  }
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -298,7 +369,9 @@ export default function HomeClient({
   };
 
   const handleClearFilters = useCallback(() => {
-    const defaultFilters = { brand: "all", size: "all", color: "all", occasion: "all" };
+    const defaultFilters: Record<string, string> = {};
+    activeFilterKeys.forEach(k => defaultFilters[k] = 'all');
+    
     setFilters(defaultFilters);
     setSearchQuery("");
     setCurrentPage(1);
@@ -313,7 +386,7 @@ export default function HomeClient({
       ...defaultFilters,
       title: ""
     });
-  }, [fetchProducts, ITEMS_PER_PAGE]);
+  }, [fetchProducts, ITEMS_PER_PAGE, activeFilterKeys]);
 
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
@@ -630,71 +703,79 @@ export default function HomeClient({
         const res = await fetch('/api/products?limit=10000&sort=created_at&order=desc');
         if (!res.ok) throw new Error("Error fetching products for export");
         const data = await res.json();
-        productsToExport = Array.isArray(data) ? data : data.products || [];
+        const fetchedProducts = Array.isArray(data) ? data : data.products || [];
+        console.log("[useProducts] Fetched successfully:", fetchedProducts.length, "products");
+        productsToExport = fetchedProducts;
       }
 
       if (productsToExport.length === 0) {
         alert("No hay productos para exportar.");
         return;
       }
+      // 1. Encontrar todos los atributos dinámicos únicos en los productos a exportar
+      // Excluimos explícitamente campos internos que no queremos en el Excel
+      const internalKeys = [
+        "id", "domain", "organization_id", "categoria_id", "subcategoria", "tags", 
+        "precio_original", "precio_descuento", "porcentaje_descuento", 
+        "cantidad_minima", "ubicacion", "costo", "margen_ganancia", 
+        "meta_title", "meta_description", "keywords", "destacado", "nuevo", 
+        "codigo_barras", "garantia", "qr", "sticker", "created_by", "estado", 
+        "disponible", "sku", "created_at", "updated_at",
+        "categoria", "Categoria", "slug"
+      ];
+      
+      const standardKeys = ["title", "brand", "price", "cantidad", "description", "videoUrl", "imagen_principal", "atributos_dinamicos"];
+      
+      const dynamicKeysSet = new Set<string>();
+      productsToExport.forEach(p => {
+         Object.keys(p).forEach(k => {
+            if (!standardKeys.includes(k) && !internalKeys.includes(k) && (p as any)[k] !== undefined && (p as any)[k] !== null) {
+               dynamicKeysSet.add(k);
+            }
+         });
+      });
+      const dynamicKeys = Array.from(dynamicKeysSet);
 
-      // Headers profesionales
+      // 2. Definir Cabeceras
       const headers = [
-        "ID",
         "Producto",
         "Marca",
-        "Talla",
-        "Color",
         "Precio",
         "Stock",
-        "Material",
-        "Ocasión",
         "Descripción",
-        "Notas de Estilo",
         "URL Video",
         "URL Imagen",
-        "Slug",
-        "Fecha de Registro",
-        "Link"
+        "Atributos Dinámicos",
+        "Link",
+        ...dynamicKeys.map(k => k.charAt(0).toUpperCase() + k.slice(1))
       ];
 
+      // 3. Generar Filas
+      const clean = (text: any) =>
+        text !== undefined && text !== null ? `"${String(text).replace(/"/g, '""').replace(/\n/g, ' ')}"` : '""';
+
       const rows = productsToExport.map(p => {
-        // Formatear fecha de forma legible
-        const date = p.created_at ? new Date(p.created_at).toLocaleDateString('es-ES') : 'N/A';
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+        const productLink = `${baseUrl}/producto/${p.slug || slugify(p.title)}`;
 
-        // Construir link público del producto
-        const origin = typeof window !== "undefined" ? window.location.origin : "";
-        const computedSlug = slugify(p.title);
-        const link =
-          origin && computedSlug
-            ? `${origin}/producto/${computedSlug}`
-            : "";
-
-        // Limpiar textos para evitar que rompan el CSV
-        const clean = (text: string | undefined | null) =>
-          text ? `"${text.replace(/"/g, '""').replace(/\n/g, ' ')}"` : '""';
-
-        return [
-          p.id,
+        const baseRow = [
           clean(p.title),
           clean(p.brand),
-          clean(p.size),
-          clean(p.color),
           p.price || 0,
           p.cantidad || 0,
-          clean(p.material),
-          clean(p.occasion),
           clean(p.description),
-          clean(p.style_notes),
           clean(p.videoUrl),
           clean(p.imagen_principal),
-          clean(p.slug),
-          clean(date),
-          clean(link)
+          clean(JSON.stringify(p.atributos_dinamicos || {})),
+          clean(productLink)
         ];
+
+        // Añadir valores dinámicos
+        const dynamicValues = dynamicKeys.map(k => clean((p as any)[k]));
+        return [...baseRow, ...dynamicValues];
       });
 
-      // Usamos punto y coma (;) como separador para mejor compatibilidad con Excel en regiones con coma decimal
+      // 4. Construir CSV
       const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -705,7 +786,6 @@ export default function HomeClient({
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-
     } catch (error) {
       console.error(error);
       alert("Error al exportar a Excel.");
@@ -817,11 +897,10 @@ export default function HomeClient({
         navigate={(path) => window.location.href = path}
         isFilterVisible={isFilterVisible}
         onToggleFilters={() => setIsFilterVisible(!isFilterVisible)}
-        brands={uniqueFilters.brands}
-        sizes={uniqueFilters.sizes}
-        occasions={uniqueFilters.occasions}
+        activeFilterKeys={activeFilterKeys}
+        filterOptions={filterOptions}
         filters={filters}
-        onFilterChange={handleFilterChange}
+        onFilterChange={onFilterChange}
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
       />
@@ -923,17 +1002,15 @@ export default function HomeClient({
                 />
               )}
               <FilterBar
-                brands={uniqueFilters.brands}
-                sizes={uniqueFilters.sizes}
-                occasions={uniqueFilters.occasions}
+                activeFilterKeys={activeFilterKeys}
+                filterOptions={filterOptions}
                 filters={filters}
-                onFilterChange={handleFilterChange}
+                onFilterChange={onFilterChange}
                 searchQuery={searchQuery}
                 onSearchChange={handleSearchChange}
                 isFilterVisible={isFilterVisible}
                 onToggleFilters={() => setIsFilterVisible(!isFilterVisible)}
                 onClearFilters={handleClearFilters}
-                totalProducts={pagination.total}
                 gridColumns={gridColumns}
                 onGridColumnsChange={(cols) => {
                   setGridColumns(cols);
@@ -949,6 +1026,9 @@ export default function HomeClient({
                     });
                   }
                 }}
+                totalProducts={pagination.total}
+                isAdmin={authenticated}
+                onOpenConfig={() => setIsFilterConfigModalOpen(true)}
               />
 
               {filteredGarments.length > 0 ? (
@@ -1242,6 +1322,15 @@ export default function HomeClient({
         isProcessing={isDeletingProduct}
       />
       <SiteFooter seoTitle={seoTitle} />
+      {isFilterConfigModalOpen && (
+        <FilterConfigModal
+          isOpen={isFilterConfigModalOpen}
+          onClose={() => setIsFilterConfigModalOpen(false)}
+          availableAttributes={availableAttributes}
+          activeKeys={activeFilterKeys}
+          onSave={handleSaveFilterConfig}
+        />
+      )}
     </div>
   );
 }

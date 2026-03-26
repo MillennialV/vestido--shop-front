@@ -19,34 +19,37 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
   const abortControllerRef = useRef<AbortController | null>(null);
   const detailAbortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchProducts = useCallback(async (params: { page?: number; limit?: number; brand?: string; size?: string; color?: string; occasion?: string; q?: string; title?: string } = {}) => {
+  const fetchProducts = useCallback(async (params: { page?: number; limit?: number; [key: string]: any } = {}) => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     const controller = new AbortController();
     abortControllerRef.current = controller;
-
+ 
     setIsLoading(true);
     setError(null);
     try {
       const page = params.page || 1;
       const limit = params.limit || 12;
-
+ 
+      console.log("[useProducts] Building query with params:", params);
       const queryParams = new URLSearchParams({
         page: String(page),
         limit: String(limit),
         sort: 'created_at',
         order: 'desc'
       });
+ 
+      // Agregar todos los parámetros de filtro adicionales
+      Object.entries(params).forEach(([key, value]) => {
+        if (!['page', 'limit'].includes(key) && value !== undefined && value !== null && value !== 'all' && value !== '') {
+          queryParams.append(key, String(value));
+        }
+      });
 
-      if (params.brand && params.brand !== 'all') queryParams.append('brand', params.brand);
-      if (params.size && params.size !== 'all') queryParams.append('size', params.size);
-      if (params.color && params.color !== 'all') queryParams.append('color', params.color);
-      if (params.occasion && params.occasion !== 'all') queryParams.append('occasion', params.occasion);
-      if (params.q) queryParams.append('q', params.q);
-      if (params.title) queryParams.append('title', params.title);
+      const finalUrl = `/api/products?${queryParams.toString()}`;
 
-      const res = await fetch(`/api/products?${queryParams.toString()}`, {
+      const res = await fetch(finalUrl, {
         signal: controller.signal
       });
       if (!res.ok) throw new Error('Error al cargar productos');

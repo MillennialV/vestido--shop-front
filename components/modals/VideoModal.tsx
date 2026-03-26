@@ -395,6 +395,14 @@ const VideoModal: React.FC<VideoModalProps> = ({
   message += `*ID de Producto:* ${garment.id}\n`;
   message += `*Talla:* ${garment.size}\n`;
   message += `*Color:* ${garment.color}\n`;
+  if (garment.atributos_dinamicos) {
+    Object.entries(garment.atributos_dinamicos).forEach(([key, value]) => {
+      if (value && String(value).trim() !== '') {
+        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
+        message += `*${formattedKey}:* ${value}\n`;
+      }
+    });
+  }
   if (garment.price) {
     const priceValue =
       typeof garment.price === "string"
@@ -731,6 +739,15 @@ const VideoModal: React.FC<VideoModalProps> = ({
                     <li>
                       <strong>Tallas Disponibles:</strong> {garment.size}
                     </li>
+                    {garment.atributos_dinamicos && Object.entries(garment.atributos_dinamicos).map(([key, value]) => {
+                      if (!value || String(value).trim() === '') return null;
+                      const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
+                      return (
+                        <li key={key}>
+                          <strong>{formattedKey}:</strong> {String(value)}
+                        </li>
+                      );
+                    })}
                     {garment.cantidad !== undefined && (
                       <li>
                         <strong>Disponibilidad:</strong> {garment.cantidad > 0 ? (
