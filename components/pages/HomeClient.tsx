@@ -1120,6 +1120,7 @@ export default function HomeClient({
                 totalProducts={totalProducts}
                 isAdmin={authenticated}
                 onOpenConfig={() => setIsFilterConfigModalOpen(true)}
+                isLoading={isLoading}
               />
 
               {filteredGarments.length > 0 ? (

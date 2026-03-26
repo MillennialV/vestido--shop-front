@@ -17,6 +17,7 @@ interface FilterBarProps {
     totalProducts?: number;
     isAdmin?: boolean;
     onOpenConfig?: () => void;
+    isLoading?: boolean;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
@@ -34,6 +35,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     totalProducts = 0,
     isAdmin = false,
     onOpenConfig,
+    isLoading = false,
 }) => {
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -146,11 +148,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         {[2, 3, 4, 5].map((cols) => (
                             <button
                                 key={cols}
-                                onClick={() => onGridColumnsChange(cols)}
+                                onClick={() => !isLoading && onGridColumnsChange(cols)}
+                                disabled={isLoading}
                                 className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${gridColumns === cols
                                     ? "bg-color-three dark:bg-[#2a2a2a] text-color-four dark:text-white shadow-sm"
                                     : "text-stone-400 hover:text-stone-600 dark:text-[#a0a0a0] dark:hover:text-white"
-                                    } ${cols === 4 ? "hidden lg:flex" : cols === 5 ? "hidden xl:flex" : "flex"}`}
+                                    } ${cols === 4 ? "hidden lg:flex" : cols === 5 ? "hidden xl:flex" : "flex"} ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                                 aria-label={`Ver ${cols} columnas`}
                             >
                                 <div className="grid gap-[1px] w-3 h-3" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
