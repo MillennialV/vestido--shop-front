@@ -718,6 +718,21 @@ const VideoModal: React.FC<VideoModalProps> = ({
                   onClick={() => handleAccordionClick("details")}
                 >
                   <ul className="space-y-2 list-disc list-inside">
+                    {/* 1. Atributos Dinámicos (Personalizados) */}
+                    {garment.atributos_dinamicos && Object.entries(garment.atributos_dinamicos).map(([key, value]) => {
+                      if (!value || String(value).trim() === '') return null;
+                      // Evitar duplicar campos que mostraremos en la sección "Fija"
+                      if (['size', 'color', 'material', 'occasion', 'style_notes'].includes(key.toLowerCase())) return null;
+                      
+                      const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
+                      return (
+                        <li key={key}>
+                          <strong>{formattedKey}:</strong> {String(value)}
+                        </li>
+                      );
+                    })}
+
+                    {/* 2. Atributos Fijos (En duro) */}
                     {garment.material && (
                       <li>
                         <strong>Material:</strong> {garment.material}
@@ -733,29 +748,26 @@ const VideoModal: React.FC<VideoModalProps> = ({
                         <strong>Notas de Estilo:</strong> {garment.style_notes}
                       </li>
                     )}
-                    <li>
-                      <strong>Color:</strong> {garment.color}
-                    </li>
-                    <li>
-                      <strong>Tallas Disponibles:</strong> {garment.size}
-                    </li>
-                    {garment.atributos_dinamicos && Object.entries(garment.atributos_dinamicos).map(([key, value]) => {
-                      if (!value || String(value).trim() === '') return null;
-                      const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
-                      return (
-                        <li key={key}>
-                          <strong>{formattedKey}:</strong> {String(value)}
-                        </li>
-                      );
-                    })}
-                    {garment.cantidad !== undefined && (
+                    {garment.color && (
                       <li>
+                        <strong>Color:</strong> {garment.color}
+                      </li>
+                    )}
+                    {garment.size && (
+                      <li>
+                        <strong>Tallas Disponibles:</strong> {garment.size}
+                      </li>
+                    )}
+
+                    {/* 3. Disponibilidad / Stock (Al final) */}
+                    {garment.cantidad !== undefined && (
+                      <li className="pt-2 border-t border-stone-100 dark:border-stone-800 mt-2">
                         <strong>Disponibilidad:</strong> {garment.cantidad > 0 ? (
-                          <span className="text-green-600 dark:text-green-400 font-semibold">
+                          <span className="text-green-600 dark:text-green-400 font-semibold ml-1">
                             En Stock ({garment.cantidad} unidades)
                           </span>
                         ) : (
-                          <span className="text-red-600 dark:text-red-400 font-semibold">
+                          <span className="text-red-600 dark:text-red-400 font-semibold ml-1">
                             Agotado
                           </span>
                         )}
