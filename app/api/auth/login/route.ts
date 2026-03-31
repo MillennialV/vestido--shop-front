@@ -26,10 +26,16 @@ export async function POST(req: NextRequest) {
     const token = (data as any).data?.token;
     let organization = (data as any).data?.organization;
 
+    console.log('[Login API Route] Backend response organization:', organization);
+
     if (token && !organization) {
       try {
-        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-        organization = payload.organization || null;
+        const payloadStr = Buffer.from(token.split('.')[1], 'base64').toString();
+        const payload = JSON.parse(payloadStr);
+        console.log('[Login API Route] Decoded token payload:', JSON.stringify(payload));
+        
+        organization = payload.organization || (payload.organizationId ? { id: payload.organizationId } : null);
+        console.log('[Login API Route] Organization after decoding fallback:', organization);
       } catch (e) {
         console.error('Error decoding token for organization:', e);
       }
