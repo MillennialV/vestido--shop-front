@@ -356,11 +356,7 @@
     font-weight: 400;
     line-height: 1.6;
     letter-spacing: -3%;
-    color: #ffffff;
-}
-
-.dark .font-title-card {
-    color: #ffffff;
+    color: var(--color-color-one);
 }
 
 .font-subtitle-card {
