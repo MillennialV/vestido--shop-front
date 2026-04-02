@@ -1143,6 +1143,7 @@ export default function HomeClient({
                       onToggleSelection={handleToggleSelection}
                       isDisabled={isProductLoading || !!selectedGarment}
                       priority={index < 6}
+                      activeFilterKeys={activeFilterKeys}
                     />
                   ))}
                 </div>

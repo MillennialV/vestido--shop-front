@@ -37,6 +37,7 @@ interface VideoCardProps {
   onToggleSelection?: (garment: Garment) => void;
   isDisabled?: boolean;
   priority?: boolean;
+  activeFilterKeys?: string[];
 }
 
 const VideoCard: React.FC<VideoCardProps> = ({
@@ -50,6 +51,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   onToggleSelection,
   isDisabled = false,
   priority = false,
+  activeFilterKeys = ["brand"],
 }) => {
   const { storeInfo } = useRemoteTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -374,16 +376,41 @@ const VideoCard: React.FC<VideoCardProps> = ({
           </h3>
 
           <p className="font-subtitle-card text-center pt-[17px]">
-            {brandDisplay && (
-              <>{brandDisplay} &middot; </>
-            )}
-            Talla: {garment.size || "N/A"} {garment.color && `· ${garment.color}`}
-            {garment.price && ` · S/ ${garment.price}`}
-            {isAdmin && garment.cantidad !== undefined && (
-              <span className={`block mt-1 font-bold ${garment.cantidad > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                Stock: {garment.cantidad}
-              </span>
-            )}
+            {(() => {
+              const displayFields: string[] = [];
+
+              // 1. Marca - siempre al inicio si existe
+              if (brandDisplay) displayFields.push(brandDisplay);
+
+              // 2. Otros campos dinámicos - solo si están en los filtros activos
+              if (activeFilterKeys && activeFilterKeys.length > 0) {
+                activeFilterKeys.forEach((key) => {
+                  if (key === "brand") return; // Ya lo manejamos arriba
+
+                  const val = garment[key];
+                  if (val && String(val).trim() !== "" && typeof val !== "object" && String(val).toLowerCase() !== "no identificable") {
+                    displayFields.push(String(val));
+                  }
+                });
+              }
+
+              // 3. Unir todo con " - "
+              const subtitleText = displayFields.join(" - ");
+
+              return (
+                <>
+                  {subtitleText}
+                  {garment.price && ` · S/ ${garment.price}`}
+                  {isAdmin && garment.cantidad !== undefined && (
+                    <span
+                      className={`block mt-1 font-bold ${garment.cantidad > 0 ? "text-green-400" : "text-red-400"}`}
+                    >
+                      Stock: {garment.cantidad}
+                    </span>
+                  )}
+                </>
+              );
+            })()}
           </p>
         </div>
       </div>
