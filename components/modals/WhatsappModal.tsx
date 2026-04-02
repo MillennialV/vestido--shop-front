@@ -22,7 +22,7 @@ const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
       setTimeout(() => setIsVisible(true), 10);
       
       // Inicializar con el número del storeInfo o localStorage
-      const currentNumber = storeInfo?.whatsapp || localStorage.getItem("whatsappNumber") || "956382746";
+      const currentNumber = storeInfo?.whatsapp || localStorage.getItem("whatsappNumber") || "";
       // Limpiar prefijo +51 si existe para el input
       const localPart = currentNumber.startsWith("51") ? currentNumber.substring(2) : currentNumber;
       // Solo dejar dígitos
@@ -117,7 +117,7 @@ const WhatsappModal: React.FC<WhatsappModalProps> = ({ isOpen, onClose }) => {
                   type="text"
                   value={whatsappNumber}
                   onChange={handleWhatsappNumberChange}
-                  placeholder="956382746"
+                  placeholder="900 000 000"
                   maxLength={9}
                   className="input-primary flex-1 px-4 py-2.5 border border-color-three/20 dark:border-[#2a2a2a] rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#25D366] text-sm"
                 />

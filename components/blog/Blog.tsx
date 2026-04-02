@@ -29,7 +29,7 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onManageCategor
             <header className="text-center mb-[18px]">
                 <h2 className="font-h1">Nuestro Blog</h2>
                 <p className="font-p mt-[28px] w-[60%] mx-auto">
-                    Inspiración, estilo y las historias detrás de cada diseño. Sumérgete en el universo de Womanity Boutique.
+                    Encuentra aquí las últimas actualizaciones, guías y artículos de interés. Tu fuente de inspiración diaria.
                 </p>
                 {authenticated && (
                     <div className="mt-8 flex justify-center gap-4">

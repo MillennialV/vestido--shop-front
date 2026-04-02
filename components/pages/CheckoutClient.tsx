@@ -90,7 +90,12 @@ const CheckoutClient = () => {
     setIsProcessing(true);
     
     // Preparar el mensaje de WhatsApp
-    const whatsappNumber = storeInfo?.whatsapp || "51900000000"; // Fallback number
+    const whatsappNumber = storeInfo?.whatsapp;
+    if (!whatsappNumber) {
+      setIsProcessing(false);
+      alert("No se ha configurado un número de WhatsApp para recibir pedidos.");
+      return;
+    }
     const customerName = `${formData.firstName} ${formData.lastName}`;
     const fullAddress = `${formData.address}, ${formData.city}, ${formData.state} ${formData.zip}`;
     
@@ -460,9 +465,9 @@ const CheckoutClient = () => {
               </div>
               <button 
                 onClick={handlePlaceOrder}
-                disabled={isProcessing || !stepsCompleted[3]}
+                disabled={isProcessing || !stepsCompleted[3] || !storeInfo?.whatsapp}
                 className={`w-full mt-10 py-5 rounded-2xl font-extrabold flex items-center justify-center gap-3 transition-all shadow-xl active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
-                  ${stepsCompleted[3] ? 'bg-color-one text-white hover:opacity-90' : 'bg-stone-100 dark:bg-[#0f0f0f] text-stone-400'}
+                  ${stepsCompleted[3] && storeInfo?.whatsapp ? 'bg-color-one text-white hover:opacity-90' : 'bg-stone-100 dark:bg-[#0f0f0f] text-stone-400'}
                 `}
               >
                 {isProcessing ? (
@@ -473,10 +478,18 @@ const CheckoutClient = () => {
                     </svg>
                     Procesando...
                   </span>
+                ) : !storeInfo?.whatsapp ? (
+                  "Número no configurado"
                 ) : (
                   <>Enviar pedido por WhatsApp <ShoppingCartIcon className="w-5 h-5" /></>
                 )}
               </button>
+
+              {!storeInfo?.whatsapp && (
+                <p className="mt-4 text-xs text-red-500 font-bold text-center">
+                  ⚠️ El administrador debe configurar un número de WhatsApp.
+                </p>
+              )}
 
               <div className="mt-6 flex items-center justify-center gap-2 text-stone-400 dark:text-[#a0a0a0]">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -722,14 +722,25 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                           controls
                           crossOrigin="anonymous"
                           className="w-full h-full object-contain"
+                          onError={(e) => {
+                            // Si falla por CORS (crossOrigin), intentar cargar sin él
+                            const video = e.currentTarget;
+                            if (video.crossOrigin) {
+                              video.removeAttribute('crossOrigin');
+                              video.load();
+                            }
+                          }}
                         />
                       )
                     ) : (
                       <img
                         src={previewUrl}
-                        crossOrigin="anonymous"
                         className="w-full h-full object-contain"
                         alt="Preview"
+                        onError={(e) => {
+                          const img = e.currentTarget;
+                          img.style.display = 'none';
+                        }}
                       />
                     )}
                   </div>

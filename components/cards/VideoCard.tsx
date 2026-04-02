@@ -200,7 +200,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
         'cantidad_minima', 'ubicacion', 'costo', 'margen_ganancia', 'meta_title',
         'meta_description', 'keywords', 'destacado', 'nuevo', 'codigo_barras',
         'garantia', 'qr', 'sticker', 'created_at', 'updated_at', 'created_by', 'size', 'occasion', 
-        'imagen_principal_base64', 'atributos_dinamicos'
+        'imagen_principal_base64', 'atributos_dinamicos', 'categoria', 'Categoria'
       ];
       return !standardKeys.includes(key) && value && String(value).trim() !== "" && typeof value !== 'object';
     })

@@ -158,7 +158,8 @@ export default function HomeClient({
         'subcategoria', 'tags', 'precio_original', 'precio_descuento', 'porcentaje_descuento',
         'cantidad_minima', 'ubicacion', 'costo', 'margen_ganancia', 'meta_title',
         'meta_description', 'keywords', 'destacado', 'nuevo', 'codigo_barras',
-        'garantia', 'qr', 'sticker', 'created_at', 'updated_at', 'created_by', 'size', 'occasion'
+        'garantia', 'qr', 'sticker', 'created_at', 'updated_at', 'created_by', 'size', 'occasion', 
+        'imagen_principal_base64', 'atributos_dinamicos', 'categoria', 'Categoria'
       ];
       
       Object.keys(garment).forEach(key => {
