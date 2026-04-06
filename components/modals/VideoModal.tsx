@@ -257,8 +257,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   const handleShare = async () => {
     if (!garment) return;
     const currentSlug = slugify(garment.title);
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : PUBLIC_URL;
-    const shareUrl = `${baseUrl}/producto/${currentSlug}`;
+    const shareUrl = `${PUBLIC_URL}/producto/${currentSlug}`;
     const shareText = `Mira este producto: ${garment.title}.`;
 
     try {
@@ -322,8 +321,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     if (!garment) return;
 
     const currentSlug = slugify(garment.title);
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : PUBLIC_URL;
-    const shareUrl = `${baseUrl}/producto/${currentSlug}`;
+    const shareUrl = `${PUBLIC_URL}/producto/${currentSlug}`;
     const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
 
     const isMobile = isMobileDevice();
@@ -389,17 +387,16 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   if (!garment) return null;
 
-  let message = `Hola, me interesa el producto:\n\n`;
+  let message = `Hola, me interesa el siguiente producto:\n\n`;
   message += `*Producto:* ${garment.title}\n`;
   if (garment.brand && garment.brand !== "No identificable") {
     message += `*Marca:* ${garment.brand}\n`;
   }
   message += `*ID de Producto:* ${garment.id}\n`;
-  message += `*Talla:* ${garment.size}\n`;
-  message += `*Color:* ${garment.color}\n`;
+  
   if (garment.atributos_dinamicos) {
     Object.entries(garment.atributos_dinamicos).forEach(([key, value]) => {
-      if (value && String(value).trim() !== '') {
+      if (value && String(value).trim() !== '' && String(value) !== 'undefined') {
         const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
         message += `*${formattedKey}:* ${value}\n`;
       }
@@ -417,8 +414,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     }
   }
   if (garment.slug) {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : PUBLIC_URL;
-    const productUrl = `${baseUrl}/producto/${garment.slug}`;
+    const productUrl = `${PUBLIC_URL}/producto/${garment.slug}`;
     message += `*Enlace:* ${productUrl}\n`;
   }
   message += `\n¿Podrían darme más información sobre la disponibilidad?`;
@@ -453,7 +449,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
       "priceCurrency": "PEN",
       "price": typeof garment.price === "number" ? garment.price : parseFloat(String(garment.price || 0)),
       "availability": garment.cantidad && garment.cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      "url": `${typeof window !== 'undefined' ? window.location.origin : PUBLIC_URL}/producto/${slugify(garment.title)}`
+      "url": `${PUBLIC_URL}/producto/${slugify(garment.title)}`
     }
   };
 

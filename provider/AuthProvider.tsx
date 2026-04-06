@@ -71,18 +71,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const isLocalhost = typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
+      let targetUrl = '/panel';
       if (isLocalhost) {
         // En local, si tiene dominio vamos a la raíz, si no al panel
-        window.location.href = targetDomain ? '/' : '/panel';
+        targetUrl = targetDomain ? '/' : '/panel';
       } else if (targetDomain) {
         // Redirigir al dominio propio de la organización en producción
-        window.location.href = `https://${targetDomain}`;
+        targetUrl = `https://${targetDomain}`;
       } else if (slug) {
         // Si no hay dominio, redirigir a la ruta por slug o panel
-        window.location.href = `/${slug}`;
-      } else {
-        window.location.href = '/panel';
+        targetUrl = `/${slug}`;
       }
+
+      window.location.href = targetUrl;
     }
   };
 

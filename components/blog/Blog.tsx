@@ -4,6 +4,7 @@ import type { Post } from '@/types/post';
 import { PlusIcon, EditIcon } from '@/components/ui/Icons';
 import { useAuth } from '@/hooks/useAuth';
 import SimplePagination from '@/components/ui/SimplePagination';
+import { useRemoteTheme } from '@/context/RemoteThemeContext';
 
 interface BlogProps {
     posts: Post[];
@@ -23,13 +24,14 @@ interface BlogProps {
 const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onManageCategories, onEditPost, onDeletePost, isLoading, pagination }) => {
 
     const { authenticated } = useAuth();
+    const { storeInfo } = useRemoteTheme();
 
     return (
         <div className="animate-fade-in-down mb-24">
             <header className="text-center mb-[18px]">
                 <h2 className="font-h1">Nuestro Blog</h2>
                 <p className="font-p mt-[28px] w-[60%] mx-auto">
-                    Encuentra aquí las últimas actualizaciones, guías y artículos de interés. Tu fuente de inspiración diaria.
+                    Noticias, artículos e historias de interés en un solo lugar.
                 </p>
                 {authenticated && (
                     <div className="mt-8 flex justify-center gap-4">

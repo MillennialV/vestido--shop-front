@@ -19,10 +19,16 @@ export async function GET(req: NextRequest) {
       const data = await backendRes.json();
       let organization = data.data?.organization || null;
 
+      console.log('[Session API Route] /api/auth/me organization:', organization);
+
       if (token && !organization) {
         try {
-          const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-          organization = payload.organization || null;
+          const payloadStr = Buffer.from(token.split('.')[1], 'base64').toString();
+          const payload = JSON.parse(payloadStr);
+          console.log('[Session API Route] Decoded token payload:', JSON.stringify(payload));
+          
+          organization = payload.organization || (payload.organizationId ? { id: payload.organizationId } : null);
+          console.log('[Session API Route] Organization after decoding fallback:', organization);
         } catch (e) {
           console.error('Error decoding token for organization in session:', e);
         }

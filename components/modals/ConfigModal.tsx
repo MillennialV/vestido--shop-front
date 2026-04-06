@@ -18,17 +18,17 @@ const LabelWithInfo: React.FC<{ label: string, info: string, htmlFor: string }> 
             const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 0;
             const tooltipWidth = Math.min(256, viewportWidth - 32);
             const halfWidth = tooltipWidth / 2;
-            
+
             let iconCenter = rect.left + rect.width / 2;
             let tooltipLeft = iconCenter;
-            
+
             // Ajustar si se sale por los bordes (clamping)
             if (iconCenter < halfWidth + 16) {
                 tooltipLeft = halfWidth + 16;
             } else if (iconCenter > viewportWidth - halfWidth - 16) {
                 tooltipLeft = viewportWidth - halfWidth - 16;
             }
-            
+
             // Calcular posición de la flecha relativa al centro del tooltip para que apunte al icono
             const offset = iconCenter - tooltipLeft;
             const arrowLeft = `calc(50% + ${offset}px)`;
@@ -43,7 +43,7 @@ const LabelWithInfo: React.FC<{ label: string, info: string, htmlFor: string }> 
 
     return (
         <div className="flex items-center gap-2 mb-2">
-            <label htmlFor={htmlFor} className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-0 cursor-pointer">
+            <label htmlFor={htmlFor} className="block text-xs font-bold text-[var(--color-threes)] uppercase tracking-wider mb-0 cursor-pointer">
                 {label}
             </label>
             <div className="relative flex items-center">
@@ -59,13 +59,13 @@ const LabelWithInfo: React.FC<{ label: string, info: string, htmlFor: string }> 
                         updateCoords();
                         setShowTooltip(!showTooltip);
                     }}
-                    className="text-stone-400 hover:text-stone-600 transition-colors"
+                    className="text-[var(--color-threes)] hover:text-stone-600 transition-colors"
                 >
                     <InfoIcon className="w-3.5 h-3.5" />
                 </button>
                 {showTooltip && typeof document !== 'undefined' && createPortal(
-                    <div 
-                        style={{ 
+                    <div
+                        style={{
                             position: 'absolute',
                             top: `${coords.top + 8}px`,
                             left: `${coords.left}px`,
@@ -75,7 +75,7 @@ const LabelWithInfo: React.FC<{ label: string, info: string, htmlFor: string }> 
                         }}
                         className="p-3 bg-stone-900 text-white text-[11px] leading-relaxed rounded-lg shadow-2xl z-[10000] animate-fade-in pointer-events-none whitespace-normal text-center"
                     >
-                        <div 
+                        <div
                             style={{ left: coords.arrowLeft }}
                             className="absolute bottom-full -translate-x-1/2 border-8 border-transparent border-b-stone-900"
                         ></div>
@@ -127,7 +127,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                     whatsapp: storeInfo.whatsapp || '',
                     is_carousel_enabled: storeInfo.is_carousel_enabled ?? true,
                 } : prev);
-                
+
                 setLocalMetadata(prev => {
                     const newValue = Object.keys(prev).length === 0 ? {
                         title: storeInfo.title || '',
@@ -213,9 +213,21 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
         setIsSaving(true);
         setMessage(null);
         try {
+            // Preparar FormData para enviar los metadatos (necesario para el archivo)
+            const formData = new FormData();
+            
+            // Añadir campos de SEO
+            if (localSEO.keywords) formData.append('keywords', localSEO.keywords);
+            if (localSEO.google_site_verification) formData.append('google_site_verification', localSEO.google_site_verification);
+            
+            // Si hay un archivo seleccionado, enviarlo como 'enlace'
+            if (localSEO.enlace instanceof File) {
+                formData.append('enlace', localSEO.enlace);
+            }
+
             await Promise.all([
                 updateStoreInfo(localMetadata),
-                updateMetadata(localSEO)
+                updateMetadata(formData)
             ]);
             setMessage({ type: 'success', text: 'Información y SEO actualizados correctamente' });
             onClose();
@@ -243,7 +255,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
     const addKeyword = () => {
         const val = tempKeyword.trim();
         if (!val) return;
-        
+
         const currentKeywords = (localSEO.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
         if (!currentKeywords.includes(val)) {
             const newList = [...currentKeywords, val].join(', ');
@@ -273,25 +285,25 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                 <div className="flex border-b border-stone-100 dark:border-[#2a2a2a]">
                     <button
                         onClick={() => setActiveTab('colors')}
-                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'colors' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'colors' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-[var(--color-threes)] hover:text-stone-600'}`}
                     >
                         Colores
                     </button>
                     <button
                         onClick={() => setActiveTab('social')}
-                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'social' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'social' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-[var(--color-threes)] hover:text-stone-600'}`}
                     >
                         Redes
                     </button>
                     <button
                         onClick={() => setActiveTab('metadata')}
-                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'metadata' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'metadata' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-[var(--color-threes)] hover:text-stone-600'}`}
                     >
                         Metadata
                     </button>
                     <button
                         onClick={() => setActiveTab('links')}
-                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'links' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`flex-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all ${activeTab === 'links' ? 'text-color-three dark:text-white border-b-2 border-stone-900 dark:border-white' : 'text-[var(--color-threes)] hover:text-stone-600'}`}
                     >
                         Enlaces
                     </button>
@@ -308,12 +320,12 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                     {activeTab === 'colors' ? (
                         <div className="space-y-6">
                             {/* ... labels and color selectors ... */}
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-x-6 sm:gap-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-x-6 sm:gap-y-6">
                                 {/* Color 1 */}
                                 <div>
-                                    <LabelWithInfo 
-                                        htmlFor="color_one" 
-                                        label="Color Principal (Marca)" 
+                                    <LabelWithInfo
+                                        htmlFor="color_one"
+                                        label="Color Principal (Marca)"
                                         info="El tono dominante que define la identidad de tu tienda. Se aplica en botones, enlaces y elementos destacados."
                                     />
                                     <div className="flex gap-2 items-center">
@@ -327,22 +339,22 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                                 className="absolute inset-[-100%] w-[300%] h-[300%] cursor-pointer border-none bg-transparent"
                                             />
                                         </div>
-                                         <input
-                                             id="color_one"
-                                             name="color_one"
-                                             type="text"
-                                             value={localColors.color_one || ''}
-                                             placeholder="Color principal"
-                                             onChange={(e) => setLocalColors({ ...localColors, color_one: e.target.value })}
-                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
-                                         />
+                                        <input
+                                            id="color_one"
+                                            name="color_one"
+                                            type="text"
+                                            value={localColors.color_one || ''}
+                                            placeholder="Color principal"
+                                            onChange={(e) => setLocalColors({ ...localColors, color_one: e.target.value })}
+                                            className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
+                                        />
                                     </div>
                                 </div>
                                 {/* Color 2 */}
                                 <div>
-                                    <LabelWithInfo 
-                                        htmlFor="color_two" 
-                                        label="Color Secundario" 
+                                    <LabelWithInfo
+                                        htmlFor="color_two"
+                                        label="Color Secundario"
                                         info="Color complementario para crear variedad visual sin competir con el principal."
                                     />
                                     <div className="flex gap-2 items-center">
@@ -356,22 +368,22 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                                 className="absolute inset-[-100%] w-[300%] h-[300%] cursor-pointer border-none bg-transparent"
                                             />
                                         </div>
-                                         <input
-                                             id="color_two"
-                                             name="color_two"
-                                             type="text"
-                                             value={localColors.color_two || ''}
-                                             placeholder="Color secundario"
-                                             onChange={(e) => setLocalColors({ ...localColors, color_two: e.target.value })}
-                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
-                                         />
+                                        <input
+                                            id="color_two"
+                                            name="color_two"
+                                            type="text"
+                                            value={localColors.color_two || ''}
+                                            placeholder="Color secundario"
+                                            onChange={(e) => setLocalColors({ ...localColors, color_two: e.target.value })}
+                                            className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
+                                        />
                                     </div>
                                 </div>
                                 {/* Color 3 */}
                                 <div>
-                                    <LabelWithInfo 
-                                        htmlFor="color_three" 
-                                        label="Color de Texto" 
+                                    <LabelWithInfo
+                                        htmlFor="color_three"
+                                        label="Color de Texto"
                                         info="Define el tono principal de la tipografía para asegurar una lectura cómoda en todo el sitio."
                                     />
                                     <div className="flex gap-2 items-center">
@@ -385,22 +397,22 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                                 className="absolute inset-[-100%] w-[300%] h-[300%] cursor-pointer border-none bg-transparent"
                                             />
                                         </div>
-                                         <input
-                                             id="color_three"
-                                             name="color_three"
-                                             type="text"
-                                             value={localColors.color_three || ''}
-                                             placeholder="Color de texto"
-                                             onChange={(e) => setLocalColors({ ...localColors, color_three: e.target.value })}
-                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
-                                         />
+                                        <input
+                                            id="color_three"
+                                            name="color_three"
+                                            type="text"
+                                            value={localColors.color_three || ''}
+                                            placeholder="Color de texto"
+                                            onChange={(e) => setLocalColors({ ...localColors, color_three: e.target.value })}
+                                            className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
+                                        />
                                     </div>
                                 </div>
                                 {/* Color 4 */}
                                 <div>
-                                    <LabelWithInfo 
-                                        htmlFor="color_four" 
-                                        label="Color de Fondo" 
+                                    <LabelWithInfo
+                                        htmlFor="color_four"
+                                        label="Color de Fondo"
                                         info="Color sutil para fondos de secciones o tarjetas, creando jerarquía visual sin saturar."
                                     />
                                     <div className="flex gap-2 items-center">
@@ -414,15 +426,15 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                                 className="absolute inset-[-100%] w-[300%] h-[300%] cursor-pointer border-none bg-transparent"
                                             />
                                         </div>
-                                         <input
-                                             id="color_four"
-                                             name="color_four"
-                                             type="text"
-                                             value={localColors.color_four || ''}
-                                             placeholder="Color de fondo"
-                                             onChange={(e) => setLocalColors({ ...localColors, color_four: e.target.value })}
-                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
-                                         />
+                                        <input
+                                            id="color_four"
+                                            name="color_four"
+                                            type="text"
+                                            value={localColors.color_four || ''}
+                                            placeholder="Color de fondo"
+                                            onChange={(e) => setLocalColors({ ...localColors, color_four: e.target.value })}
+                                            className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -430,10 +442,10 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                             {/* Banner Toggle Switch */}
                             <div className="pt-4 border-t border-stone-100 dark:border-[#2a2a2a] flex items-center justify-between">
                                 <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Configuración de Pantalla</span>
-                                    <span className="text-[11px] text-stone-400">Habilitar o deshabilitar el banner principal de la tienda.</span>
+                                    <span className="text-xs font-bold text-[var(--color-threes)] uppercase tracking-wider">Configuración de Pantalla</span>
+                                    <span className="text-[11px] text-[var(--color-threes)]">Habilitar o deshabilitar el banner principal de la tienda.</span>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => setLocalSocial({ ...localSocial, is_carousel_enabled: !localSocial.is_carousel_enabled })}
                                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${localSocial.is_carousel_enabled ? 'bg-stone-900 dark:bg-white' : 'bg-stone-200 dark:bg-stone-800'}`}
                                 >
@@ -453,9 +465,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                     ) : activeTab === 'social' ? (
                         <div className="space-y-6">
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="facebook_url" 
-                                    label="Facebook URL" 
+                                <LabelWithInfo
+                                    htmlFor="facebook_url"
+                                    label="Facebook URL"
                                     info="Enlace directo a tu fanpage de Facebook. Aparecerá como icono en el encabezado y pie de página."
                                 />
                                 <input
@@ -469,9 +481,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 />
                             </div>
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="instagram_url" 
-                                    label="Instagram URL" 
+                                <LabelWithInfo
+                                    htmlFor="instagram_url"
+                                    label="Instagram URL"
                                     info="Enlace directo a tu perfil de Instagram. Ideal para mostrar tu catálogo visual."
                                 />
                                 <input
@@ -485,9 +497,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 />
                             </div>
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="whatsapp" 
-                                    label="WhatsApp (ej: 51999888777)" 
+                                <LabelWithInfo
+                                    htmlFor="whatsapp"
+                                    label="WhatsApp (ej: 51999888777)"
                                     info="Tu número de WhatsApp con código de país. Permitirá a los clientes contactarte con un clic."
                                 />
                                 <input
@@ -513,9 +525,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <LabelWithInfo 
-                                        htmlFor="seo_title" 
-                                        label="Título del Sitio (SEO)" 
+                                    <LabelWithInfo
+                                        htmlFor="seo_title"
+                                        label="Título del Sitio (SEO)"
                                         info="Este es el título que verán los usuarios en Google y en la pestaña del navegador. Idealmente entre 50 y 60 caracteres."
                                     />
                                     <input
@@ -535,9 +547,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                     />
                                 </div>
                                 <div>
-                                    <LabelWithInfo 
-                                        htmlFor="google_site_verification" 
-                                        label="Google Verification" 
+                                    <LabelWithInfo
+                                        htmlFor="google_site_verification"
+                                        label="Google Verification"
                                         info="Código para verificar la propiedad del sitio en Google Search Console y empezar a rastrear tu tráfico SEO."
                                     />
                                     <input
@@ -552,9 +564,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 </div>
                             </div>
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="seo_description" 
-                                    label="Descripción (SEO)" 
+                                <LabelWithInfo
+                                    htmlFor="seo_description"
+                                    label="Descripción (SEO)"
                                     info="Resumen corto que aparece debajo del título en Google. Debe ser atractivo para que los usuarios hagan clic."
                                 />
                                 <textarea
@@ -567,25 +579,56 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 />
                             </div>
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="og_image_default" 
-                                    label="Imagen OG por defecto (URL)" 
+                                <LabelWithInfo
+                                    htmlFor="og_image_default"
+                                    label="Imagen OG por defecto"
                                     info="Esta imagen aparecerá cuando compartas el enlace de tu tienda por WhatsApp, Facebook o Instagram."
                                 />
-                                <input
-                                    id="og_image_default"
-                                    name="og_image_default"
-                                    type="text"
-                                    value={localSEO.og_image_default || ''}
-                                    placeholder="Enlace de imagen OG"
-                                    onChange={(e) => setLocalSEO({ ...localSEO, og_image_default: e.target.value })}
-                                    className="input-primary w-full border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-3 text-sm"
-                                />
+                                <div className="space-y-4">
+                                    {/* Previsualización o imagen actual */}
+                                    {(localSEO.enlace || localSEO.og_image_default) && (
+                                        <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-[#0f0f0f] flex items-center justify-center">
+                                            <img
+                                                src={localSEO.enlace instanceof File ? URL.createObjectURL(localSEO.enlace) : (localSEO.og_image_default || '')}
+                                                alt="OG Preview"
+                                                className="max-w-full max-h-full object-contain"
+                                            />
+                                            {localSEO.enlace instanceof File && (
+                                                <div className="absolute top-2 right-2 px-2 py-1 bg-stone-900/80 text-white text-[10px] rounded-md backdrop-blur-sm">
+                                                    Previsualización
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Botón de subida custom */}
+                                    <label className="block">
+                                        <div className="cursor-pointer flex items-center justify-center gap-2 w-full px-4 py-3 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 rounded-xl transition-all border border-stone-200 dark:border-stone-700 font-bold text-xs uppercase tracking-wider">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 8m4-4v12" />
+                                            </svg>
+                                            {localSEO.enlace instanceof File ? 'Cambiar Imagen' : 'Subir Imagen OG'}
+                                        </div>
+                                        <input
+                                            id="og_image_default"
+                                            name="og_image_default"
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    setLocalSEO({ ...localSEO, enlace: file });
+                                                }
+                                            }}
+                                        />
+                                    </label>
+                                </div>
                             </div>
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="keywords" 
-                                    label="Keywords (etiquetas)" 
+                                <LabelWithInfo
+                                    htmlFor="keywords"
+                                    label="Keywords (etiquetas)"
                                     info="Presiona Enter o haz clic en + para añadir una palabra clave. Haz clic en la x de cada etiqueta para eliminarla."
                                 />
                                 <div className="space-y-3">
@@ -613,27 +656,27 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                             +
                                         </button>
                                     </div>
-                                    
+
                                     <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-stone-50 dark:bg-[#0f0f0f]/50 rounded-xl border border-dashed border-stone-200 dark:border-[#2a2a2a]">
                                         {(() => {
                                             const keywords = (localSEO.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
                                             if (keywords.length === 0) {
-                                                return <span className="text-[11px] text-stone-400 italic p-1">No hay palabras clave añadidas.</span>;
+                                                return <span className="text-[11px] text-[var(--color-threes)] italic p-1">No hay palabras clave añadidas.</span>;
                                             }
-                                            
+
                                             const displayedKeywords = isExpanded ? keywords : keywords.slice(0, 4);
-                                                  return (
+                                            return (
                                                 <>
                                                     {displayedKeywords.map((kw, i) => (
-                                                        <div 
-                                                            key={i} 
+                                                        <div
+                                                            key={i}
                                                             className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2a2a2a] border border-stone-200 dark:border-[#3a3a3a] rounded-full text-[11px] font-medium text-stone-600 dark:text-white shadow-sm animate-fade-in"
                                                         >
                                                             <span>{kw}</span>
-                                                            <button 
+                                                            <button
                                                                 type="button"
                                                                 onClick={() => removeKeyword(kw)}
-                                                                className="w-4 h-4 flex items-center justify-center hover:bg-stone-100 dark:hover:bg-[#3a3a3a] rounded-full text-stone-400 hover:text-red-500 transition-colors"
+                                                                className="w-4 h-4 flex items-center justify-center hover:bg-stone-100 dark:hover:bg-[#3a3a3a] rounded-full text-[var(--color-threes)] hover:text-red-500 transition-colors"
                                                             >
                                                                 <CloseIcon className="w-2.5 h-2.5" />
                                                             </button>
@@ -646,7 +689,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                                                 e.preventDefault();
                                                                 setIsExpanded(!isExpanded);
                                                             }}
-                                                            className="text-[11px] font-bold text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 transition-colors px-2 py-1.5"
+                                                            className="text-[11px] font-bold text-[var(--color-threes)] hover:text-stone-900 dark:hover:text-stone-100 transition-colors px-2 py-1.5"
                                                         >
                                                             {isExpanded ? 'Ver menos' : `Ver más (${keywords.length - 4})`}
                                                         </button>
@@ -658,12 +701,12 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 </div>
                             </div>
                             <div className="pt-4 border-t border-stone-100 dark:border-stone-800">
-                                <h3 className="text-xs font-bold text-stone-400 uppercase mb-4">Información de Contacto</h3>
+                                <h3 className="text-xs font-bold text-[var(--color-threes)] uppercase mb-4">Información de Contacto</h3>
                                 <div className="space-y-4">
                                     <div>
-                                        <LabelWithInfo 
-                                            htmlFor="contact_address" 
-                                            label="Dirección Física" 
+                                        <LabelWithInfo
+                                            htmlFor="contact_address"
+                                            label="Dirección Física"
                                             info="La ubicación de tu showroom o local físico que aparecerá en el pie de página y en Google Maps."
                                         />
                                         <input
@@ -678,9 +721,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <LabelWithInfo 
-                                                htmlFor="contact_email" 
-                                                label="Email" 
+                                            <LabelWithInfo
+                                                htmlFor="contact_email"
+                                                label="Email"
                                                 info="Correo de contacto para consultas de clientes."
                                             />
                                             <input
@@ -694,9 +737,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                             />
                                         </div>
                                         <div>
-                                            <LabelWithInfo 
-                                                htmlFor="contact_schedule" 
-                                                label="Horario" 
+                                            <LabelWithInfo
+                                                htmlFor="contact_schedule"
+                                                label="Horario"
                                                 info="Tus días y horas de atención al público (ej: Lun - Sáb: 10AM - 8PM)."
                                             />
                                             <input
@@ -724,9 +767,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                     ) : (
                         <div className="space-y-6">
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="terms_url" 
-                                    label="Términos y Condiciones (URL)" 
+                                <LabelWithInfo
+                                    htmlFor="terms_url"
+                                    label="Términos y Condiciones (URL)"
                                     info="Enlace a la página donde explicas las reglas de uso de tu sitio. Si está vacío, el enlace se ocultará en el pie de página."
                                 />
                                 <input
@@ -740,9 +783,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 />
                             </div>
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="privacy_url" 
-                                    label="Política de Privacidad (URL)" 
+                                <LabelWithInfo
+                                    htmlFor="privacy_url"
+                                    label="Política de Privacidad (URL)"
                                     info="URL del documento que explica cómo proteges los datos de tus clientes."
                                 />
                                 <input
@@ -756,9 +799,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 />
                             </div>
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="shipping_url" 
-                                    label="Políticas de Envío (URL)" 
+                                <LabelWithInfo
+                                    htmlFor="shipping_url"
+                                    label="Políticas de Envío (URL)"
                                     info="Enlace con los detalles de tiempos y costos de entrega. Ayuda a generar confianza antes de la compra."
                                 />
                                 <input
@@ -772,9 +815,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 />
                             </div>
                             <div>
-                                <LabelWithInfo 
-                                    htmlFor="footer_license" 
-                                    label="Licencia / Texto Footer" 
+                                <LabelWithInfo
+                                    htmlFor="footer_license"
+                                    label="Licencia / Texto Footer"
                                     info="El texto de derechos reservados que aparece al final de todo el sitio. Ejemplo: © 2026 Nombre de tu Empresa."
                                 />
                                 <input

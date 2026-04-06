@@ -350,29 +350,24 @@
 }
 
 .font-title-card {
-    position: relative;
     font-family: var(--font-allrounder-monument-test-regular);
     text-transform: uppercase;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 400;
     line-height: 1.6;
     letter-spacing: -3%;
-    z-index: 10;
     color: var(--color-color-three);
-    text-shadow: 1px 1px 0px var(--color-color-three);
 }
 
 .font-subtitle-card {
-    position: relative;
     font-family: var(--font-inter), sans-serif;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 400;
     line-height: 120%;
     letter-spacing: -3%;
-    z-index: 10;
     color: var(--color-color-three);
-    text-shadow: 1px 1px 0px var(--color-color-three);
 }
+
 
 .buttom-shop {
     min-width: 48px;
