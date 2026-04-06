@@ -1,73 +1,76 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { ChatBubbleIcon, CloseIcon, ChevronLeftIcon, WhatsappIcon } from "@/components/ui/Icons";
+import React, { useState, useEffect, useContext } from "react";
+import { ChatBubbleIcon, CloseIcon, ChevronLeftIcon, WhatsappIcon, SettingsIcon } from "@/components/ui/Icons";
 import { useRemoteTheme } from "@/context/RemoteThemeContext";
+import { AuthContext } from "@/context/AuthContext";
+import { ChatbotAdminModal, ChatbotConfig, ChatbotQuestion } from "@/components/modals/ChatbotAdminModal";
 
-interface Question {
+interface ChatbotConfig {
+    is_enabled: boolean;
+    welcome_message: string;
+    avatar_url?: string;
+}
+
+interface ChatbotQuestion {
     id: string;
-    text: string;
-    answer: React.ReactNode;
+    question_text: string;
+    answer_text: string;
+    action_type: string;
+    action_value: string;
+    order: number;
 }
 
 export const Chatbot: React.FC = () => {
     const { storeInfo } = useRemoteTheme();
+    const auth = useContext(AuthContext);
+    const authenticated = auth?.authenticated || false;
+
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+    const [isConfigOpen, setIsConfigOpen] = useState(false);
+    const [selectedQuestion, setSelectedQuestion] = useState<ChatbotQuestion | null>(null);
+
+    const [config, setConfig] = useState<ChatbotConfig | null>(null);
+    const [questions, setQuestions] = useState<ChatbotQuestion[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const whatsappNumber = storeInfo?.whatsapp || "51956382746";
-    const address = storeInfo?.address || "Av. Paz Soldán 255 Oficina A24, San Isidro, Lima";
-    const schedule = storeInfo?.schedule || "Lunes a Sábado de 10am a 8pm";
+    const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}`;
 
-    const questions = useMemo<Question[]>(() => [
-        {
-            id: "location",
-            text: "¿Dónde están ubicados?",
-            answer: (
-                <span>
-                    Estamos en <strong>{address}</strong>.
-                    <br />
-                    <a
-                        href={`https://maps.google.com/?q=${encodeURIComponent(address)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-stone-600 dark:text-[#a0a0a0] underline text-sm mt-1 block hover:text-stone-900 dark:hover:text-white"
-                    >
-                        Ver en mapa
-                    </a>
-                </span>
-            ),
-        },
-        {
-            id: "hours",
-            text: "¿Cuál es el horario de atención?",
-            answer: `Atendemos de ${schedule}.`,
-        },
-        {
-            id: "sizes",
-            text: "¿Tienen vestidos en talla grande?",
-            answer: "Sí, tenemos TODAS las tallas desde XS hasta XXXL en stock.",
-        },
-        {
-            id: "prices",
-            text: "¿Cuánto cuestan?",
-            answer: "Desde S/160 según marca y diseño.",
-        },
-        {
-            id: "brands",
-            text: "¿Qué marcas y modelos tienen?",
-            answer: "Contamos con más de 2000 vestidos importados de Los Ángeles, incluyendo marcas como Tommy Hilfiger, Calvin Klein y Ralph Lauren.",
-        },
-        {
-            id: "contact",
-            text: "¿Cuál es su número de WhatsApp?",
-            answer: (
-                <span>
-                    Puedes escribirnos al <strong>{whatsappNumber.startsWith('51') ? `+51 ${whatsappNumber.substring(2)}` : whatsappNumber}</strong> para consultas o pedidos.
-                </span>
-            )
+    const fetchChatbotData = async () => {
+        try {
+            const res = await fetch('/api/theme/chatbot-config');
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success && json.data) {
+                    setConfig(json.data.config);
+                    setQuestions(json.data.questions || []);
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch chatbot config", e);
+        } finally {
+            setIsLoading(false);
         }
-    ], [address, schedule, whatsappNumber]);
+    };
+
+    useEffect(() => {
+        fetchChatbotData();
+    }, []);
+
+    if (isLoading) return null;
+    
+    // Si no hay configuración en la BD y no es admin, no renderiza.
+    if (!config && !authenticated) return null;
+
+    // Proveer valores por defecto en caso de que la tabla esté vacía para que el admin pueda editar.
+    const safeConfig = config || { 
+        is_enabled: false, 
+        welcome_message: "¡Hola! ¿En qué puedo ayudarte hoy?",
+        avatar_url: ""
+    };
+
+    if (!safeConfig.is_enabled && !authenticated) return null;
 
     const handleClose = () => {
         setIsOpen(false);
@@ -80,7 +83,7 @@ export const Chatbot: React.FC = () => {
         setIsOpen(true);
     };
 
-    const handleSelectQuestion = (q: Question) => {
+    const handleSelectQuestion = (q: ChatbotQuestion) => {
         setSelectedQuestion(q);
     };
 
@@ -88,9 +91,43 @@ export const Chatbot: React.FC = () => {
         setSelectedQuestion(null);
     };
 
-    const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}`;
+    // Render action based on action_type
+    const renderAction = (question: ChatbotQuestion) => {
+        if (!question.action_type || question.action_type === 'none') return null;
+
+        if (question.action_type === 'url') {
+            return (
+                <a
+                    href={question.action_value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-stone-600 dark:text-[#a0a0a0] underline text-sm mt-2 block hover:text-stone-900 dark:hover:text-white"
+                >
+                    Ver enlace
+                </a>
+            );
+        }
+
+        if (question.action_type === 'whatsapp') {
+            const customWa = question.action_value || whatsappUrl;
+            return (
+                <a
+                    href={customWa.startsWith('http') ? customWa : `https://wa.me/${customWa.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 justify-center bg-green-500 text-white p-2 rounded-lg text-xs hover:bg-green-600 transition-all shadow-md mt-3 font-medium w-full max-w-[200px]"
+                >
+                    <WhatsappIcon className="w-4 h-4" />
+                    Contactar
+                </a>
+            );
+        }
+
+        return null;
+    };
 
     return (
+        <>
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none font-sans">
             {/* Messages Area / Chat Window */}
             <div
@@ -103,12 +140,23 @@ export const Chatbot: React.FC = () => {
                 {/* Header */}
                 <div className="bg-stone-900 dark:bg-white text-stone-50 dark:text-[#0f0f0f] p-4 flex justify-between items-center shadow-md">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        {safeConfig.is_enabled ? (
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Bot Activo"></div>
+                        ) : (
+                            <div className="w-2 h-2 rounded-full bg-red-500" title="Bot Inactivo (Visible Solo Admin)"></div>
+                        )}
                         <h3 className="font-serif text-lg font-medium tracking-wide">Asistente Virtual</h3>
                     </div>
-                    <button onClick={handleClose} className="hover:bg-stone-800 dark:hover:bg-stone-200 p-1.5 rounded-full transition-colors" aria-label="Cerrar chat">
-                        <CloseIcon className="w-5 h-5" />
-                    </button>
+                    <div className="flex gap-1 items-center">
+                        {authenticated && (
+                            <button onClick={() => setIsConfigOpen(true)} className="p-1.5 hover:bg-stone-800 dark:hover:bg-stone-200 rounded-full text-stone-300 dark:text-stone-700 hover:text-white dark:hover:text-black transition-colors" title="Configurar Chatbot">
+                                <SettingsIcon className="w-4 h-4" />
+                            </button>
+                        )}
+                        <button onClick={handleClose} className="hover:bg-stone-800 dark:hover:bg-stone-200 p-1.5 rounded-full transition-colors" aria-label="Cerrar chat">
+                            <CloseIcon className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -116,11 +164,20 @@ export const Chatbot: React.FC = () => {
                     {!selectedQuestion ? (
                         <div className="p-4 space-y-3 animate-fade-in-down">
                             <div className="flex gap-2 mb-4">
-                                <div className="w-8 h-8 rounded-full bg-stone-900 dark:bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                                    <span className="text-stone-50 dark:text-[#0f0f0f] text-xs font-serif">V</span>
+                                <div className="w-8 h-8 rounded-full bg-stone-900 dark:bg-white flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+                                    {safeConfig.avatar_url ? (
+                                        <img src={safeConfig.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-stone-50 dark:text-[#0f0f0f] text-xs font-serif">V</span>
+                                    )}
                                 </div>
                                 <div className="bg-white dark:bg-[#1a1a1a] p-3 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-stone-100 dark:border-[#2a2a2a] text-stone-600 dark:text-[#a0a0a0] text-sm shadow-sm">
-                                    ¡Hola! 👋 Soy el asistente de Vestido.shop. <br />¿En qué puedo ayudarte hoy?
+                                    {safeConfig.welcome_message.split('\\n').map((line: string, i: number) => (
+                                        <React.Fragment key={i}>
+                                            {line}
+                                            {i < safeConfig.welcome_message.split('\\n').length - 1 && <br />}
+                                        </React.Fragment>
+                                    ))}
                                 </div>
                             </div>
 
@@ -131,7 +188,7 @@ export const Chatbot: React.FC = () => {
                                         onClick={() => handleSelectQuestion(q)}
                                         className="text-left bg-white dark:bg-[#1a1a1a] p-3 rounded-lg border border-stone-200 dark:border-[#2a2a2a] text-stone-700 dark:text-white text-sm hover:bg-stone-100 dark:hover:bg-[#2a2a2a] transition-all shadow-sm active:scale-[0.98]"
                                     >
-                                        {q.text}
+                                        {q.question_text}
                                     </button>
                                 ))}
                             </div>
@@ -161,16 +218,26 @@ export const Chatbot: React.FC = () => {
 
                             {/* User Question */}
                             <div className="self-end bg-stone-200/50 dark:bg-[#2a2a2a] p-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg text-sm text-stone-800 dark:text-white mb-4 shadow-sm max-w-[85%]">
-                                {selectedQuestion.text}
+                                {selectedQuestion.question_text}
                             </div>
 
                             {/* Bot Answer */}
                             <div className="flex gap-2 self-start max-w-[90%]">
-                                <div className="w-8 h-8 rounded-full bg-stone-900 dark:bg-white flex items-center justify-center flex-shrink-0 shadow-sm mt-1">
-                                    <span className="text-stone-50 dark:text-[#0f0f0f] text-xs font-serif">V</span>
+                                <div className="w-8 h-8 rounded-full bg-stone-900 dark:bg-white flex items-center justify-center flex-shrink-0 shadow-sm mt-1 overflow-hidden">
+                                     {safeConfig.avatar_url ? (
+                                        <img src={safeConfig.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-stone-50 dark:text-[#0f0f0f] text-xs font-serif">V</span>
+                                    )}
                                 </div>
                                 <div className="bg-white dark:bg-[#1a1a1a] p-3.5 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-stone-100 dark:border-[#2a2a2a] text-sm text-stone-600 dark:text-[#a0a0a0] shadow-sm leading-relaxed">
-                                    {selectedQuestion.answer}
+                                    {selectedQuestion.answer_text.split('\\n').map((line: string, i: number) => (
+                                        <React.Fragment key={i}>
+                                            {line}
+                                            {i < selectedQuestion.answer_text.split('\\n').length - 1 && <br />}
+                                        </React.Fragment>
+                                    ))}
+                                    {renderAction(selectedQuestion)}
                                 </div>
                             </div>
 
@@ -198,11 +265,14 @@ export const Chatbot: React.FC = () => {
                 onClick={isOpen ? handleClose : handleOpen}
                 className={`
             bg-stone-900 dark:bg-white hover:bg-stone-800 dark:hover:bg-stone-200 text-white dark:text-[#0f0f0f] w-12 h-12 md:w-14 md:h-14 rounded-full shadow-2xl transition-all duration-300 pointer-events-auto
-            flex items-center justify-center z-50
+            flex items-center justify-center z-50 relative
             ${isOpen ? "rotate-90" : "hover:scale-110 active:scale-95 animate-bounce-subtle"}
         `}
                 aria-label={isOpen ? "Cerrar asistente" : "Abrir asistente"}
             >
+                {!safeConfig.is_enabled && authenticated && (
+                    <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#1a1a1a]"></span>
+                )}
                 {isOpen ? (
                     <CloseIcon className="w-5 h-5 md:w-6 md:h-6" />
                 ) : (
@@ -210,5 +280,18 @@ export const Chatbot: React.FC = () => {
                 )}
             </button>
         </div>
+
+        {/* Admin Editor Modal: rendered OUTSIDE the pointer-events-none wrapper */}
+        {authenticated && (
+            <ChatbotAdminModal
+                isOpen={isConfigOpen}
+                onClose={() => setIsConfigOpen(false)}
+                config={safeConfig}
+                questions={questions}
+                onRefresh={fetchChatbotData}
+            />
+        )}
+        </>
     );
 };
+
