@@ -156,14 +156,23 @@ const VideoCard: React.FC<VideoCardProps> = ({
       return;
     }
 
-    let message = `Hola, me interesa la siguiente prenda:\n\n`;
+    let message = `Hola, me interesa el siguiente producto:\n\n`;
     message += `*Producto:* ${garment.title}\n`;
     if (garment.brand && garment.brand !== "No identificable") {
       message += `*Marca:* ${garment.brand}\n`;
     }
     message += `*ID de Producto:* ${garment.id}\n`;
-    message += `*Talla:* ${garment.size}\n`;
-    message += `*Color:* ${garment.color}\n`;
+    
+    // Atributos dinámicos
+    if (garment.atributos_dinamicos) {
+      Object.entries(garment.atributos_dinamicos).forEach(([key, value]) => {
+        if (value && String(value).trim() !== "" && String(value) !== "undefined") {
+          const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
+          message += `*${formattedKey}:* ${value}\n`;
+        }
+      });
+    }
+
     if (garment.price) {
       const priceValue =
         typeof garment.price === "string"
@@ -197,7 +206,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
         'subcategoria', 'tags', 'precio_original', 'precio_descuento', 'porcentaje_descuento',
         'cantidad_minima', 'ubicacion', 'costo', 'margen_ganancia', 'meta_title',
         'meta_description', 'keywords', 'destacado', 'nuevo', 'codigo_barras',
-        'garantia', 'qr', 'sticker', 'created_at', 'updated_at', 'created_by', 'size', 'occasion', 
+        'garantia', 'qr', 'sticker', 'created_at', 'updated_at', 'created_by', 'size', 'occasion',
         'imagen_principal_base64', 'atributos_dinamicos'
       ];
       return !standardKeys.includes(key) && value && String(value).trim() !== "" && typeof value !== 'object';
@@ -234,12 +243,12 @@ const VideoCard: React.FC<VideoCardProps> = ({
       aria-pressed={isSelectionMode ? isSelected : undefined}
     >
       {showSpinner && (
-          <div
-            className="absolute inset-0 flex items-center justify-center z-10"
-            aria-hidden="true"
-          >
-            <SpinnerIcon className="w-10 h-10 text-stone-400 dark:text-[#a0a0a0] animate-spin" />
-          </div>
+        <div
+          className="absolute inset-0 flex items-center justify-center z-10"
+          aria-hidden="true"
+        >
+          <SpinnerIcon className="w-10 h-10 text-stone-400 dark:text-[#a0a0a0] animate-spin" />
+        </div>
       )}
 
       {toastMessage && (
@@ -346,9 +355,8 @@ const VideoCard: React.FC<VideoCardProps> = ({
         </>
       )}
 
-      {/* Contenido siempre visible cuando el card está visible, independientemente del estado del video */}
       <div
-        className={`absolute bottom-0 left-0 p-6 w-full text-white transition-opacity duration-300 z-20 opacity-100`}
+        className={`absolute bottom-0 left-0 p-6 pt-15 w-full transition-opacity duration-300 z-20 opacity-100 bg-gradient-to-t from-[var(--color-color-four)]/90 via-[var(--color-color-four)]/40 to-transparent`}
       >
         <div
           className={`transform transition-transform duration-500 ease-in-out ${!isSelectionMode ? "group-hover:-translate-y-2" : ""}`}
@@ -357,8 +365,8 @@ const VideoCard: React.FC<VideoCardProps> = ({
             {isSelectionMode ? (
               <>{garment.title || "Sin título"}</>
             ) : (
-              <Link 
-                href={`/producto/${currentSlug}`} 
+              <Link
+                href={`/producto/${currentSlug}`}
                 className="hover:underline"
                 onClick={(e) => {
                   if (onSelect) {

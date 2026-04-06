@@ -387,17 +387,16 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   if (!garment) return null;
 
-  let message = `Hola, me interesa el producto:\n\n`;
+  let message = `Hola, me interesa el siguiente producto:\n\n`;
   message += `*Producto:* ${garment.title}\n`;
   if (garment.brand && garment.brand !== "No identificable") {
     message += `*Marca:* ${garment.brand}\n`;
   }
   message += `*ID de Producto:* ${garment.id}\n`;
-  message += `*Talla:* ${garment.size}\n`;
-  message += `*Color:* ${garment.color}\n`;
+  
   if (garment.atributos_dinamicos) {
     Object.entries(garment.atributos_dinamicos).forEach(([key, value]) => {
-      if (value && String(value).trim() !== '') {
+      if (value && String(value).trim() !== '' && String(value) !== 'undefined') {
         const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
         message += `*${formattedKey}:* ${value}\n`;
       }

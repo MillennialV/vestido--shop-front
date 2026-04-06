@@ -11,7 +11,7 @@ interface RemoteThemeContextType {
     refreshTheme: () => Promise<void>;
     updateColors: (newColors: Partial<ThemeColors>) => Promise<void>;
     updateStoreInfo: (newInfo: Partial<StoreInfo>) => Promise<void>;
-    updateMetadata: (newMetadata: Partial<StoreMetadata>) => Promise<void>;
+    updateMetadata: (newMetadata: Partial<StoreMetadata> | FormData) => Promise<void>;
     organization: any | null;
 }
 
@@ -161,15 +161,28 @@ export const RemoteThemeProvider: React.FC<{
         }
     };
 
-    const updateMetadata = async (newMetadata: Partial<StoreMetadata>) => {
+    const updateMetadata = async (newMetadata: Partial<StoreMetadata> | FormData) => {
         try {
+            const isFormData = newMetadata instanceof FormData;
             const method = metadata?.id ? 'PUT' : 'POST';
-            const body = metadata?.id ? { id: metadata.id, ...newMetadata } : newMetadata;
+            const url = metadata?.id ? `/api/theme/metadata/${metadata.id}` : '/api/theme/metadata';
+            
+            const headers: Record<string, string> = {};
+            let body: any;
 
-            const res = await fetch('/api/theme/metadata', {
+            if (isFormData) {
+                // Si es un update (PUT) y lo enviamos como FormData, el ID debe estar en el FormData
+                // o lo pasamos en la URL si el proxy lo permite.
+                body = newMetadata;
+            } else {
+                headers['Content-Type'] = 'application/json';
+                body = JSON.stringify(metadata?.id ? { id: metadata.id, ...newMetadata } : newMetadata);
+            }
+
+            const res = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
+                headers,
+                body
             });
 
             if (res.ok) {

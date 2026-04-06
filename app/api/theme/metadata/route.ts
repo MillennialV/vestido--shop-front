@@ -54,14 +54,25 @@ export async function POST(req: NextRequest) {
         const token = cookieStore.get("authToken")?.value;
         if (!token) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-        const body = await req.json();
+        const contentType = req.headers.get("content-type");
+        const isMultipart = contentType?.includes("multipart/form-data");
+
+        const headers: Record<string, string> = {
+            "Authorization": `Bearer ${token}`
+        };
+
+        let body;
+        if (isMultipart) {
+            body = await req.formData();
+        } else {
+            headers["Content-Type"] = "application/json";
+            body = JSON.stringify(await req.json());
+        }
+
         const backendRes = await fetch(`${THEME_API_URL}/api/store-metadata`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(body)
+            headers,
+            body
         });
 
         const data = await backendRes.json();

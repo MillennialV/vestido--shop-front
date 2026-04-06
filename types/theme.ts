@@ -37,6 +37,7 @@ export interface StoreMetadata {
     google_site_verification?: string;
     metadata_base?: string;
     og_image_default?: string;
+    enlace?: string | File;
     twitter_site?: string;
     twitter_creator?: string;
     json_ld_logo?: string;

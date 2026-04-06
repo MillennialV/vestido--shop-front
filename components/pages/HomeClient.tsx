@@ -148,9 +148,9 @@ export default function HomeClient({
   const availableAttributes = useMemo(() => {
     const keys = new Set<string>();
     keys.add('brand');
-    
+
     const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
-    
+
     sourceData.forEach(garment => {
       const standardKeys = [
         'id', 'brand', 'title', 'description', 'videoUrl', 'imagen_principal', 'imagenes',
@@ -160,17 +160,17 @@ export default function HomeClient({
         'meta_description', 'keywords', 'destacado', 'nuevo', 'codigo_barras',
         'garantia', 'qr', 'sticker', 'created_at', 'updated_at', 'created_by', 'size', 'occasion'
       ];
-      
+
       Object.keys(garment).forEach(key => {
         if (!standardKeys.includes(key)) {
           keys.add(key);
         }
       });
-      
+
       if (garment.size) keys.add('size');
       if (garment.occasion) keys.add('occasion');
     });
-    
+
     return Array.from(keys);
   }, [allProductsForFilters, initialGarments]);
 
@@ -318,14 +318,14 @@ export default function HomeClient({
   const filteredGarments = useMemo(() => {
     // Si NO hay filtros ni búsqueda, usamos tal cual lo que viene del hook (paginado por API)
     const hasActiveFilters = Object.values(filters).some(v => v !== 'all') || searchQuery !== "";
-    
+
     if (!hasActiveFilters) {
       return garments;
     }
 
     // Si HAY filtros, intentamos el filtrado local sobre todos los productos
     const sourceData = allProductsForFilters.length > 0 ? allProductsForFilters : initialGarments;
-    
+
     const filtered = sourceData.filter(g => {
       // Filtrar por Marca
       if (filters.brand && filters.brand !== 'all') {
@@ -340,17 +340,17 @@ export default function HomeClient({
           if (String((g as any)[key]) !== filterVal) return false;
         }
       }
-      
+
       // Filtrar por búsqueda de texto
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return (
-          g.title?.toLowerCase().includes(q) || 
+          g.title?.toLowerCase().includes(q) ||
           g.description?.toLowerCase().includes(q) ||
           g.brand?.toLowerCase().includes(q)
         );
       }
-      
+
       return true;
     });
 
@@ -403,7 +403,7 @@ export default function HomeClient({
   const onFilterChange = useCallback((newFilter: Record<string, string>) => {
     // 1. Calcular el NUEVO estado completo basado en los filtros actuales y los nuevos
     const updatedFilters = { ...filters, ...newFilter };
-    
+
     // 2. Actualizar el estado inmediatamente
     setFilters(updatedFilters);
     setCurrentPage(1);
@@ -462,7 +462,7 @@ export default function HomeClient({
   const handleClearFilters = useCallback(() => {
     const defaultFilters: Record<string, string> = {};
     activeFilterKeys.forEach(k => defaultFilters[k] = 'all');
-    
+
     setFilters(defaultFilters);
     setSearchQuery("");
     setCurrentPage(1);
@@ -806,24 +806,24 @@ export default function HomeClient({
       // 1. Encontrar todos los atributos dinámicos únicos en los productos a exportar
       // Excluimos explícitamente campos internos que no queremos en el Excel
       const internalKeys = [
-        "id", "domain", "organization_id", "categoria_id", "subcategoria", "tags", 
-        "precio_original", "precio_descuento", "porcentaje_descuento", 
-        "cantidad_minima", "ubicacion", "costo", "margen_ganancia", 
-        "meta_title", "meta_description", "keywords", "destacado", "nuevo", 
-        "codigo_barras", "garantia", "qr", "sticker", "created_by", "estado", 
+        "id", "domain", "organization_id", "categoria_id", "subcategoria", "tags",
+        "precio_original", "precio_descuento", "porcentaje_descuento",
+        "cantidad_minima", "ubicacion", "costo", "margen_ganancia",
+        "meta_title", "meta_description", "keywords", "destacado", "nuevo",
+        "codigo_barras", "garantia", "qr", "sticker", "created_by", "estado",
         "disponible", "sku", "created_at", "updated_at",
         "categoria", "Categoria", "slug"
       ];
-      
+
       const standardKeys = ["title", "brand", "price", "cantidad", "description", "videoUrl", "imagen_principal", "atributos_dinamicos"];
-      
+
       const dynamicKeysSet = new Set<string>();
       productsToExport.forEach(p => {
-         Object.keys(p).forEach(k => {
-            if (!standardKeys.includes(k) && !internalKeys.includes(k) && (p as any)[k] !== undefined && (p as any)[k] !== null) {
-               dynamicKeysSet.add(k);
-            }
-         });
+        Object.keys(p).forEach(k => {
+          if (!standardKeys.includes(k) && !internalKeys.includes(k) && (p as any)[k] !== undefined && (p as any)[k] !== null) {
+            dynamicKeysSet.add(k);
+          }
+        });
       });
       const dynamicKeys = Array.from(dynamicKeysSet);
 
@@ -981,7 +981,7 @@ export default function HomeClient({
   );
 
   return (
-    <div className="bg-[#FFFFFF] dark:bg-[#000000] min-h-screen font-sans text-color-three dark:text-white transition-colors">
+    <div className="bg-[color-mix(in_srgb,var(--color-four),transparent_50%)] dark:bg-[#000000] min-h-screen font-sans text-color-three dark:text-white transition-colors">
       <Header
         isAdmin={authenticated}
         onToggleAdmin={handleToggleAdmin}
