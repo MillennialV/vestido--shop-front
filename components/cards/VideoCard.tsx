@@ -381,18 +381,14 @@ const VideoCard: React.FC<VideoCardProps> = ({
             )}
           </h3>
 
-          <p className="font-subtitle-card text-center pt-[17px]">
-            {brandDisplay && (
-              <>{brandDisplay} &middot; </>
-            )}
-            Talla: {garment.size || "N/A"} {garment.color && `· ${garment.color}`}
-            {garment.price && ` · S/ ${garment.price}`}
-            {isAdmin && garment.cantidad !== undefined && (
-              <span className={`block mt-1 font-bold ${garment.cantidad > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                Stock: {garment.cantidad}
-              </span>
-            )}
-          </p>
+          <div className="font-subtitle-card text-center pt-[17px] line-clamp-2 overflow-hidden text-ellipsis">
+            {garment.description}
+          </div>
+          {isAdmin && garment.cantidad !== undefined && (
+            <p className={`font-subtitle-card text-center mt-1 font-bold ${garment.cantidad > 0 ? 'text-green-400' : 'text-red-400'}`}>
+              Stock: {garment.cantidad}
+            </p>
+          )}
         </div>
       </div>
     </article>
