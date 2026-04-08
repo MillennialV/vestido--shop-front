@@ -350,22 +350,22 @@
 }
 
 .font-title-card {
-    font-family: var(--font-allrounder-monument-test-regular);
+    font-family: var(--font-allrounder);
     text-transform: uppercase;
     font-size: 18px;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 1.6;
     letter-spacing: -3%;
-    color: var(--color-color-three);
+    color: var(--color-color-one);
 }
 
 .font-subtitle-card {
-    font-family: var(--font-inter), sans-serif;
+    font-family: var(--font-allrounder);
     font-size: 12px;
-    font-weight: 400;
+    font-weight: 300;
     line-height: 120%;
     letter-spacing: -3%;
-    color: var(--color-color-three);
+    color: var(--color-color-one);
 }
 
 
