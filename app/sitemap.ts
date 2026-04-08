@@ -41,14 +41,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.log(`[Sitemap] Summary: Found ${garments?.length || 0} products and ${posts?.length || 0} posts.`);
 
     const productEntries = garments.map((garment: any) => {
-        const slug = slugify(garment.title);
+        const slug = garment.slug || slugify(garment.title);
         const url = `${PUBLIC_URL}/producto/${slug}`;
         
         return {
             url,
             lastModified: garment.updated_at || garment.created_at ? new Date(garment.updated_at || garment.created_at) : new Date(),
             changeFrequency: 'weekly' as const,
-            priority: 0.7,
+            priority: 0.8,
         };
     });
 
@@ -59,7 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             url,
             lastModified: post.updated_at || post.created_at ? new Date(post.updated_at || post.created_at) : new Date(),
             changeFrequency: 'monthly' as const,
-            priority: 0.8,
+            priority: 0.7,
         };
     });
 
