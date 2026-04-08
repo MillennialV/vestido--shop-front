@@ -87,7 +87,9 @@ const FilterConfigModal: React.FC<FilterConfigModalProps> = ({
 
                         <div className="grid gap-3">
                             {availableAttributes.length > 0 ? (
-                                availableAttributes.filter(key => key !== 'brand').map(key => (
+                                availableAttributes.filter(key => 
+                                    !['brand', 'categoria', 'category', 'atributos_dinamicos'].includes(key.toLowerCase())
+                                ).map(key => (
                                     <label
                                         key={key}
                                         className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer group ${selectedKeys.includes(key)

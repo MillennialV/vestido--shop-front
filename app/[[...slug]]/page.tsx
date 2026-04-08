@@ -1,5 +1,6 @@
 import HomeClient from "@/components/pages/HomeClient";
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getDomain } from "@/lib/get-domain";
 import { slugify } from "@/lib/slugify";
 import { 
@@ -114,11 +115,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     } catch (e) {}
 
     const productTitle = product?.title
-        ? `${product.title} | ${orgName}`
+        ? `${product.title} | Envío Gratis en ${orgName}`
         : `${slug.replace(/-/g, ' ')} | ${orgName}`;
 
     const productDescription = product?.description
-        || DEFAULT_SEO.description;
+        || `Compra ${product?.title || slug.replace(/-/g, ' ')} al mejor precio en ${orgName}. Envío rápido y garantía de calidad.`;
 
     const productImage: string =
         product?.imagen_principal ||
@@ -166,11 +167,27 @@ async function getProduct(slug: string) {
         if (res.ok) {
             const data = await res.json();
             const products = data?.data?.products || [];
-            // Devuelve el primer producto si coincide el slug calculado del título
-            return products.find((p: any) => slugify(p.title) === slug) || products[0] || null;
+            // Devuelve el primer producto si coincide el slug calculado del título o el slug guardado directamente
+            return products.find((p: any) => p.slug === slug || slugify(p.title) === slug) || products[0] || null;
         }
     } catch (error) {
         console.error("Error fetching product for schema:", error);
+    }
+    return null;
+}
+
+async function checkRedirection(slug: string) {
+    const domain = await getDomain();
+    try {
+        // Obtenemos organization-id primero o usamos el dominio
+        // En este ecosistema, el inventario service acepta domain o organization-id
+        const res = await fetch(`${INVENTARIO_BASE_API}/api/producto/check-redirect/${slug}?domain=${domain}`);
+        if (res.ok) {
+            const data = await res.json();
+            return data.redirect_to || null;
+        }
+    } catch (error) {
+        console.error("Error checking redirection:", error);
     }
     return null;
 }
@@ -179,14 +196,29 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
     const resolvedParams = await params;
     const slugArray = resolvedParams.slug;
     let slug: string | null = null;
+    let isProductBase = false;
+    
     if (slugArray && slugArray.length > 0) {
-        slug = slugArray[0] === "producto" && slugArray.length > 1 ? slugArray[1] : slugArray[0];
+        if (slugArray[0] === "producto") {
+            isProductBase = true;
+            slug = slugArray.length > 1 ? slugArray[1] : null;
+        } else {
+            slug = slugArray[0];
+        }
     }
 
     const [initialData, product] = await Promise.all([
         fetchInitialData(),
         (slug && slug !== "producto") ? getProduct(slug) : Promise.resolve(null)
     ]);
+
+    // Redirección inteligente: Si es una ruta de producto y no se encontró el producto, buscar en historial
+    if (isProductBase && slug && !product) {
+        const redirectTo = await checkRedirection(slug);
+        if (redirectTo) {
+            redirect(`/producto/${redirectTo}`);
+        }
+    }
 
     const domain = await getDomain();
     const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'https://auth.vestido.shop';
