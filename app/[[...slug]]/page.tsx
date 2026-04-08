@@ -167,8 +167,8 @@ async function getProduct(slug: string) {
         if (res.ok) {
             const data = await res.json();
             const products = data?.data?.products || [];
-            // Devuelve el primer producto si coincide el slug calculado del título o el slug guardado directamente
-            return products.find((p: any) => p.slug === slug || slugify(p.title) === slug) || products[0] || null;
+            // Priorizar coincidencia exacta por slug o título slugificado
+            return products.find((p: any) => p.slug === slug || slugify(p.title) === slug) || null;
         }
     } catch (error) {
         console.error("Error fetching product for schema:", error);
@@ -215,7 +215,8 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
     // Redirección inteligente: Si es una ruta de producto y no se encontró el producto, buscar en historial
     if (isProductBase && slug && !product) {
         const redirectTo = await checkRedirection(slug);
-        if (redirectTo) {
+        // Protección contra bucles infinitos: Solo redirigir si el destino es DIFERENTE al actual
+        if (redirectTo && redirectTo !== slug) {
             redirect(`/producto/${redirectTo}`);
         }
     }
