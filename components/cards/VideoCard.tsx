@@ -220,7 +220,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
     brandDisplay
   ].filter(Boolean).join(' - ');
 
-  const currentSlug = slugify(garment.title);
+  const currentSlug = garment.slug || slugify(garment.title);
 
   const cardDescription = `${garment.title}${brandDisplay ? ` por ${brandDisplay}` : ""}, Talla ${garment.size}, Color ${garment.color}`;
   const actionLabel = isSelectionMode ? `Seleccionar` : `Ver detalles de`;

@@ -247,7 +247,7 @@ export default function HomeClient({
   // Sync URL with selected garment without triggering full page re-renders
   useEffect(() => {
     if (selectedGarment) {
-      const slug = slugify(selectedGarment.title);
+      const slug = selectedGarment.slug || slugify(selectedGarment.title);
       const newPath = `/producto/${slug}`;
       if (window.location.pathname !== newPath) {
         window.history.pushState(null, "", newPath);

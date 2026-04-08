@@ -256,7 +256,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   const handleShare = async () => {
     if (!garment) return;
-    const currentSlug = slugify(garment.title);
+    const currentSlug = garment.slug || slugify(garment.title);
     const shareUrl = `${PUBLIC_URL}/producto/${currentSlug}`;
     const shareText = `Mira este producto: ${garment.title}.`;
 
@@ -320,7 +320,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   const handleSocialShare = async (platform: "TikTok" | "Instagram") => {
     if (!garment) return;
 
-    const currentSlug = slugify(garment.title);
+    const currentSlug = garment.slug || slugify(garment.title);
     const shareUrl = `${PUBLIC_URL}/producto/${currentSlug}`;
     const shareText = `Mira este vestido: ${garment.title} - Colección Womanity Boutique.`;
 
@@ -449,7 +449,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
       "priceCurrency": "PEN",
       "price": typeof garment.price === "number" ? garment.price : parseFloat(String(garment.price || 0)),
       "availability": garment.cantidad && garment.cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      "url": `${PUBLIC_URL}/producto/${slugify(garment.title)}`
+      "url": `${PUBLIC_URL}/producto/${garment.slug || slugify(garment.title)}`
     }
   };
 
