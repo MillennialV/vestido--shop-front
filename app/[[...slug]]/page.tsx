@@ -250,7 +250,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
         ...(product.sku ? { "sku": product.sku } : {}),
         "offers": {
             "@type": "Offer",
-            "url": `${PUBLIC_URL}/producto/${slugify(product.title)}`,
+            "url": `${PUBLIC_URL}/producto/${product.slug || slugify(product.title)}`,
             "priceCurrency": "PEN",
             // Bug 3: solo incluir price si tiene valor real
             ...(product.price ? { "price": String(product.price) } : {}),
