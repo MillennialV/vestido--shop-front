@@ -356,7 +356,10 @@ const VideoCard: React.FC<VideoCardProps> = ({
       )}
 
       <div
-        className={`absolute bottom-0 left-0 p-6 pt-15 w-full transition-opacity duration-300 z-20 opacity-100 backdrop-blur-sm bg-black/30`}
+        className={`absolute bottom-0 left-0 p-6 pt-3 w-full transition-opacity duration-300 z-20 opacity-100
+          backdrop-blur-[2px] 
+             bg-gradient-to-t from-black/30 via-black/30 to-transparent
+          `}
       >
         <div
           className={`transform transition-transform duration-500 ease-in-out ${!isSelectionMode ? "group-hover:-translate-y-2" : ""}`}
