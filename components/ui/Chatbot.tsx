@@ -6,21 +6,6 @@ import { useRemoteTheme } from "@/context/RemoteThemeContext";
 import { AuthContext } from "@/context/AuthContext";
 import { ChatbotAdminModal, ChatbotConfig, ChatbotQuestion } from "@/components/modals/ChatbotAdminModal";
 
-interface ChatbotConfig {
-    is_enabled: boolean;
-    welcome_message: string;
-    avatar_url?: string;
-}
-
-interface ChatbotQuestion {
-    id: string;
-    question_text: string;
-    answer_text: string;
-    action_type: string;
-    action_value: string;
-    order: number;
-}
-
 export const Chatbot: React.FC = () => {
     const { storeInfo } = useRemoteTheme();
     const auth = useContext(AuthContext);
@@ -34,8 +19,9 @@ export const Chatbot: React.FC = () => {
     const [questions, setQuestions] = useState<ChatbotQuestion[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const whatsappNumber = storeInfo?.whatsapp || "51956382746";
-    const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}`;
+    const hasWhatsapp = !!storeInfo?.whatsapp;
+    const whatsappNumber = storeInfo?.whatsapp || "";
+    const whatsappUrl = hasWhatsapp ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}` : "";
 
     const fetchChatbotData = async () => {
         try {
@@ -182,7 +168,9 @@ export const Chatbot: React.FC = () => {
                             </div>
 
                             <div className="flex flex-col gap-2 pl-2">
-                                {questions.map((q) => (
+                                {questions
+                                    .filter(q => q.action_type !== 'whatsapp' || hasWhatsapp)
+                                    .map((q) => (
                                     <button
                                         key={q.id}
                                         onClick={() => handleSelectQuestion(q)}
@@ -193,18 +181,20 @@ export const Chatbot: React.FC = () => {
                                 ))}
                             </div>
 
-                            <div className="pt-2 mt-2 border-t border-stone-200/50 dark:border-[#2a2a2a]">
-                                <p className="text-xs text-center text-stone-400 dark:text-[#a0a0a0]/60 mb-2">¿Prefieres hablar con una persona?</p>
-                                <a
-                                    href={whatsappUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2 justify-center bg-green-500 text-white p-3 rounded-lg text-sm hover:bg-green-600 transition-all shadow-md active:scale-[0.98] font-medium w-full"
-                                >
-                                    <WhatsappIcon className="w-5 h-5" />
-                                    Hablar con una asesora
-                                </a>
-                            </div>
+                            {hasWhatsapp && (
+                                <div className="pt-2 mt-2 border-t border-stone-200/50 dark:border-[#2a2a2a]">
+                                    <p className="text-xs text-center text-stone-400 dark:text-[#a0a0a0]/60 mb-2">¿Prefieres hablar con una persona?</p>
+                                    <a
+                                        href={whatsappUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 justify-center bg-green-500 text-white p-3 rounded-lg text-sm hover:bg-green-600 transition-all shadow-md active:scale-[0.98] font-medium w-full"
+                                    >
+                                        <WhatsappIcon className="w-5 h-5" />
+                                        Hablar con una asesora
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="flex flex-col h-full animate-fade-in-down p-4">
@@ -241,20 +231,22 @@ export const Chatbot: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="mt-auto pt-6">
-                                <div className="bg-stone-100 dark:bg-[#0f0f0f] rounded-lg p-3 border border-stone-200 dark:border-[#2a2a2a]">
-                                    <p className="text-xs text-stone-500 dark:text-[#a0a0a0] mb-2 font-medium text-center">¿Necesitas coordinar una cita?</p>
-                                    <a
-                                        href={whatsappUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-center gap-2 w-full bg-stone-900 dark:bg-white text-white dark:text-[#0f0f0f] p-2.5 rounded-lg text-sm hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors shadow-sm"
-                                    >
-                                        <WhatsappIcon className="w-4 h-4" />
-                                        Contactar por WhatsApp
-                                    </a>
+                            {hasWhatsapp && (
+                                <div className="mt-auto pt-6">
+                                    <div className="bg-stone-100 dark:bg-[#0f0f0f] rounded-lg p-3 border border-stone-200 dark:border-[#2a2a2a]">
+                                        <p className="text-xs text-stone-500 dark:text-[#a0a0a0] mb-2 font-medium text-center">¿Necesitas coordinar una cita?</p>
+                                        <a
+                                            href={whatsappUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-center gap-2 w-full bg-stone-900 dark:bg-white text-white dark:text-[#0f0f0f] p-2.5 rounded-lg text-sm hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors shadow-sm"
+                                        >
+                                            <WhatsappIcon className="w-4 h-4" />
+                                            Contactar por WhatsApp
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     )}
                 </div>
