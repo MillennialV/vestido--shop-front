@@ -3,11 +3,11 @@ import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getDomain } from "@/lib/get-domain";
 import { slugify } from "@/lib/slugify";
-import { 
-    DEFAULT_SEO, 
-    DEFAULT_OG_IMAGE, 
-    STATIC_PAGE_DEFAULTS, 
-    PUBLIC_URL 
+import {
+    DEFAULT_SEO,
+    DEFAULT_OG_IMAGE,
+    STATIC_PAGE_DEFAULTS,
+    PUBLIC_URL
 } from "@/lib/constants";
 
 const INVENTARIO_BASE_API = process.env.NEXT_PUBLIC_API_INVENTARIO_BASE_URL || 'http://localhost:3001';
@@ -112,18 +112,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
                 orgName = organization.organization_display_name || organization.organization_name || orgName;
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     const productTitle = product?.title
-        ? `${product.title} | Envío Gratis en ${orgName}`
+        ? `${product.title} | ${orgName}`
         : `${slug.replace(/-/g, ' ')} | ${orgName}`;
 
+    // Priorizar la descripción del producto, con fallback persuasivo
     const productDescription = product?.description
-        || `Compra ${product?.title || slug.replace(/-/g, ' ')} al mejor precio en ${orgName}. Envío rápido y garantía de calidad.`;
+        ? (product.description.length > 160 ? product.description.substring(0, 157) + '...' : product.description)
+        : `Consigue ${product?.title || slug.replace(/-/g, ' ')} al mejor precio en ${orgName}. Calidad garantizada.`;
 
+    // Lógica de imagen: Imagen principal -> Galería -> Fragmento de Video (#t=0.1) -> Imagen por defecto
     const productImage: string =
         product?.imagen_principal ||
         (product?.imagenes && product.imagenes.length > 0 ? product.imagenes[0] : null) ||
+        (product?.videoUrl ? `${product.videoUrl}${product.videoUrl.includes('?') ? '&' : '#'}t=0.1` : null) ||
         DEFAULT_OG_IMAGE;
 
     const productUrl = `${PUBLIC_URL}/producto/${slug}`;
@@ -197,7 +201,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
     const slugArray = resolvedParams.slug;
     let slug: string | null = null;
     let isProductBase = false;
-    
+
     if (slugArray && slugArray.length > 0) {
         if (slugArray[0] === "producto") {
             isProductBase = true;
@@ -233,7 +237,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
                 orgName = organization.organization_display_name || organization.organization_name || orgName;
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     // Bug 1: solo generar schema si el producto tiene slug válido
     const productJsonLd = (product && (product.slug || slug)) ? {
