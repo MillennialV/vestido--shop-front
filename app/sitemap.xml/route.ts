@@ -47,6 +47,9 @@ function escapeXml(unsafe: string) {
 
 export async function GET() {
     const domain = await getDomain();
+    const protocol = domain.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${domain}`;
+
     const [garments, posts] = await Promise.all([
         getGarments(domain),
         getPosts(domain)
@@ -60,17 +63,17 @@ export async function GET() {
     // 1. Home
     xmlItems.push(`
   <url>
-    <loc>${PUBLIC_URL}</loc>
+    <loc>${baseUrl}</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>`);
-    usedUrls.add(PUBLIC_URL);
+    usedUrls.add(baseUrl);
 
     // 2. Productos
     garments.forEach((garment: any) => {
         const slug = garment.slug || slugify(garment.title);
-        const url = `${PUBLIC_URL}/producto/${slug}`;
+        const url = `${baseUrl}/producto/${slug}`;
         
         if (usedUrls.has(url)) return;
         usedUrls.add(url);
@@ -97,7 +100,7 @@ export async function GET() {
 
     // 3. Posts
     posts.forEach((post: any) => {
-        const url = `${PUBLIC_URL}/posts/${post.slug}`;
+        const url = `${baseUrl}/posts/${post.slug}`;
         
         if (usedUrls.has(url)) return;
         usedUrls.add(url);

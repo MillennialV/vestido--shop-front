@@ -101,6 +101,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     const product = await getProduct(slug);
 
     const domain = await getDomain();
+    const protocol = domain.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${domain}`;
+
     const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'https://auth.vestido.shop';
     let orgName = DEFAULT_SEO.siteName;
     try {
@@ -130,7 +133,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
         (product?.videoUrl ? `${product.videoUrl}${product.videoUrl.includes('?') ? '&' : '#'}t=0.1` : null) ||
         DEFAULT_OG_IMAGE;
 
-    const productUrl = `${PUBLIC_URL}/producto/${slug}`;
+    const productUrl = `${baseUrl}/producto/${slug}`;
 
     return {
         title: productTitle,

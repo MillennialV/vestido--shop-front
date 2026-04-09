@@ -12,6 +12,7 @@ import { RemoteThemeProvider } from "@/context/RemoteThemeContext";
 import CartModal from "@/components/modals/CartModal";
 import { Chatbot } from "@/components/ui/Chatbot";
 import { getRemoteThemeData } from "@/lib/theme-data";
+import { getDomain } from "@/lib/get-domain";
 import { StoreNotFound } from "@/components/ui/StoreNotFound";
 import { DEFAULT_SEO, DEFAULT_STORE_INFO, SOCIAL_DEFAULTS, SCHEMA_DEFAULTS, ABREPE_DISPLAY_NAME, DEFAULT_OG_IMAGE } from "@/lib/constants";
 
@@ -45,10 +46,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description,
-    metadataBase: (() => {
+    metadataBase: await (async () => {
       try {
-        const base = metadata?.metadata_base || DEFAULT_SEO.canonical;
-        return new URL(base && base.startsWith("http") ? base : DEFAULT_SEO.canonical);
+        const domain = await getDomain();
+        const protocol = domain.includes('localhost') ? 'http' : 'https';
+        const base = metadata?.metadata_base || `${protocol}://${domain}`;
+        return new URL(base && base.startsWith("http") ? base : `${protocol}://${domain}`);
       } catch {
         return new URL(DEFAULT_SEO.canonical);
       }
