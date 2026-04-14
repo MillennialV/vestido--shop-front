@@ -39,6 +39,23 @@ interface VideoCardProps {
   priority?: boolean;
 }
 
+const isHexDark = (hex: string) => {
+  if (!hex || !hex.startsWith("#")) return false;
+  try {
+    const c = hex.substring(1);
+    const rgb =
+      c.length === 3
+        ? [c[0] + c[0], c[1] + c[1], c[2] + c[2]].map((x) => parseInt(x, 16))
+        : [c.substring(0, 2), c.substring(2, 4), c.substring(4, 6)].map((x) =>
+            parseInt(x, 16)
+          );
+    const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+    return brightness < 128;
+  } catch {
+    return false;
+  }
+};
+
 const VideoCard: React.FC<VideoCardProps> = ({
   garment,
   onSelect,
@@ -51,14 +68,37 @@ const VideoCard: React.FC<VideoCardProps> = ({
   isDisabled = false,
   priority = false,
 }) => {
-  const { storeInfo } = useRemoteTheme();
+  const { storeInfo, colors } = useRemoteTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isMediaLoading, setIsMediaLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  // isLoadingDetails removido para apertura instantánea
+  const [isDarkTone, setIsDarkTone] = useState(true);
+
+  // Determinar si el color de texto principal es oscuro
+  const isPrimaryTextDark = colors?.color_one ? isHexDark(colors.color_one) : false;
+
+  const detectTone = (img: HTMLImageElement) => {
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, img.naturalHeight * 0.7, img.naturalWidth, img.naturalHeight * 0.3, 0, 0, 1, 1);
+        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        setIsDarkTone(brightness < 128);
+      }
+    } catch (e) {
+      // Si falla por CORS, usamos una heurística simple basada en el nombre del color
+      const darks = ["negro", "black", "azul", "navy", "marino", "gris", "grey", "dark"];
+      const colorWord = garment.color?.toLowerCase() || "";
+      setIsDarkTone(darks.some((d) => colorWord.includes(d)));
+    }
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -289,6 +329,8 @@ const VideoCard: React.FC<VideoCardProps> = ({
           playsInline
           preload={priority ? "auto" : "metadata"}
           onCanPlay={handleCanPlay}
+          onLoadedData={(e) => detectTone(e.currentTarget as unknown as HTMLImageElement)}
+          crossOrigin="anonymous"
           onError={handleError}
           className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""}`}
           title={`Vista previa en video de ${productAlt}`}
@@ -301,7 +343,11 @@ const VideoCard: React.FC<VideoCardProps> = ({
           unoptimized
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className={`object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""}`}
-          onLoad={() => setIsMediaLoading(false)}
+          onLoad={(e) => {
+            setIsMediaLoading(false);
+            detectTone(e.currentTarget);
+          }}
+          crossOrigin="anonymous"
           onError={handleError}
           priority={priority}
         />
@@ -357,8 +403,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
       <div
         className={`absolute bottom-0 left-0 p-6 pt-3 w-full transition-opacity duration-300 z-20 opacity-100
-          backdrop-blur-[2px] 
-             bg-gradient-to-t from-black/30 via-black/30 to-transparent
+          ${isPrimaryTextDark ? "card-overlay-light" : "card-overlay-dark"}
           `}
       >
         <div

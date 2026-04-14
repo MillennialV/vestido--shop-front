@@ -98,11 +98,11 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         imagen_principal: garment.imagen_principal || "",
         cantidad: garment.cantidad !== undefined && garment.cantidad !== null ? String(garment.cantidad) : "0",
       });
-      
+
       const initialCustom: { id: string, key: string, value: string }[] = [];
       if (garment.size) initialCustom.push({ id: `cf-size-${Date.now()}`, key: "size", value: String(garment.size) });
       if (garment.color) initialCustom.push({ id: `cf-color-${Date.now()}`, key: "color", value: String(garment.color) });
-      
+
       if (garment.atributos_dinamicos) {
         Object.entries(garment.atributos_dinamicos).forEach(([k, v], i) => {
           if (k !== 'size' && k !== 'color') {
@@ -111,7 +111,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         });
       }
       setCustomFields(initialCustom);
-      
+
       setPreviewUrl(garment.videoUrl || garment.imagen_principal || null);
       setExtraImages((garment.imagenes || []).slice(0, 3).map(url => ({ preview: url, isNew: false })));
 
@@ -469,22 +469,22 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       }
 
       if (!base64Image && !imageUrlToSend) {
-        throw new Error("No hay una fuente visual válida para que la IA analice la prenda.");
+        throw new Error("No hay una fuente visual válida para que la IA analice el producto.");
       }
 
-        const baseSchema: Record<string, any> = {
-          title: "nombre creativo del vestido",
-          brand: "Identifica la marca",
-          description: "breve descripción",
-          price: 0,
-        };
-        
-        // Agregar campos existentes al esquema para que la IA los llene
-        customFields.forEach(cf => {
-          if (cf.key.trim() && !baseSchema[cf.key.trim()]) {
-            baseSchema[cf.key.trim()] = "valor detectado o null";
-          }
-        });
+      const baseSchema: Record<string, any> = {
+        title: "nombre creativo del vestido",
+        brand: "Identifica la marca",
+        description: "breve descripción",
+        price: 0,
+      };
+
+      // Agregar campos existentes al esquema para que la IA los llene
+      customFields.forEach(cf => {
+        if (cf.key.trim() && !baseSchema[cf.key.trim()]) {
+          baseSchema[cf.key.trim()] = "valor detectado o null";
+        }
+      });
       const response = await fetch("/api/ia/analyze-garment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -495,7 +495,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error("Error al analizar la prenda con IA");
+        throw new Error("Error al analizar el producto con IA");
       }
       const result = await response.json();
 
@@ -519,17 +519,17 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
       // Update customFields WITH case-insensitivity
       setCustomFields(prevKeys => {
-         const newKeys = [...prevKeys];
-         newKeys.forEach(cf => {
-            if (cf.key) {
-               // Buscar en result de forma insensible
-               const resultKey = Object.keys(result).find(rk => rk.toLowerCase() === cf.key.toLowerCase());
-               if (resultKey && result[resultKey] !== undefined && result[resultKey] !== null) {
-                  cf.value = String(result[resultKey]);
-               }
+        const newKeys = [...prevKeys];
+        newKeys.forEach(cf => {
+          if (cf.key) {
+            // Buscar en result de forma insensible
+            const resultKey = Object.keys(result).find(rk => rk.toLowerCase() === cf.key.toLowerCase());
+            if (resultKey && result[resultKey] !== undefined && result[resultKey] !== null) {
+              cf.value = String(result[resultKey]);
             }
-         });
-         return newKeys;
+          }
+        });
+        return newKeys;
       });
     } catch (error) {
       const errorMessage =
@@ -583,7 +583,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
             id="form-modal-title"
             className="text-3xl font-semibold text-color-three dark:text-white mb-6 font-serif"
           >
-            {garment ? "Editar Prenda" : "Añadir Nueva Prenda"}
+            {garment ? "Editar Producto" : "Añadir Nueva Producto"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="bg-color-three/5 dark:bg-[#0f0f0f]/30 p-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] space-y-4">
@@ -663,7 +663,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                           value={formData.imagen_principal}
                           onChange={handleImagePrincipalUrlChange}
                           placeholder="https://..."
-                           className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
+                          className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
                         />
                       </div>
                     )}
@@ -671,13 +671,13 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 )}
               </div>
 
-               <div className="pt-4 border-t border-color-three/10 dark:border-[#2a2a2a]">
+              <div className="pt-4 border-t border-color-three/10 dark:border-[#2a2a2a]">
                 <label className="block text-sm font-semibold text-color-three dark:text-white mb-2">
                   Imágenes Adicionales (Opcional - Máx 3)
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {extraImages.map((img, index) => (
-                     <div key={index} className="relative aspect-square rounded-md overflow-hidden bg-color-three/10 dark:bg-[#0f0f0f]">
+                    <div key={index} className="relative aspect-square rounded-md overflow-hidden bg-color-three/10 dark:bg-[#0f0f0f]">
                       <img src={img.preview} alt={`Extra ${index}`} className="w-full h-full object-cover" />
                       <button
                         type="button"
@@ -689,7 +689,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                     </div>
                   ))}
                   {extraImages.length < 3 && (
-                     <label className="flex items-center justify-center border-2 border-dashed border-color-three/20 dark:border-[#2a2a2a] rounded-md cursor-pointer hover:bg-color-four/80 dark:hover:bg-[#1a1a1a]/50 aspect-square">
+                    <label className="flex items-center justify-center border-2 border-dashed border-color-three/20 dark:border-[#2a2a2a] rounded-md cursor-pointer hover:bg-color-four/80 dark:hover:bg-[#1a1a1a]/50 aspect-square">
                       <span className="text-xl text-stone-400">+</span>
                       <input
                         type="file"
@@ -704,7 +704,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
               </div>
 
               {previewUrl && (
-                 <div className="mt-4 pt-4 border-t border-color-three/10 dark:border-[#2a2a2a]">
+                <div className="mt-4 pt-4 border-t border-color-three/10 dark:border-[#2a2a2a]">
                   <span className="text-xs font-medium text-stone-500 dark:text-[#a0a0a0] block mb-2 uppercase">Vista Previa</span>
                   <div className=" w-full relative rounded-lg overflow-hidden bg-black aspect-video max-h-[200px] flex items-center justify-center">
                     {(videoFile || formData.videoUrl) ? (
@@ -757,7 +757,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                     ? "Sube un video para activar la IA."
                     : "Autocompletar datos con IA"
                 }
-                 className="w-full flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-lg border border-color-three/20 dark:border-[#2a2a2a] text-color-three dark:text-white hover:bg-color-three/5 dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-lg border border-color-three/20 dark:border-[#2a2a2a] text-color-three dark:text-white hover:bg-color-three/5 dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isAiLoading ? (
                   <>
@@ -850,7 +850,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 placeholder="10"
                 className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
               />
-               {formErrors.cantidad && <p className="text-red-500 text-xs mt-1">{formErrors.cantidad}</p>}
+              {formErrors.cantidad && <p className="text-red-500 text-xs mt-1">{formErrors.cantidad}</p>}
             </div>
 
             <div>
@@ -884,7 +884,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 </button>
               </div>
               {customFields.length === 0 ? (
-                <p className="text-xs text-stone-500 mb-4">No hay campos extra automáticos para esta prenda. Pulsa en "+ Añadir" si necesitas (ej. Voltaje, Detalles).</p>
+                <p className="text-xs text-stone-500 mb-4">No hay campos extra automáticos para este producto. Pulsa en "+ Añadir" si necesitas (ej. Voltaje, Detalles).</p>
               ) : (
                 <div className="space-y-3 mb-4">
                   {customFields.map((cf, idx) => (
@@ -938,11 +938,11 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
               </div>
             )}
             <div className="flex justify-end gap-4 pt-4">
-               <button
-                 type="button"
-                 onClick={onClose}
-                 className="bg-color-three/5 dark:bg-[#0f0f0f] text-color-three dark:text-[#a0a0a0] font-medium py-2 px-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/10 dark:hover:bg-[#2a2a2a] transition-colors"
-               >
+              <button
+                type="button"
+                onClick={onClose}
+                className="bg-color-three/5 dark:bg-[#0f0f0f] text-color-three dark:text-[#a0a0a0] font-medium py-2 px-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-three/10 dark:hover:bg-[#2a2a2a] transition-colors"
+              >
                 Cancelar
               </button>
               <button
@@ -963,10 +963,10 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
           </form>
         </div>
         <button
-           onClick={onClose}
-           className="absolute top-4 right-4 text-color-three dark:text-[#a0a0a0] hover:text-color-one dark:hover:text-white z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-color-one"
-           aria-label="Cerrar formulario"
-         >
+          onClick={onClose}
+          className="absolute top-4 right-4 text-color-three dark:text-[#a0a0a0] hover:text-color-one dark:hover:text-white z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-color-one"
+          aria-label="Cerrar formulario"
+        >
           <CloseIcon className="w-8 h-8" />
         </button>
       </div>
