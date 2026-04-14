@@ -368,6 +368,16 @@
     color: var(--color-color-one);
 }
 
+.card-overlay-dark {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 60%, transparent 100%);
+    backdrop-filter: blur(8px);
+}
+
+.card-overlay-light {
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 60%, transparent 100%);
+    backdrop-filter: blur(8px);
+}
+
 
 .buttom-shop {
     min-width: 48px;
