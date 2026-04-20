@@ -27,9 +27,9 @@ const SiteFooter: React.FC<SiteFooterProps> = ({ seoTitle }) => {
                     {/* Logo y Descripción */}
                     <div className="flex flex-col sm:items-start sm:text-left">
                         {(storeInfo?.title || seoTitle) && (
-                            <h1 className="text-xl font-serif mb-4 text-color-three dark:text-white">
+                            <h2 className="text-xl font-serif mb-4 text-color-three dark:text-white">
                                 {storeInfo?.title || seoTitle}
-                            </h1>
+                            </h2>
                         )}
                         {storeInfo?.logo_url ? (
                             <div className="mb-[40px]">

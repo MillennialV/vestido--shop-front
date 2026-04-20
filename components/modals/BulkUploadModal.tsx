@@ -137,7 +137,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         // Si es imagen, convertir a WebP inmediatamente para previsualización real
         if (file.type.startsWith("image/")) {
           try {
-            fileToProcess = await convertToWebP(file);
+            fileToProcess = await convertToWebP(file, 0.8, 'product');
           } catch (err) {
             console.error("Error al convertir a WebP en selección masiva:", err);
           }

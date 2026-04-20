@@ -64,6 +64,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     alternates: {
       canonical: "/",
+      languages: {
+        'es-PE': DEFAULT_SEO.canonical,
+        'es': DEFAULT_SEO.canonical,
+      },
     },
     openGraph: {
       type: "website",
@@ -142,6 +146,19 @@ export default async function RootLayout({
       </html>
     );
   }
+
+  const FAQS_LAYOUT_API = process.env.NEXT_PUBLIC_API_PREGUNTAS_BASE_URL || 'http://localhost:3005';
+  let faqs: { pregunta: string; respuesta: string; id: number }[] = [];
+  try {
+    const faqRes = await fetch(
+      `${FAQS_LAYOUT_API}/api/preguntas?limit=5&estado=activa&order=asc&domain=${domain}`,
+      { next: { revalidate: 3600 } }
+    );
+    if (faqRes.ok) {
+      const faqData = await faqRes.json();
+      faqs = faqData?.data?.preguntas || [];
+    }
+  } catch {}
 
   return (
     <html lang="es" className={`${allrounder.variable}`} suppressHydrationWarning>
@@ -273,49 +290,25 @@ export default async function RootLayout({
           }}
         />
 
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              mainEntity: [
-                {
+        {faqs.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: faqs.map(faq => ({
                   "@type": "Question",
-                  name: "¿Cómo puedo saber cuál es mi talla correcta?",
+                  name: faq.pregunta,
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Recomendamos revisar nuestra guía de tallas detallada, disponible en la descripción de cada product. Si tienes dudas, nuestro equipo de estilistas está disponible por WhatsApp para ofrecerte una asesoría personalizada y asegurar que encuentres el ajuste perfecto.",
+                    text: faq.respuesta,
                   },
-                },
-                {
-                  "@type": "Question",
-                  name: "¿Cuál es la política de envíos y devoluciones?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Ofrecemos envío express a todo el país, con un tiempo de entrega de 24-48 horas en ciudades principales. Aceptamos devoluciones dentro de los primeros 7 días después de la recepción, siempre que la prenda esté en su estado original y con todas las etiquetas.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "Los vestidos, ¿requieren algún cuidado especial?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Sí, al ser prendas de alta costura, recomendamos encarecidamente la limpieza en seco profesional. Evita lavar a máquina o usar secadoras. Para el almacenamiento, guárdalo en una funda para prendas en un lugar fresco y seco para preservar la calidad de los tejidos y detalles.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "¿Ofrecen arreglos o ajustes a medida?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Actualmente no ofrecemos un servicio de arreglos a medida, pero nuestros vestidos están diseñados para permitir ajustes menores por parte de un sastre profesional. Podemos recomendarte talleres de confianza si lo necesitas.",
-                  },
-                },
-              ],
-            }),
-          }}
-        />
+                })),
+              }),
+            }}
+          />
+        )}
       </head>
       <body className={`${inter.variable} ${cormorant.variable} bg-stone-50 font-sans`}>
         {process.env.NEXT_PUBLIC_GA_ID && process.env.NEXT_PUBLIC_GA_ID !== "G-XXXXXXXXXX" && (

@@ -70,6 +70,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
         return {
             alternates: {
                 canonical: PUBLIC_URL,
+                languages: {
+                    'es-PE': PUBLIC_URL,
+                    'es': PUBLIC_URL,
+                },
             },
             robots: DEFAULT_SEO.robots,
         };
@@ -84,6 +88,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
             description: page.description,
             alternates: {
                 canonical: pageUrl,
+                languages: {
+                    'es-PE': pageUrl,
+                    'es': pageUrl,
+                },
             },
             openGraph: {
                 url: pageUrl,
@@ -127,12 +135,25 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
         DEFAULT_OG_IMAGE;
 
     const productUrl = `${PUBLIC_URL}/producto/${slug}`;
+    const productKeywords = [
+        product?.title,
+        product?.brand,
+        product?.color,
+        product?.size,
+        orgName,
+        'comprar',
+    ].filter(Boolean).join(', ');
 
     return {
         title: productTitle,
         description: productDescription,
+        keywords: productKeywords,
         alternates: {
             canonical: productUrl,
+            languages: {
+                'es-PE': productUrl,
+                'es': productUrl,
+            },
         },
         openGraph: {
             url: productUrl,
@@ -263,7 +284,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
 
     return (
         <>
-            {/* Visible H1 for SEO - Server Side Rendered */}
+            {/* H1 SSR para SEO */}
             <div className="sr-only">
                 {product ? (
                     <h1>{product.title}</h1>
@@ -278,6 +299,35 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug?
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
                 />
             )}
+
+            {/* Catálogo SSR para rastreadores y LLMs */}
+            {initialData.garments.length > 0 && (
+                <section aria-label="Catálogo de productos" className="sr-only">
+                    <h2>Productos disponibles en {orgName}</h2>
+                    <ul>
+                        {initialData.garments.slice(0, 10).map((g: any) => (
+                            <li key={g.id}>
+                                <a href={`/producto/${g.slug || g.title}`}>{g.title}</a>
+                                {g.description && <p>{g.description}</p>}
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+
+            {/* FAQs SSR con semántica HTML nativa */}
+            {initialData.faqs.length > 0 && (
+                <section aria-label="Preguntas frecuentes" className="sr-only">
+                    <h2>Preguntas Frecuentes</h2>
+                    {initialData.faqs.map((faq: any) => (
+                        <details key={faq.id}>
+                            <summary>{faq.pregunta}</summary>
+                            <p>{faq.respuesta}</p>
+                        </details>
+                    ))}
+                </section>
+            )}
+
             <HomeClient
                 initialGarments={initialData.garments}
                 initialPagination={initialData.pagination}

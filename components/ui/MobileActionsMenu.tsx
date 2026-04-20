@@ -106,16 +106,16 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                 )}
 
                 {/* Profile/Admin Action */}
-                {!hideAdminControls && (
+                {!hideAdminControls && isAdmin && (
                     <button
                         onClick={() => {
                             onToggleAdmin();
                             setIsOpen(false);
                         }}
                         className="p-2 rounded-full text-color-three dark:text-white hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
-                        aria-label={isAdmin ? "Cerrar sesión" : "Modo administrador"}
+                        aria-label="Cerrar sesión"
                     >
-                        {isAdmin ? <ExitIcon className="size-[24px]" /> : <AdminIcon className="size-[24px]" />}
+                        <ExitIcon className="size-[24px]" />
                     </button>
                 )}
 

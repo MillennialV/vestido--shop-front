@@ -383,7 +383,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   };
 
   const isHome = pathname === "/" || pathname === "";
-  const TitleTag = "h1";
+  const TitleTag = "h2";
 
   if (!garment) return null;
 
@@ -468,7 +468,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
         aria-labelledby="modal-title"
       >
         <div
-          className={`relative bg-color-four dark:bg-[#1a1a1a] rounded-none md:rounded-[25px] shadow-2xl w-full md:max-w-4xl h-full md:max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
+          className={`relative bg-color-four dark:bg-[#1a1a1a] rounded-none md:rounded-[25px] shadow-2xl w-full md:max-w-4xl h-full md:h-auto md:max-h-[min(90vh,800px)] flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'}`}
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -486,12 +486,12 @@ const VideoModal: React.FC<VideoModalProps> = ({
             </div>
           )}
 
-          <div className="flex flex-col md:flex-row flex-grow overflow-y-auto md:overflow-hidden gap-0 custom-scrollbar ">
+          <div className="flex flex-col md:flex-row flex-grow overflow-y-auto md:overflow-hidden gap-0 custom-scrollbar">
             {/* Gallery Section - Video/Image Stage */}
-            <div className="relative w-full md:w-1/2 flex flex-col md:sticky md:top-0 md:h-screen md:max-h-[90vh]">
+            <div className="relative w-full md:w-1/2 flex flex-col flex-shrink-0">
 
               {/* Main Stage */}
-              <div className="relative w-full mx-auto flex-grow flex items-center justify-center aspect-[3/4] md:aspect-auto min-h-[300px] p-0 md:p-[35px]">
+              <div className="relative w-full flex-grow aspect-[3/4] md:aspect-[3/4] min-h-[300px] md:min-h-0 md:max-h-[min(80vh,700px)] p-0 md:p-[35px]">
                 <div className="relative w-full h-full p-3 md:rounded-[15px] overflow-hidden">
                   {/* Navigation Arrows (Overlay) */}
                   {mediaList.length > 1 && (

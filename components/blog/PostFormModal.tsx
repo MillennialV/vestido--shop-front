@@ -6,6 +6,7 @@ import "react-quill-new/dist/quill.snow.css";
 import type { Post } from "@/types/post";
 import { useCategories } from "@/hooks/useCategories";
 import { CloseIcon, SpinnerIcon, UploadIcon } from "@/components/ui/Icons";
+import { convertToWebP } from "@/lib/imageUtils";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), {
   ssr: false,
@@ -110,10 +111,16 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
     if (errors.title) setErrors(prev => ({ ...prev, title: "" }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
+      try {
+        const optimized = await convertToWebP(file, 0.8, 'banner');
+        setImageFile(optimized);
+      } catch (err) {
+        console.error("Error optimizando imagen de blog:", err);
+        setImageFile(file);
+      }
       if (errors.featured_image_url) setErrors(prev => ({ ...prev, featured_image_url: "" }));
     }
   };

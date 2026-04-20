@@ -211,21 +211,13 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
-              {!hideAdminControls && (
+              {!hideAdminControls && isAdmin && (
                 <button
                   onClick={onToggleAdmin}
                   className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
-                  aria-label={
-                    isAdmin
-                      ? "Salir del modo administrador"
-                      : "Entrar al modo administrador"
-                  }
+                  aria-label="Salir del modo administrador"
                 >
-                  {isAdmin ? (
-                    <ExitIcon className="w-6 h-6" />
-                  ) : (
-                    <AdminIcon className="w-6 h-6" />
-                  )}
+                  <ExitIcon className="w-6 h-6" />
                 </button>
               )}
             </div>

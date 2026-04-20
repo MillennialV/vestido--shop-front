@@ -125,8 +125,22 @@ const FaqModal: React.FC<FaqModalProps> = ({
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pregunta.trim() || !respuesta.trim()) {
-      setError("Por favor completa todos los campos");
+    const newFieldErrors: Record<string, string> = {};
+    const trimmedPregunta = pregunta.trim();
+    const trimmedRespuesta = respuesta.trim();
+
+    if (trimmedPregunta.length < 10) {
+      newFieldErrors.pregunta = "La pregunta debe tener al menos 10 caracteres";
+    }
+    if (!trimmedRespuesta) {
+      newFieldErrors.respuesta = "La respuesta es requerida";
+    } else if (trimmedRespuesta.length < 20) {
+      newFieldErrors.respuesta = "La respuesta debe tener al menos 20 caracteres";
+    }
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      setError("Por favor corrige los errores antes de continuar");
       return;
     }
 
@@ -172,8 +186,24 @@ const FaqModal: React.FC<FaqModalProps> = ({
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!faq || !pregunta.trim() || !respuesta.trim()) {
-      setError("Por favor completa todos los campos");
+    if (!faq) return;
+    
+    const newFieldErrors: Record<string, string> = {};
+    const trimmedPregunta = pregunta.trim();
+    const trimmedRespuesta = respuesta.trim();
+
+    if (trimmedPregunta.length < 10) {
+      newFieldErrors.pregunta = "La pregunta debe tener al menos 10 caracteres";
+    }
+    if (!trimmedRespuesta) {
+      newFieldErrors.respuesta = "La respuesta es requerida";
+    } else if (trimmedRespuesta.length < 20) {
+      newFieldErrors.respuesta = "La respuesta debe tener al menos 20 caracteres";
+    }
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      setError("Por favor corrige los errores antes de continuar");
       return;
     }
 

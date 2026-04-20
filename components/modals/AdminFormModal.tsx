@@ -583,7 +583,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
             id="form-modal-title"
             className="text-3xl font-semibold text-color-three dark:text-white mb-6 font-serif"
           >
-            {garment ? "Editar Producto" : "Añadir Nueva Producto"}
+            {garment ? "Editar Producto" : "Añadir Nuevo Producto"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="bg-color-three/5 dark:bg-[#0f0f0f]/30 p-4 rounded-lg border border-color-three/10 dark:border-[#2a2a2a] space-y-4">

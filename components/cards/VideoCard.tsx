@@ -47,8 +47,8 @@ const isHexDark = (hex: string) => {
       c.length === 3
         ? [c[0] + c[0], c[1] + c[1], c[2] + c[2]].map((x) => parseInt(x, 16))
         : [c.substring(0, 2), c.substring(2, 4), c.substring(4, 6)].map((x) =>
-            parseInt(x, 16)
-          );
+          parseInt(x, 16)
+        );
     const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
     return brightness < 128;
   } catch {
