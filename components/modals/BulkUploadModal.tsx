@@ -137,7 +137,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         // Si es imagen, convertir a WebP inmediatamente para previsualización real
         if (file.type.startsWith("image/")) {
           try {
-            fileToProcess = await convertToWebP(file, 0.8, 'product');
+            fileToProcess = await convertToWebP(file, 0.8);
           } catch (err) {
             console.error("Error al convertir a WebP en selección masiva:", err);
           }
@@ -185,7 +185,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
       const newKeysFound = new Set<string>();
       const standardKeys = ["Producto", "title", "Marca", "brand", "Descripción", "description", "Precio", "price", "Stock", "cantidad", "URL Imagen", "imageUrl", "URL Video", "videoUrl", "Link", "link", "Atributos Dinámicos", "atributos_dinamicos"];
-      
+
       jsonData.forEach(row => {
         Object.keys(row).forEach(k => {
           if (!standardKeys.includes(k) && row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== "") {
@@ -203,31 +203,31 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         const rowsToCreate: any[] = [];
 
         const extractCustom = (r: any) => {
-            const custom: Record<string, string> = {};
-            
-            // 1. Extraer del JSON "Atributos Dinámicos" si existe
-            const rawAttrs = r["Atributos Dinámicos"] || r["atributos_dinamicos"];
-            if (rawAttrs) {
-               try {
-                  const parsed = typeof rawAttrs === 'string' ? JSON.parse(rawAttrs) : rawAttrs;
-                  if (typeof parsed === 'object' && parsed !== null) {
-                     Object.entries(parsed).forEach(([k, v]) => {
-                        custom[k.toLowerCase()] = String(v);
-                     });
-                  }
-               } catch (e) {
-                  console.error("Error parsing Atributos Dinámicos", e);
-               }
-            }
+          const custom: Record<string, string> = {};
 
-            // 2. Extraer de columnas individuales del Excel
-            Object.keys(r).forEach(k => {
-               if (!standardKeys.includes(k) && r[k] !== undefined && r[k] !== null && String(r[k]).trim() !== "") {
-                  custom[k.toLowerCase()] = String(r[k]);
-               }
-            });
-            return custom;
-         };
+          // 1. Extraer del JSON "Atributos Dinámicos" si existe
+          const rawAttrs = r["Atributos Dinámicos"] || r["atributos_dinamicos"];
+          if (rawAttrs) {
+            try {
+              const parsed = typeof rawAttrs === 'string' ? JSON.parse(rawAttrs) : rawAttrs;
+              if (typeof parsed === 'object' && parsed !== null) {
+                Object.entries(parsed).forEach(([k, v]) => {
+                  custom[k.toLowerCase()] = String(v);
+                });
+              }
+            } catch (e) {
+              console.error("Error parsing Atributos Dinámicos", e);
+            }
+          }
+
+          // 2. Extraer de columnas individuales del Excel
+          Object.keys(r).forEach(k => {
+            if (!standardKeys.includes(k) && r[k] !== undefined && r[k] !== null && String(r[k]).trim() !== "") {
+              custom[k.toLowerCase()] = String(r[k]);
+            }
+          });
+          return custom;
+        };
 
         jsonData.forEach((row, rowIndex) => {
           // Intentar encontrar por título (Producto) o por índice
@@ -731,16 +731,16 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           price: 0
         };
         const standardFields = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color'];
-        
+
         // Identificar campos heredados del PRIMER producto de la lista (si no es este el primero)
         const firstFile = files[0];
         const inheritedFields = firstFile?.customFields || [];
 
         // Agregar campos heredados al esquema base
         inheritedFields.forEach(cf => {
-           if (cf.key.trim() && !baseSchema[cf.key.trim()]) {
-              baseSchema[cf.key.trim()] = "valor detectado o null";
-           }
+          if (cf.key.trim() && !baseSchema[cf.key.trim()]) {
+            baseSchema[cf.key.trim()] = "valor detectado o null";
+          }
         });
 
         // Add existing custom fields OF THIS FILE to the schema for AI to fill
@@ -821,16 +821,16 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
               const standardFields2 = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color', 'usage', 'error', 'success'];
               const aiCustomFields: { id: string, key: string, value: string }[] = [...(f.customFields || [])];
-              
+
               // Si no es el primer archivo, también heredamos los campos vacíos del primero si faltan en este
               if (index > 0) {
-                 const firstCustomFields = prev[0]?.customFields || [];
-                 firstCustomFields.forEach(cf1 => {
-                    const exists = aiCustomFields.some(cfx => cfx.key.toLowerCase() === cf1.key.toLowerCase());
-                    if (!exists && cf1.key.trim()) {
-                       aiCustomFields.push({ id: `cf-inherited-${Date.now()}-${cf1.key}`, key: cf1.key, value: "" });
-                    }
-                 });
+                const firstCustomFields = prev[0]?.customFields || [];
+                firstCustomFields.forEach(cf1 => {
+                  const exists = aiCustomFields.some(cfx => cfx.key.toLowerCase() === cf1.key.toLowerCase());
+                  if (!exists && cf1.key.trim()) {
+                    aiCustomFields.push({ id: `cf-inherited-${Date.now()}-${cf1.key}`, key: cf1.key, value: "" });
+                  }
+                });
               }
 
               // Update customFields WITH case-insensitivity
@@ -845,17 +845,17 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
               // Add new custom fields from AI result if they were requested in baseSchema and not already present
               Object.keys(result).forEach(rk => {
-                 const keyResult = rk.trim();
-                 const valResult = result[rk];
-                 if (keyResult && !standardFields2.includes(keyResult) && valResult !== undefined && valResult !== null) {
-                    const alreadyPresent = aiCustomFields.some(cf => cf.key.toLowerCase() === keyResult.toLowerCase());
-                    if (!alreadyPresent) {
-                       const isRequested = Object.keys(baseSchema).some(bk => bk.toLowerCase() === keyResult.toLowerCase());
-                       if (isRequested) {
-                          aiCustomFields.push({ id: `cf-ia-${Date.now()}-${keyResult}`, key: keyResult, value: String(valResult) });
-                       }
+                const keyResult = rk.trim();
+                const valResult = result[rk];
+                if (keyResult && !standardFields2.includes(keyResult) && valResult !== undefined && valResult !== null) {
+                  const alreadyPresent = aiCustomFields.some(cf => cf.key.toLowerCase() === keyResult.toLowerCase());
+                  if (!alreadyPresent) {
+                    const isRequested = Object.keys(baseSchema).some(bk => bk.toLowerCase() === keyResult.toLowerCase());
+                    if (isRequested) {
+                      aiCustomFields.push({ id: `cf-ia-${Date.now()}-${keyResult}`, key: keyResult, value: String(valResult) });
                     }
-                 }
+                  }
+                }
               });
 
               return {
@@ -966,10 +966,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             if (f.garmentData.color) formData.append("color", f.garmentData.color);
             if (f.garmentData.price) formData.append("price", f.garmentData.price);
             formData.append("cantidad", f.garmentData.cantidad || "0");
-            
+
             // Atributos dinámicos combinados
             const standardFields = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color'];
-            
+
             // 1. Del garmentData original (ej. Excel)
             Object.entries(f.garmentData).forEach(([k, v]) => {
               if (!standardFields.includes(k) && v && String(v).trim()) {
@@ -1346,14 +1346,14 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                             placeholder="Nombre (ej. Talla)"
                             value={cf.key}
                             onChange={(e) => {
-                               setFiles(prev => prev.map(f => {
-                                 if (f.id === file.id && f.customFields) {
-                                    const newCustom = [...f.customFields];
-                                    newCustom[idx].key = e.target.value;
-                                    return { ...f, customFields: newCustom };
-                                 }
-                                 return f;
-                               }));
+                              setFiles(prev => prev.map(f => {
+                                if (f.id === file.id && f.customFields) {
+                                  const newCustom = [...f.customFields];
+                                  newCustom[idx].key = e.target.value;
+                                  return { ...f, customFields: newCustom };
+                                }
+                                return f;
+                              }));
                             }}
                             className="w-1/3 p-2 border border-stone-300 dark:border-stone-700 rounded-md text-sm bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white font-medium"
                           />
@@ -1365,9 +1365,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                               onChange={(e) => {
                                 setFiles(prev => prev.map(f => {
                                   if (f.id === file.id && f.customFields) {
-                                     const newCustom = [...f.customFields];
-                                     newCustom[idx].value = e.target.value;
-                                     return { ...f, customFields: newCustom };
+                                    const newCustom = [...f.customFields];
+                                    newCustom[idx].value = e.target.value;
+                                    return { ...f, customFields: newCustom };
                                   }
                                   return f;
                                 }));
@@ -1393,16 +1393,16 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                           </div>
                         </div>
                       ))}
-                      
+
                       <button
                         onClick={() => {
-                           setFiles(prev => prev.map(f => {
-                              if (f.id === file.id) {
-                                 const newCustom = [...(f.customFields || []), { id: `cf-${Date.now()}`, key: "", value: "" }];
-                                 return { ...f, customFields: newCustom };
-                              }
-                              return f;
-                           }));
+                          setFiles(prev => prev.map(f => {
+                            if (f.id === file.id) {
+                              const newCustom = [...(f.customFields || []), { id: `cf-${Date.now()}`, key: "", value: "" }];
+                              return { ...f, customFields: newCustom };
+                            }
+                            return f;
+                          }));
                         }}
                         className="text-[12px] text-sky-500 hover:text-sky-600 dark:text-sky-400 font-medium text-left bg-sky-50 dark:bg-sky-900/10 px-3 py-2 rounded-md transition-colors w-fit border border-sky-100 dark:border-sky-800"
                       >

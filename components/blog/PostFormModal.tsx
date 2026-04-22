@@ -115,7 +115,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const optimized = await convertToWebP(file, 0.8, 'banner');
+        const optimized = await convertToWebP(file, 0.8);
         setImageFile(optimized);
       } catch (err) {
         console.error("Error optimizando imagen de blog:", err);

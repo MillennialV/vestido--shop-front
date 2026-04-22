@@ -30,7 +30,7 @@ export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerU
         for (const file of filesArray) {
             try {
                 // Convertimos inmediatamente a WebP con resolución de banner
-                const webpFile = await convertToWebP(file, 0.9, 'banner');
+                const webpFile = await convertToWebP(file, 0.9);
                 const previewUrl = URL.createObjectURL(webpFile);
                 // Usamos el nombre orig sin extensión como título inicial
                 const defaultTitle = file.name.replace(/\.[^/.]+$/, "");
