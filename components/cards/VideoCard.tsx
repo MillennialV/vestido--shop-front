@@ -330,7 +330,6 @@ const VideoCard: React.FC<VideoCardProps> = ({
           preload={priority ? "auto" : "metadata"}
           onCanPlay={handleCanPlay}
           onLoadedData={(e) => detectTone(e.currentTarget as unknown as HTMLImageElement)}
-          crossOrigin="anonymous"
           onError={handleError}
           className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${!isSelectionMode ? "group-hover:scale-110" : ""}`}
           title={`Vista previa en video de ${productAlt}`}
@@ -347,7 +346,6 @@ const VideoCard: React.FC<VideoCardProps> = ({
             setIsMediaLoading(false);
             detectTone(e.currentTarget);
           }}
-          crossOrigin="anonymous"
           onError={handleError}
           priority={priority}
         />
