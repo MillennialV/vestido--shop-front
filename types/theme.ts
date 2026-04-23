@@ -27,6 +27,9 @@ export interface StoreInfo {
     is_carousel_enabled?: boolean;
     logo_url?: string;
     brand_prompt?: string;
+    category?: string;
+    style?: string;
+    referential_images?: string[];
     created_at?: string;
     updated_at?: string;
 }
