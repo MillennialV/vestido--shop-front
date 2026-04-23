@@ -130,7 +130,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     {isAdmin && (
                         <button
                             onClick={onOpenConfig}
-                            className="flex items-center justify-center w-9 h-9 rounded-full bg-stone-100 dark:bg-[#1a1a1a] text-stone-400 hover:text-[#D4B57E] hover:bg-stone-200 dark:hover:bg-[#2a2a2a] transition-all border border-dashed border-stone-300 dark:border-[#3a3a3a] group"
+                            className="flex items-center justify-center w-9 h-9 rounded-full bg-color-four dark:bg-[#1a1a1a] text-stone-400 hover:text-color-two hover:bg-color-four/80 dark:hover:bg-[#2a2a2a] transition-all border border-dashed border-stone-300 dark:border-[#3a3a3a] group shadow-sm"
                             title="Configurar Filtros"
                         >
                             <PlusIcon className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
@@ -174,12 +174,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         {selectedFilterTags.map(tag => (
                             <div
                                 key={tag.key}
-                                className="flex items-center gap-2 bg-color-four dark:bg-[#2a2a2a]/80 border border-stone-100 dark:border-[#2a2a2a] rounded-xl px-4 py-2 shadow-sm transition-all hover:border-[#D4B57E]/30"
+                                className="flex items-center gap-2 bg-color-four dark:bg-[#2a2a2a]/80 border border-stone-100 dark:border-[#2a2a2a] rounded-xl px-4 py-2 shadow-sm transition-all hover:border-color-two/50"
                             >
                                 <span className="text-xs sm:text-sm font-semibold text-stone-700 dark:text-white capitalize">{tag.label}</span>
                                 <button
                                     onClick={() => onFilterChange({ [tag.key]: "all" })}
-                                    className="text-stone-400 dark:text-[#a0a0a0] hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                    className="text-stone-400 dark:text-[#a0a0a0] hover:text-color-two transition-colors"
                                     aria-label={`Remove ${tag.label}`}
                                 >
                                     <CloseIcon className="w-3.5 h-3.5" />
@@ -191,7 +191,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                 <span className="text-xs sm:text-sm font-medium text-stone-700 dark:text-white italic">"{searchQuery}"</span>
                                 <button
                                     onClick={() => onSearchChange("")}
-                                    className="text-stone-400 dark:text-[#a0a0a0] hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                    className="text-stone-400 dark:text-[#a0a0a0] hover:text-color-two transition-colors"
                                 >
                                     <CloseIcon className="w-3.5 h-3.5" />
                                 </button>
@@ -200,7 +200,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     </div>
                     <button
                         onClick={onClearFilters}
-                        className="text-xs sm:text-sm font-bold text-[#D4B57E] hover:text-[#C4A56E] transition-colors px-2 py-1"
+                        className="text-xs sm:text-sm font-bold text-color-two opacity-80 hover:opacity-100 transition-opacity px-2 py-1"
                     >
                         Limpiar todo
                     </button>

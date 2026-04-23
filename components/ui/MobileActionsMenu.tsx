@@ -72,7 +72,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                 >
                     <ShoppingCartIcon className="size-[24px]" />
                     {totalItems > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-color-one text-color-three dark:text-[#1a1a1a] text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
+                        <span className="absolute -top-1 -right-1 bg-color-two text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
                             {totalItems}
                         </span>
                     )}

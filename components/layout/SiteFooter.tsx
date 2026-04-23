@@ -51,17 +51,17 @@ const SiteFooter: React.FC<SiteFooterProps> = ({ seoTitle }) => {
                         </p>
                         <div className="flex gap-[16px] mt-[24px]">
                             {facebookUrl && (
-                                <Link href={facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                <Link href={facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-color-two transition-colors">
                                     <FacebookIcon className="size-[24px]" />
                                 </Link>
                             )}
                             {instagramUrl && (
-                                <Link href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                <Link href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-color-two transition-colors">
                                     <InstagramIcon className="size-[24px]" />
                                 </Link>
                             )}
                             {whatsappUrl && (
-                                <Link href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                <Link href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-color-two transition-colors">
                                     <WhatsappIcon className="size-[24px]" />
                                 </Link>
                             )}

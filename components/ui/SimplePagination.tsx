@@ -15,20 +15,20 @@ const SimplePagination: React.FC<SimplePaginationProps> = ({ currentPage, hasNex
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="p-3 text-stone-600 dark:text-white bg-white dark:bg-[#1a1a1a] rounded-full border border-stone-200 dark:border-[#2a2a2a] hover:bg-stone-50 dark:hover:bg-[#2a2a2a] transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                className="p-3 text-color-three dark:text-white bg-color-four dark:bg-[#1a1a1a] rounded-full border border-color-three/20 dark:border-[#2a2a2a] hover:text-color-two hover:border-color-two hover:bg-color-two/10 dark:hover:bg-[#2a2a2a] transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
                 aria-label="Página anterior"
             >
                 <ChevronLeftIcon className="w-5 h-5" />
             </button>
 
-            <span className="text-sm font-medium text-stone-500 dark:text-[#a0a0a0]">
+            <span className="text-sm font-medium text-color-three/70 dark:text-[#a0a0a0]">
                 Página {currentPage}
             </span>
 
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={!hasNextPage}
-                className="p-3 text-stone-600 dark:text-white bg-white dark:bg-[#1a1a1a] rounded-full border border-stone-200 dark:border-[#2a2a2a] hover:bg-stone-50 dark:hover:bg-[#2a2a2a] transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                className="p-3 text-color-three dark:text-white bg-color-four dark:bg-[#1a1a1a] rounded-full border border-color-three/20 dark:border-[#2a2a2a] hover:text-color-two hover:border-color-two hover:bg-color-two/10 dark:hover:bg-[#2a2a2a] transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
                 aria-label="Página siguiente"
             >
                 <ChevronRightIcon className="w-5 h-5" />

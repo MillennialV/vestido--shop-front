@@ -154,7 +154,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 <div className="flex-shrink-0 p-6 bg-white dark:bg-[#1a1a1a] border-t border-stone-100 dark:border-[#2a2a2a] flex items-center justify-between gap-4 z-10">
                     <button 
                         onClick={handleClear}
-                        className="text-stone-500 dark:text-[#a0a0a0] font-bold px-8 py-4 hover:underline"
+                        className="text-color-two opacity-80 hover:opacity-100 font-bold px-8 py-4 hover:underline transition-opacity"
                     >
                         Limpiar
                     </button>

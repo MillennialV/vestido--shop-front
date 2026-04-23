@@ -97,7 +97,7 @@ export const BrandFilterContent: React.FC<{
                         <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
                             selectedBrands.includes(brand)
                                 ? "bg-color-one border-color-one"
-                                : "border-color-three/20 dark:border-[#2a2a2a] bg-color-four dark:bg-[#1a1a1a] group-hover:border-color-one/50"
+                                : "border-color-three/20 dark:border-[#2a2a2a] bg-color-four dark:bg-[#1a1a1a] group-hover:border-color-two/50"
                         }`}>
                             {selectedBrands.includes(brand) && <div className="w-2.5 h-2.5 bg-color-four rounded-sm" />}
                         </div>
@@ -150,7 +150,7 @@ export const OccasionFilterContent: React.FC<{
                         className={`w-full px-5 py-3 rounded-xl border text-sm font-medium transition-all flex justify-between items-center gap-2 text-left ${
                             selectedOccasion === occasion
                                 ? "bg-color-one/10 border-color-one text-color-one"
-                                : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-one/30 hover:text-color-three dark:hover:text-white"
+                                : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-two/50 hover:text-color-three dark:hover:text-white"
                         }`}
                     >
                         <span>{occasion}</span>
@@ -201,7 +201,7 @@ export const SizeFilterContent: React.FC<{
                                 className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
                                     selectedSize === size
                                         ? "bg-color-one/10 border-color-one text-color-one"
-                                        : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-one/30 dark:hover:text-white"
+                                        : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-two/50 dark:hover:text-white"
                                 }`}
                             >
                                 {size}
@@ -218,8 +218,8 @@ export const SizeFilterContent: React.FC<{
                                 onClick={() => onChange(size)}
                                 className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
                                     selectedSize === size
-                                        ? "bg-[#D4B57E]/10 border-[#D4B57E] text-[#D3A24D]"
-                                        : "bg-stone-50 dark:bg-[#0f0f0f] border-stone-100 dark:border-[#2a2a2a] text-stone-600 dark:text-[#a0a0a0] dark:hover:text-white"
+                                        ? "bg-color-one/10 border-color-one text-color-one"
+                                        : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-two/50 dark:hover:text-white"
                                 }`}
                             >
                                 {size}

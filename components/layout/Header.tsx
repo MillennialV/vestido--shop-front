@@ -183,7 +183,7 @@ const Header: React.FC<HeaderProps> = ({
               >
                 <ShoppingCartIcon className="w-6 h-6" />
                 {mounted && totalItems > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                  <span className="absolute top-0 right-0 bg-color-two text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
                     {totalItems}
                   </span>
                 )}
