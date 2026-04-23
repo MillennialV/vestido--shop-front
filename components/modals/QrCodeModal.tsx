@@ -122,7 +122,7 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({
         >
           <h2
             id="qr-code-modal-title"
-            className="text-[20px] font-inter font-semibold height-[100%] spacing-[0%] text-color-three dark:text-white mb-2 "
+            className="text-[20px] font-serif font-semibold height-[100%] spacing-[0%] text-color-three dark:text-white mb-2"
           >
             Compartir con QR
           </h2>

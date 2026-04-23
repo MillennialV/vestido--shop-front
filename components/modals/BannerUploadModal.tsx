@@ -14,9 +14,10 @@ interface BannerUploadModalProps {
     isOpen: boolean;
     onClose: () => void;
     onUpload: (items: BannerUploadItem[]) => Promise<void>;
+    onAuthError?: (message: string) => void;
 }
 
-export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerUploadModalProps) {
+export default function BannerUploadModal({ isOpen, onClose, onUpload, onAuthError }: BannerUploadModalProps) {
     const [items, setItems] = useState<BannerUploadItem[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,7 +76,14 @@ export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerU
             items.forEach(item => URL.revokeObjectURL(item.previewUrl));
             setItems([]);
             onClose();
-        } catch (err) {
+        } catch (err: any) {
+            if (err?.status === 401 || (err instanceof Error && err.message.includes('401'))) {
+                if (onAuthError) {
+                    onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+                }
+                onClose();
+                return;
+            }
             alert("Error al intentar subir los archivos.");
             console.error(err);
         } finally {
@@ -99,7 +107,7 @@ export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerU
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 sm:p-8 border-b border-color-three/10 dark:border-[#2a2a2a] shrink-0">
                     <div>
-                        <h2 className="text-2xl font-bold text-color-three dark:text-white">Subir Banners</h2>
+                        <h2 className="text-2xl font-bold font-serif text-color-three dark:text-white">Subir Banners</h2>
                         <p className="text-color-disable text-sm mt-1">Selecciona imágenes, añade un meta title a cada una y confirma la carga.</p>
                     </div>
                     <button
@@ -202,7 +210,7 @@ export default function BannerUploadModal({ isOpen, onClose, onUpload }: BannerU
                     <button
                         onClick={handleUploadClick}
                         disabled={items.length === 0 || isUploading}
-                        className="px-8 py-3 font-medium text-color-four bg-color-three dark:bg-white dark:text-[#0f0f0f] hover:opacity-90 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:shadow-none flex items-center justify-center min-w-[140px]"
+                        className="px-8 py-3 font-medium text-color-four bg-color-one hover:opacity-90 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:shadow-none flex items-center justify-center min-w-[140px]"
                     >
                         {isUploading ? (
                             <><SpinnerIcon className="w-5 h-5 mr-2 animate-spin" /> Subiendo ({items.length})...</>

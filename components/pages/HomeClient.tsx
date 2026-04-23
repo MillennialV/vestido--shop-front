@@ -214,7 +214,7 @@ export default function HomeClient({
   const [gridColumns, setGridColumns] = useState(3);
   const [isDownloadAllModalOpen, setIsDownloadAllModalOpen] = useState(false);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
-  const { authenticated, onLogout, onLogin, organization } = useAuth();
+  const { authenticated, onLogout, onLogin, organization, refreshToken } = useAuth();
   const router = useRouter();
 
   // Console.log para verificar la organización actual del usuario
@@ -684,8 +684,12 @@ export default function HomeClient({
         setProducts(garments.filter(g => g.id !== garmentToDelete.id));
       }
       setIsProductDeleteModalOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar producto:", error);
+      if (error?.status === 401 || (error instanceof Error && error.message.includes('401'))) {
+        setAccessCodeError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+        setIsAccessCodeModalOpen(true);
+      }
     } finally {
       setIsDeletingProduct(false);
       setGarmentToDelete(null);
@@ -924,9 +928,14 @@ export default function HomeClient({
       // Recargar posts para corregir huecos y paginaciÃ³n
       await fetchPosts({ page: nextPage, limit: POSTS_PER_PAGE });
       setIsDeleteModalOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar el artículo:", error);
-      alert("Error al eliminar el artículo");
+      if (error?.status === 401 || (error instanceof Error && error.message.includes('401'))) {
+        setAccessCodeError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+        setIsAccessCodeModalOpen(true);
+      } else {
+        alert("Error al eliminar el artículo");
+      }
     } finally {
       setIsDeleting(false);
       setPostToDelete(null);
@@ -995,6 +1004,16 @@ export default function HomeClient({
         onFilterChange={onFilterChange}
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
+        onAuthError={async (msg) => {
+          console.log("⚠️ Intento de acción no autorizada (401). Intentando refrescar token...");
+          const success = await refreshToken();
+          if (!success) {
+            setAccessCodeError(msg);
+            setIsAccessCodeModalOpen(true);
+          } else {
+            console.log("✅ Token refrescado. La acción debería reintentarse o el estado actualizarse.");
+          }
+        }}
       />
       <main className="mx-[12px] md:mx-[23px] md:mx-auto md:max-w-[1290px] bg-color-four dark:bg-[#0F0F0F] rounded-[21px] my-5 px-[26px] py-[30px]">
         {SHOW_CAROUSEL && (
@@ -1003,7 +1022,7 @@ export default function HomeClient({
               <div className="flex justify-end mb-2">
                 <button
                   onClick={() => setIsBannerUploadModalOpen(true)}
-                  className="flex items-center gap-2 bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-all"
+                  className="flex items-center gap-2 bg-color-one text-color-four px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-all shadow-sm"
                 >
                   <PlusIcon className="w-4 h-4" />
                   Agregar Banners
@@ -1194,7 +1213,7 @@ export default function HomeClient({
                           setEditingFaq(null);
                           setIsFaqModalOpen(true);
                         }}
-                        className="inline-flex mt-8 items-center gap-2 bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-semibold py-2.5 px-5 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
+                        className="inline-flex mt-8 items-center gap-2 bg-color-one text-color-four font-semibold py-2.5 px-5 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 text-sm shadow-md hover:shadow-lg cursor-pointer"
                       >
                         <PlusIcon className="w-4 h-4" />
                         <span>Agregar pregunta</span>
@@ -1257,6 +1276,13 @@ export default function HomeClient({
         garment={editingGarment}
         onClose={() => setIsFormModalOpen(false)}
         onSave={handleSaveGarment}
+        onAuthError={async (msg) => {
+          const success = await refreshToken();
+          if (!success) {
+            setAccessCodeError(msg);
+            setIsAccessCodeModalOpen(true);
+          }
+        }}
       />
       <BulkUploadModal
         isOpen={isBulkUploadModalOpen}
@@ -1355,6 +1381,13 @@ export default function HomeClient({
         post={editingPost}
         onClose={() => setIsPostModalOpen(false)}
         onSubmit={handleSavePost}
+        onAuthError={async (msg) => {
+          const success = await refreshToken();
+          if (!success) {
+            setAccessCodeError(msg);
+            setIsAccessCodeModalOpen(true);
+          }
+        }}
       />
 
       <CategoryManagerModal
@@ -1377,6 +1410,13 @@ export default function HomeClient({
           }).catch((err) => {
             console.warn("Error al recargar preguntas frecuentes:", err);
           });
+        }}
+        onAuthError={async (msg) => {
+          const success = await refreshToken();
+          if (!success) {
+            setAccessCodeError(msg);
+            setIsAccessCodeModalOpen(true);
+          }
         }}
       />
       <ConfirmationModal

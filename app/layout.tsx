@@ -173,12 +173,12 @@ export default async function RootLayout({
               :root {
                 --color-one: ${colors.color_one};
                 --color-two: ${colors.color_two};
-                --color-three: ${colors.color_three};
-                --color-four: ${colors.color_four};
+                --color-three: ${colors.color_four};
+                --color-four: ${colors.color_three};
                 --color-color-one: ${colors.color_one};
                 --color-color-two: ${colors.color_two};
-                --color-color-three: ${colors.color_three};
-                --color-color-four: ${colors.color_four};
+                --color-color-three: ${colors.color_four};
+                --color-color-four: ${colors.color_three};
               }
             `
           }} />

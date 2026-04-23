@@ -91,9 +91,10 @@ const LabelWithInfo: React.FC<{ label: string, info: string, htmlFor: string }> 
 interface ConfigModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onAuthError?: (message: string) => void;
 }
 
-export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
+export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onAuthError }) => {
     const { colors, storeInfo, metadata, updateColors, updateStoreInfo, updateMetadata } = useRemoteTheme();
     const [activeTab, setActiveTab] = useState<'colors' | 'social' | 'metadata' | 'links'>('colors');
     const [localColors, setLocalColors] = useState<Partial<ThemeColors>>({});
@@ -186,6 +187,13 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
             setMessage({ type: 'success', text: 'Configuración actualizada correctamente' });
             onClose();
         } catch (error: any) {
+            if (error?.status === 401 || (error instanceof Error && error.message.includes('401'))) {
+                if (onAuthError) {
+                    onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+                }
+                onClose();
+                return;
+            }
             setMessage({ type: 'error', text: error.message || 'Error al actualizar configuración' });
         } finally {
             setIsSaving(false);
@@ -203,6 +211,13 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
             setMessage({ type: 'success', text: 'Redes actualizadas correctamente' });
             onClose();
         } catch (error: any) {
+            if (error?.status === 401 || (error instanceof Error && error.message.includes('401'))) {
+                if (onAuthError) {
+                    onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+                }
+                onClose();
+                return;
+            }
             setMessage({ type: 'error', text: error.message || 'Error al actualizar redes' });
         } finally {
             setIsSaving(false);
@@ -232,6 +247,13 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
             setMessage({ type: 'success', text: 'Información y SEO actualizados correctamente' });
             onClose();
         } catch (error: any) {
+            if (error?.status === 401 || (error instanceof Error && error.message.includes('401'))) {
+                if (onAuthError) {
+                    onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+                }
+                onClose();
+                return;
+            }
             setMessage({ type: 'error', text: error.message || 'Error al actualizar información' });
         } finally {
             setIsSaving(false);
@@ -246,6 +268,13 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
             setMessage({ type: 'success', text: 'Enlaces legales actualizados correctamente' });
             onClose();
         } catch (error: any) {
+            if (error?.status === 401 || (error instanceof Error && error.message.includes('401'))) {
+                if (onAuthError) {
+                    onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+                }
+                onClose();
+                return;
+            }
             setMessage({ type: 'error', text: error.message || 'Error al actualizar enlaces' });
         } finally {
             setIsSaving(false);
@@ -383,8 +412,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 <div>
                                     <LabelWithInfo
                                         htmlFor="color_three"
-                                        label="Color de Texto"
-                                        info="Define el tono principal de la tipografía para asegurar una lectura cómoda en todo el sitio."
+                                        label="Color de Fondo"
+                                        info="Color sutil para fondos de secciones o tarjetas, creando jerarquía visual sin saturar."
                                     />
                                     <div className="flex gap-2 items-center">
                                         <div className="w-9 h-9 rounded-full overflow-hidden border border-stone-300 dark:border-stone-600 relative flex-shrink-0">
@@ -402,7 +431,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                             name="color_three"
                                             type="text"
                                             value={localColors.color_three || ''}
-                                            placeholder="Color de texto"
+                                            placeholder="Color de fondo"
                                             onChange={(e) => setLocalColors({ ...localColors, color_three: e.target.value })}
                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
                                         />
@@ -412,8 +441,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                 <div>
                                     <LabelWithInfo
                                         htmlFor="color_four"
-                                        label="Color de Fondo"
-                                        info="Color sutil para fondos de secciones o tarjetas, creando jerarquía visual sin saturar."
+                                        label="Color de Texto"
+                                        info="Define el tono principal de la tipografía para asegurar una lectura cómoda en todo el sitio."
                                     />
                                     <div className="flex gap-2 items-center">
                                         <div className="w-9 h-9 rounded-full overflow-hidden border border-stone-300 dark:border-stone-600 relative flex-shrink-0">
@@ -431,7 +460,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => 
                                             name="color_four"
                                             type="text"
                                             value={localColors.color_four || ''}
-                                            placeholder="Color de fondo"
+                                            placeholder="Color de texto"
                                             onChange={(e) => setLocalColors({ ...localColors, color_four: e.target.value })}
                                             className="input-primary w-full min-w-0 flex-1 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 text-sm"
                                         />

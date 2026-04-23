@@ -56,7 +56,7 @@ const FilterConfigModal: React.FC<FilterConfigModalProps> = ({
                 {/* Header */}
                 <div className="px-8 py-6 border-b border-stone-100 dark:border-[#2a2a2a] flex items-center justify-between bg-gradient-to-r from-stone-50/50 to-white dark:from-[#1a1a1a] dark:to-[#121212]">
                     <div>
-                        <h2 className="text-xl font-bold text-stone-900 dark:text-white">Configurar Filtros</h2>
+                        <h2 className="text-xl font-bold text-stone-900 dark:text-white font-serif">Configurar Filtros</h2>
                         <p className="text-sm text-stone-500 dark:text-[#a0a0a0] mt-1">Selecciona qué campos aparecerán en la tienda</p>
                     </div>
                     <button
@@ -80,7 +80,7 @@ const FilterConfigModal: React.FC<FilterConfigModalProps> = ({
                                     <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-stone-200 dark:bg-[#2a2a2a] text-stone-500 rounded uppercase">Obligatorio</span>
                                 </div>
                             </div>
-                            <input type="checkbox" checked readOnly className="w-5 h-5 accent-[#D4B57E] cursor-not-allowed" />
+                            <input type="checkbox" checked readOnly className="w-5 h-5 accent-color-one cursor-not-allowed" />
                         </div>
 
                         <p className="text-xs font-bold text-stone-400 dark:text-[#666] uppercase tracking-wider mt-6 mb-2">Campos Dinámicos Detectados</p>
@@ -93,7 +93,7 @@ const FilterConfigModal: React.FC<FilterConfigModalProps> = ({
                                     <label
                                         key={key}
                                         className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer group ${selectedKeys.includes(key)
-                                            ? 'bg-color-one/5 dark:bg-[#D4B57E40] border-[#D4B57E] shadow-sm'
+                                            ? 'bg-color-one/5 dark:bg-color-one/10 border-color-one shadow-sm'
                                             : 'bg-white dark:bg-[#121212] border-stone-100 dark:border-[#2a2a2a] hover:border-stone-200 dark:hover:border-[#3a3a3a] hover:bg-stone-50 dark:hover:bg-[#1a1a1a]'
                                             }`}
                                     >
@@ -105,7 +105,7 @@ const FilterConfigModal: React.FC<FilterConfigModalProps> = ({
                                             type="checkbox"
                                             checked={selectedKeys.includes(key)}
                                             onChange={() => handleToggleKey(key)}
-                                            className="w-5 h-5 accent-[#D4B57E] rounded-md transition-transform group-active:scale-95"
+                                            className="w-5 h-5 accent-color-one rounded-md transition-transform group-active:scale-95"
                                         />
                                     </label>
                                 ))
@@ -130,7 +130,7 @@ const FilterConfigModal: React.FC<FilterConfigModalProps> = ({
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="px-8 py-2.5 rounded-xl text-sm font-bold text-white bg-[#D4B57E] hover:bg-[#C4A56E] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-[#D4B57E40] active:scale-[0.98]"
+                        className="px-8 py-2.5 rounded-xl text-sm font-bold text-white bg-color-one hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-color-one/40 active:scale-[0.98]"
                     >
                         {isSaving ? 'Guardando...' : 'Aplicar Filtros'}
                     </button>

@@ -381,7 +381,7 @@
 
 .buttom-shop {
     min-width: 48px;
-    background-color: var(--color-color-three);
+    background-color: var(--color-color-one);
     color: var(--color-color-four);
     font-family: var(--font-inter), sans-serif;
     font-size: 18px;
@@ -392,8 +392,8 @@
 }
 
 .dark .buttom-shop {
-    background-color: var(--color-color-four);
-    color: var(--color-color-three);
+    background-color: var(--color-color-one);
+    color: var(--color-color-four);
 }
 
 .buttom-whatsapp {

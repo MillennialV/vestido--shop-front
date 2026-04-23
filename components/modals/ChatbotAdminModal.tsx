@@ -103,7 +103,7 @@ export const ChatbotAdminModal: React.FC<ChatbotAdminModalProps> = ({ isOpen, on
             <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-stone-200 dark:border-[#2a2a2a]">
-                    <h2 className="text-xl font-medium text-stone-900 dark:text-white flex items-center gap-2">
+                    <h2 className="text-xl font-medium font-serif text-stone-900 dark:text-white flex items-center gap-2">
                         <SettingsIcon className="w-6 h-6" />
                         Ajustes del Asistente
                     </h2>
@@ -115,13 +115,13 @@ export const ChatbotAdminModal: React.FC<ChatbotAdminModalProps> = ({ isOpen, on
                 {/* Tabs */}
                 <div className="flex border-b border-stone-200 dark:border-[#2a2a2a] px-6">
                     <button
-                        className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'config' ? 'border-primary text-primary' : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-stone-300'}`}
+                        className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'config' ? 'border-stone-900 dark:border-white text-stone-900 dark:text-white' : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-stone-300'}`}
                         onClick={() => setActiveTab('config')}
                     >
                         Configuración
                     </button>
                     <button
-                        className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'questions' ? 'border-primary text-primary' : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-stone-300'}`}
+                        className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'questions' ? 'border-stone-900 dark:border-white text-stone-900 dark:text-white' : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-stone-300'}`}
                         onClick={() => { setActiveTab('questions'); setEditingQuestion(null); }}
                     >
                         Flujo de Conversación
@@ -163,7 +163,7 @@ export const ChatbotAdminModal: React.FC<ChatbotAdminModalProps> = ({ isOpen, on
                                 />
                             </div>
 
-                            <button onClick={handleSaveConfig} disabled={isSaving} className="w-full bg-stone-900 dark:bg-white text-white dark:text-stone-900 py-3 rounded-xl font-medium hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors disabled:opacity-50">
+                            <button onClick={handleSaveConfig} disabled={isSaving} className="w-full bg-color-one text-color-four py-3 rounded-xl font-medium hover:opacity-90 transition-colors disabled:opacity-50">
                                 {isSaving ? "Guardando..." : "Guardar Configuración"}
                             </button>
                         </div>
@@ -242,7 +242,7 @@ export const ChatbotAdminModal: React.FC<ChatbotAdminModalProps> = ({ isOpen, on
                                     </div>
                                     <div className="flex gap-3 pt-4">
                                         <button onClick={() => setEditingQuestion(null)} className="flex-1 py-3 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors">Cancelar</button>
-                                        <button onClick={handleSaveQuestion} disabled={isSaving} className="flex-1 bg-primary text-white py-3 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                                        <button onClick={handleSaveQuestion} disabled={isSaving} className="flex-1 bg-color-one text-color-four py-3 rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2">
                                             {isSaving ? "Guardando..." : <><CheckIcon className="w-5 h-5"/> Guardar Pregunta</>}
                                         </button>
                                     </div>

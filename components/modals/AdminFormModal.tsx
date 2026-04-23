@@ -38,6 +38,7 @@ interface AdminFormModalProps {
   garment: Garment | null;
   onClose: () => void;
   onSave?: (product: Garment) => void;
+  onAuthError?: (message: string) => void;
 }
 
 const AdminFormModal: React.FC<AdminFormModalProps> = ({
@@ -45,6 +46,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
   garment,
   onClose,
   onSave,
+  onAuthError,
 }) => {
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -260,7 +262,16 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
           // Asegurar que el modal se cierre
           setTimeout(() => onClose(), 100);
         })
-        .catch((error) => {
+        .catch((error: any) => {
+          // Manejar errores de sesión expirada
+          if (error?.status === 401 || (error instanceof Error && error.message.includes('401'))) {
+            if (onAuthError) {
+              onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+            }
+            onClose();
+            return;
+          }
+
           // Manejar errores de validación del backend
           if (error.errors && Array.isArray(error.errors)) {
             const errorsObj: Record<string, string> = {};

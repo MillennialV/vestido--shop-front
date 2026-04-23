@@ -77,7 +77,9 @@ export const usePosts = (initialPosts: Post[] = []) => {
             const response = await res.json();
 
             if (!res.ok) {
-                throw new Error(response.error || 'Error al crear el post');
+                const error = new Error(response.error || 'Error al procesar el post');
+                (error as any).status = res.status;
+                throw error;
             }
             return response;
         } catch (error: any) {
@@ -104,7 +106,9 @@ export const usePosts = (initialPosts: Post[] = []) => {
             const response = await res.json();
 
             if (!res.ok) {
-                throw new Error(response.error || 'Error al crear el post');
+                const error = new Error(response.error || 'Error al actualizar el post');
+                (error as any).status = res.status;
+                throw error;
             }
             return response;
         } catch (err: any) {
@@ -124,7 +128,11 @@ export const usePosts = (initialPosts: Post[] = []) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ featured_image_url: post.featured_image_url })
             });
-            if (!res.ok) throw new Error('Error al eliminar el post');
+            if (!res.ok) {
+                const error = new Error('Error al eliminar el post');
+                (error as any).status = res.status;
+                throw error;
+            }
             setPosts((prev: Post[]) => prev.filter(p => p.id !== post.id && String(p.id) !== String(post.id)));
         } catch (err: any) {
             setError(err.message || 'Error al eliminar el producto');

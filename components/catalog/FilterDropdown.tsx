@@ -51,7 +51,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 onClick={onToggle}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 text-sm font-medium border border-transparent ${
                     isOpen || (activeCount && activeCount > 0)
-                        ? "bg-color-one text-color-four shadow-md"
+                        ? "bg-color-two text-white shadow-md"
                         : "bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white hover:bg-color-four/80 dark:hover:bg-[#1a1a1a] dark:border-[#2a2a2a]"
                 }`}
             >
@@ -88,7 +88,7 @@ export const BrandFilterContent: React.FC<{
                     placeholder={placeholder}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full bg-color-four dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a] rounded-2xl py-3 pl-11 pr-4 text-sm text-color-three dark:text-white placeholder:text-color-three/40 dark:placeholder-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-color-one/50 transition-all"
+                    className="w-full bg-color-four dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a] rounded-2xl py-3 pl-11 pr-4 text-sm text-color-three dark:text-white placeholder:text-color-three/40 dark:placeholder-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-color-two/50 transition-all"
                 />
             </div>
             <div className="flex flex-col gap-3 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
@@ -96,7 +96,7 @@ export const BrandFilterContent: React.FC<{
                     <label key={brand} className="flex items-center gap-4 cursor-pointer group">
                         <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
                             selectedBrands.includes(brand)
-                                ? "bg-color-one border-color-one"
+                                ? "bg-color-two border-color-two"
                                 : "border-color-three/20 dark:border-[#2a2a2a] bg-color-four dark:bg-[#1a1a1a] group-hover:border-color-two/50"
                         }`}>
                             {selectedBrands.includes(brand) && <div className="w-2.5 h-2.5 bg-color-four rounded-sm" />}
@@ -139,7 +139,7 @@ export const OccasionFilterContent: React.FC<{
                     placeholder={placeholder}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full bg-color-four dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a] rounded-2xl py-3 pl-11 pr-4 text-sm text-color-three dark:text-white placeholder:text-color-three/40 dark:placeholder-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-color-one/50 transition-all"
+                    className="w-full bg-color-four dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a] rounded-2xl py-3 pl-11 pr-4 text-sm text-color-three dark:text-white placeholder:text-color-three/40 dark:placeholder-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-color-two/50 transition-all"
                 />
             </div>
             <div className="flex flex-col gap-2 max-w-full max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
@@ -149,7 +149,7 @@ export const OccasionFilterContent: React.FC<{
                         onClick={() => onChange(occasion)}
                         className={`w-full px-5 py-3 rounded-xl border text-sm font-medium transition-all flex justify-between items-center gap-2 text-left ${
                             selectedOccasion === occasion
-                                ? "bg-color-one/10 border-color-one text-color-one"
+                                ? "bg-color-two/10 border-color-two text-color-two"
                                 : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-two/50 hover:text-color-three dark:hover:text-white"
                         }`}
                     >
@@ -188,7 +188,7 @@ export const SizeFilterContent: React.FC<{
                     placeholder={placeholder}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full bg-color-four dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a] rounded-2xl py-3 pl-11 pr-4 text-sm text-color-three dark:text-white placeholder:text-color-three/40 dark:placeholder-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-color-one/50 transition-all"
+                    className="w-full bg-color-four dark:bg-[#0f0f0f] border border-color-three/10 dark:border-[#2a2a2a] rounded-2xl py-3 pl-11 pr-4 text-sm text-color-three dark:text-white placeholder:text-color-three/40 dark:placeholder-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-color-two/50 transition-all"
                 />
             </div>
             <div className="flex flex-col gap-6 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
@@ -200,7 +200,7 @@ export const SizeFilterContent: React.FC<{
                                 onClick={() => onChange(size)}
                                 className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
                                     selectedSize === size
-                                        ? "bg-color-one/10 border-color-one text-color-one"
+                                        ? "bg-color-two/10 border-color-two text-color-two"
                                         : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-two/50 dark:hover:text-white"
                                 }`}
                             >
@@ -218,7 +218,7 @@ export const SizeFilterContent: React.FC<{
                                 onClick={() => onChange(size)}
                                 className={`w-12 h-12 rounded-2xl border text-xs sm:text-sm font-bold transition-all ${
                                     selectedSize === size
-                                        ? "bg-color-one/10 border-color-one text-color-one"
+                                        ? "bg-color-two/10 border-color-two text-color-two"
                                         : "bg-color-four dark:bg-[#0f0f0f] border-color-three/10 dark:border-[#2a2a2a] text-color-three/60 dark:text-[#a0a0a0] hover:border-color-two/50 dark:hover:text-white"
                                 }`}
                             >

@@ -1066,10 +1066,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <header className="p-6 border-b border-color-three/10 dark:border-[#2a2a2a] flex justify-between items-center">
-          <h2
-            id="bulk-upload-title"
-            className="text-2xl font-semibold text-color-three dark:text-white"
-          >
+          <h2 id="bulk-upload-title" className="text-xl sm:text-2xl font-bold text-color-three dark:text-white font-serif flex items-center gap-2">
             Carga Masiva de Multimedia
           </h2>
           <button
@@ -1517,7 +1514,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             <button
               onClick={handleSaveAll}
               disabled={isSaving || isProcessing || isEditingMassively || readyToSaveCount === 0}
-              className="w-full sm:w-auto bg-sky-600 dark:bg-sky-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-sky-700 dark:hover:bg-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-sm h-[38px]"
+              className="w-full sm:w-auto bg-color-one text-color-four font-medium py-2 px-4 rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-sm h-[38px]"
             >
               {isSaving
                 ? "Guardando..."

@@ -28,6 +28,7 @@ interface FaqModalProps {
   faq?: FaqItem | null;
   onClose: () => void;
   onSuccess: () => void;
+  onAuthError?: (message: string) => void;
 }
 
 interface ValidationError {
@@ -41,6 +42,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
   faq,
   onClose,
   onSuccess,
+  onAuthError,
 }) => {
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -161,7 +163,11 @@ const FaqModal: React.FC<FaqModalProps> = ({
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         if (res.status === 401) {
-          setError('No estás autenticado. Inicia sesión primero.');
+          if (onAuthError) {
+            onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+          }
+          onClose();
+          return;
         } else if (res.status === 422) {
           const validationErrors = parseValidationErrors(errorData);
           if (Object.keys(validationErrors).length > 0) {
@@ -224,7 +230,11 @@ const FaqModal: React.FC<FaqModalProps> = ({
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         if (res.status === 401) {
-          setError('No estás autenticado. Inicia sesión primero.');
+          if (onAuthError) {
+            onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+          }
+          onClose();
+          return;
         } else if (res.status === 404) {
           setError('La pregunta no existe');
         } else if (res.status === 422) {
@@ -264,7 +274,11 @@ const FaqModal: React.FC<FaqModalProps> = ({
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         if (res.status === 401) {
-          setError('No estás autenticado. Inicia sesión primero.');
+          if (onAuthError) {
+            onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+          }
+          onClose();
+          return;
         } else if (res.status === 404) {
           setError('La pregunta no existe');
         } else {
@@ -466,7 +480,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   type="submit"
                   aria-label="Guardar"
                   disabled={isLoading}
-                   className="bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-medium py-2.5 px-6 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer shadow-md"
+                   className="bg-color-one text-color-four font-medium py-2.5 px-6 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer shadow-md"
                 >
                   {isLoading ? (
                     <>

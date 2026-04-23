@@ -271,7 +271,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
       className={`relative group aspect-[9/16] overflow-hidden rounded-[20px] shadow-lg transform transition-all duration-300 ease-in-out bg-stone-900 
         w-full mx-auto
         ${isDisabled ? "cursor-not-allowed opacity-75 grayscale-[0.5]" : isSelectionMode ? "cursor-pointer" : "cursor-pointer hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 dark:focus:ring-offset-[#1a1a1a] focus:ring-stone-500 dark:focus:ring-white"}
-        ${isSelected ? "ring-4 ring-offset-2 ring-sky-500" : ""}
+        ${isSelected ? "ring-4 ring-offset-2 ring-color-two" : ""}
       `}
       onMouseEnter={!isSelectionMode ? handleMouseEnter : undefined}
       onMouseLeave={!isSelectionMode ? handleMouseLeave : undefined}
@@ -357,7 +357,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
       {isSelectionMode && (
         <div className="absolute top-4 left-4 z-30" aria-hidden="true">
           {isSelected ? (
-            <CheckCircleIcon className="w-8 h-8 text-sky-500 bg-white rounded-full shadow-lg" />
+            <CheckCircleIcon className="w-8 h-8 text-color-two bg-white rounded-full shadow-lg" />
           ) : (
             <CircleIcon className="w-8 h-8 text-white bg-black/30 rounded-full" />
           )}

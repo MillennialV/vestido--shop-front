@@ -213,7 +213,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                                 type="checkbox"
                                 checked={selectedFields.title}
                                 onChange={() => handleFieldToggle('title')}
-                                className="rounded border-stone-300 text-sky-600 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50"
+                                className="rounded border-stone-300 text-color-two shadow-sm focus:border-color-two focus:ring focus:ring-color-two/20 focus:ring-opacity-50"
                             />
                             <span className="text-stone-700 dark:text-stone-300">Título</span>
                         </label>
@@ -222,7 +222,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                                 type="checkbox"
                                 checked={selectedFields.brand}
                                 onChange={() => handleFieldToggle('brand')}
-                                className="rounded border-stone-300 text-sky-600 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50"
+                                className="rounded border-stone-300 text-color-two shadow-sm focus:border-color-two focus:ring focus:ring-color-two/20 focus:ring-opacity-50"
                             />
                             <span className="text-stone-700 dark:text-stone-300">Marca</span>
                         </label>
@@ -231,7 +231,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                                 type="checkbox"
                                 checked={selectedFields.price}
                                 onChange={() => handleFieldToggle('price')}
-                                className="rounded border-stone-300 text-sky-600 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50"
+                                className="rounded border-stone-300 text-color-two shadow-sm focus:border-color-two focus:ring focus:ring-color-two/20 focus:ring-opacity-50"
                             />
                             <span className="text-stone-700 dark:text-stone-300">Precio</span>
                         </label>
@@ -240,7 +240,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                                 type="checkbox"
                                 checked={selectedFields.size}
                                 onChange={() => handleFieldToggle('size')}
-                                className="rounded border-stone-300 text-sky-600 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50"
+                                className="rounded border-stone-300 text-color-two shadow-sm focus:border-color-two focus:ring focus:ring-color-two/20 focus:ring-opacity-50"
                             />
                             <span className="text-stone-700 dark:text-stone-300">Talla</span>
                         </label>
@@ -249,7 +249,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                                 type="checkbox"
                                 checked={selectedFields.color}
                                 onChange={() => handleFieldToggle('color')}
-                                className="rounded border-stone-300 text-sky-600 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50"
+                                className="rounded border-stone-300 text-color-two shadow-sm focus:border-color-two focus:ring focus:ring-color-two/20 focus:ring-opacity-50"
                             />
                             <span className="text-stone-700 dark:text-stone-300">Color</span>
                         </label>
@@ -258,7 +258,7 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                                 type="checkbox"
                                 checked={selectedFields.sku}
                                 onChange={() => handleFieldToggle('sku')}
-                                className="rounded border-stone-300 text-sky-600 shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50"
+                                className="rounded border-stone-300 text-color-two shadow-sm focus:border-color-two focus:ring focus:ring-color-two/20 focus:ring-opacity-50"
                             />
                             <span className="text-stone-700 dark:text-stone-300">SKU / ID</span>
                         </label>
@@ -294,9 +294,9 @@ const QrBatchConfigModal: React.FC<QrBatchConfigModalProps> = ({
                     <button
                         onClick={generatePDF}
                         disabled={isGenerating || garments.length === 0}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-lg text-white dark:text-[#0f0f0f] font-medium transition-colors ${isGenerating || garments.length === 0
-                            ? "bg-stone-400 cursor-not-allowed"
-                            : "bg-stone-800 hover:bg-stone-700 dark:bg-white dark:hover:bg-stone-200"
+                        className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-colors ${isGenerating || garments.length === 0
+                            ? "bg-stone-400 text-white cursor-not-allowed"
+                            : "bg-color-one text-color-four hover:opacity-90"
                             }`}
                     >
                         {isGenerating ? (

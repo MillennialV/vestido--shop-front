@@ -42,12 +42,12 @@ export const RemoteThemeProvider: React.FC<{
         const colorMap = {
             '--color-one': colors.color_one,
             '--color-two': colors.color_two,
-            '--color-three': colors.color_three,
-            '--color-four': colors.color_four,
+            '--color-three': colors.color_four,
+            '--color-four': colors.color_three,
             '--color-color-one': colors.color_one,
             '--color-color-two': colors.color_two,
-            '--color-color-three': colors.color_three,
-            '--color-color-four': colors.color_four,
+            '--color-color-three': colors.color_four,
+            '--color-color-four': colors.color_three,
         };
 
         Object.entries(colorMap).forEach(([key, value]) => {
@@ -129,8 +129,10 @@ export const RemoteThemeProvider: React.FC<{
             if (res.ok) {
                 await fetchTheme();
             } else {
-                const errData = await res.json();
-                throw new Error(errData.message || 'Error updating colors');
+                const errData = await res.json().catch(() => ({}));
+                const error = new Error(errData.message || 'Error updating colors');
+                (error as any).status = res.status;
+                throw error;
             }
         } catch (error) {
             console.error('Error updating colors:', error);
@@ -152,8 +154,10 @@ export const RemoteThemeProvider: React.FC<{
             if (res.ok) {
                 await fetchTheme();
             } else {
-                const errData = await res.json();
-                throw new Error(errData.message || 'Error updating store info');
+                const errData = await res.json().catch(() => ({}));
+                const error = new Error(errData.message || 'Error updating store info');
+                (error as any).status = res.status;
+                throw error;
             }
         } catch (error) {
             console.error('Error updating store info:', error);
@@ -188,8 +192,10 @@ export const RemoteThemeProvider: React.FC<{
             if (res.ok) {
                 await fetchTheme();
             } else {
-                const errData = await res.json();
-                throw new Error(errData.message || 'Error updating metadata');
+                const errData = await res.json().catch(() => ({}));
+                const error = new Error(errData.message || 'Error updating metadata');
+                (error as any).status = res.status;
+                throw error;
             }
         } catch (error) {
             console.error('Error updating metadata:', error);

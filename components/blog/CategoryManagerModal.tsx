@@ -75,7 +75,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
         onClick={(e) => e.stopPropagation()}
       >
         <header className="px-8 pt-8 pb-4 flex justify-between items-center">
-          <h2 className="text-xl font-bold tracking-tight">Gestionar Categorías</h2>
+          <h2 className="text-xl font-bold tracking-tight font-serif">Gestionar Categorías</h2>
           <button onClick={onClose} className="text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors">
             <CloseIcon className="w-5 h-5" />
           </button>
@@ -104,7 +104,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                       />
                       <button
                         onClick={() => handleUpdate(category.id)}
-                        className="bg-stone-900 dark:bg-white text-white dark:text-black px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors"
+                        className="bg-color-one text-color-four px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 transition-colors"
                       >
                         OK
                       </button>
@@ -162,7 +162,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                     <button
                       type="submit"
                       disabled={isLoading || !newCategoryName.trim()}
-                      className="bg-stone-900 dark:bg-white text-white dark:text-black text-xs font-bold px-4 py-2 rounded-lg hover:bg-stone-800 dark:hover:bg-stone-200 disabled:opacity-50 transition-colors shadow-md"
+                      className="bg-color-one text-color-four text-xs font-bold px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition-colors shadow-md"
                     >
                       {isLoading ? "Guardando..." : "Guardar"}
                     </button>

@@ -124,7 +124,7 @@ export const Chatbot: React.FC = () => {
         `}
             >
                 {/* Header */}
-                <div className="bg-stone-900 dark:bg-white text-stone-50 dark:text-[#0f0f0f] p-4 flex justify-between items-center shadow-md">
+                <div className="bg-color-one text-color-four p-4 flex justify-between items-center shadow-md">
                     <div className="flex items-center gap-2">
                         {safeConfig.is_enabled ? (
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Bot Activo"></div>
@@ -139,7 +139,7 @@ export const Chatbot: React.FC = () => {
                                 <SettingsIcon className="w-4 h-4" />
                             </button>
                         )}
-                        <button onClick={handleClose} className="hover:bg-stone-800 dark:hover:bg-stone-200 p-1.5 rounded-full transition-colors" aria-label="Cerrar chat">
+                        <button onClick={handleClose} className="hover:bg-black/10 dark:hover:bg-white/10 p-1.5 rounded-full transition-colors" aria-label="Cerrar chat">
                             <CloseIcon className="w-5 h-5" />
                         </button>
                     </div>
@@ -150,11 +150,11 @@ export const Chatbot: React.FC = () => {
                     {!selectedQuestion ? (
                         <div className="p-4 space-y-3 animate-fade-in-down">
                             <div className="flex gap-2 mb-4">
-                                <div className="w-8 h-8 rounded-full bg-stone-900 dark:bg-white flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+                                <div className="w-8 h-8 rounded-full bg-color-one flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
                                     {safeConfig.avatar_url ? (
                                         <img src={safeConfig.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-stone-50 dark:text-[#0f0f0f] text-xs font-serif">V</span>
+                                        <span className="text-color-four text-xs font-serif">V</span>
                                     )}
                                 </div>
                                 <div className="bg-white dark:bg-[#1a1a1a] p-3 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-stone-100 dark:border-[#2a2a2a] text-stone-600 dark:text-[#a0a0a0] text-sm shadow-sm">
@@ -213,11 +213,11 @@ export const Chatbot: React.FC = () => {
 
                             {/* Bot Answer */}
                             <div className="flex gap-2 self-start max-w-[90%]">
-                                <div className="w-8 h-8 rounded-full bg-stone-900 dark:bg-white flex items-center justify-center flex-shrink-0 shadow-sm mt-1 overflow-hidden">
+                                <div className="w-8 h-8 rounded-full bg-color-one flex items-center justify-center flex-shrink-0 shadow-sm mt-1 overflow-hidden">
                                      {safeConfig.avatar_url ? (
                                         <img src={safeConfig.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-stone-50 dark:text-[#0f0f0f] text-xs font-serif">V</span>
+                                        <span className="text-color-four text-xs font-serif">V</span>
                                     )}
                                 </div>
                                 <div className="bg-white dark:bg-[#1a1a1a] p-3.5 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-stone-100 dark:border-[#2a2a2a] text-sm text-stone-600 dark:text-[#a0a0a0] shadow-sm leading-relaxed">
@@ -239,7 +239,7 @@ export const Chatbot: React.FC = () => {
                                             href={whatsappUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center justify-center gap-2 w-full bg-stone-900 dark:bg-white text-white dark:text-[#0f0f0f] p-2.5 rounded-lg text-sm hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors shadow-sm"
+                                            className="flex items-center justify-center gap-2 w-full bg-color-one text-color-four p-2.5 rounded-lg text-sm hover:opacity-90 transition-colors shadow-sm"
                                         >
                                             <WhatsappIcon className="w-4 h-4" />
                                             Contactar por WhatsApp
@@ -256,7 +256,7 @@ export const Chatbot: React.FC = () => {
             <button
                 onClick={isOpen ? handleClose : handleOpen}
                 className={`
-            bg-stone-900 dark:bg-white hover:bg-stone-800 dark:hover:bg-stone-200 text-white dark:text-[#0f0f0f] w-12 h-12 md:w-14 md:h-14 rounded-full shadow-2xl transition-all duration-300 pointer-events-auto
+            bg-color-one hover:opacity-90 text-color-four w-12 h-12 md:w-14 md:h-14 rounded-full shadow-2xl transition-all duration-300 pointer-events-auto
             flex items-center justify-center z-50 relative
             ${isOpen ? "rotate-90" : "hover:scale-110 active:scale-95 animate-bounce-subtle"}
         `}

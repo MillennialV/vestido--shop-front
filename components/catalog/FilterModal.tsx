@@ -160,7 +160,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                     </button>
                     <button 
                         onClick={handleApply}
-                        className="flex-grow bg-[#D4B57E] hover:bg-[#C4A56E] text-white font-bold py-5 rounded-2xl shadow-lg transition-all active:scale-95"
+                        className="flex-grow bg-color-one hover:opacity-90 text-white font-bold py-5 rounded-2xl shadow-lg transition-all active:scale-95"
                     >
                         Aplicar
                     </button>

@@ -37,14 +37,14 @@ const Blog: React.FC<BlogProps> = ({ posts, navigate, onAddPost, onManageCategor
                     <div className="mt-8 flex justify-center gap-4">
                         <button
                             onClick={onAddPost}
-                            className="inline-flex items-center gap-2 bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-semibold py-2.5 px-5 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 text-sm shadow-md hover:shadow-lg"
+                            className="inline-flex items-center gap-2 bg-color-one text-color-four font-semibold py-2.5 px-5 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 text-sm shadow-md hover:shadow-lg"
                         >
                             <PlusIcon className="w-4 h-4" />
                             <span>Crear Artículo</span>
                         </button>
                         <button
                             onClick={onManageCategories}
-                            className="inline-flex items-center gap-2 bg-color-four dark:bg-[#0f0f0f] text-color-three dark:text-white border border-color-three/10 dark:border-[#2a2a2a] font-semibold py-2.5 px-5 rounded-lg hover:bg-color-four/80 dark:hover:bg-[#1a1a1a] transition-all duration-200 text-sm shadow-sm hover:shadow-md"
+                            className="inline-flex items-center gap-2 bg-color-one text-color-four font-semibold py-2.5 px-5 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 text-sm shadow-md hover:shadow-lg"
                         >
                             <EditIcon className="w-4 h-4" />
                             <span>Gestionar Categorías</span>

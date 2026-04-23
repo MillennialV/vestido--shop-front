@@ -46,7 +46,7 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                         <div className="flex flex-wrap items-center gap-2">
                             <button
                                 onClick={onAddGarment}
-                                className="inline-flex items-center gap-2 bg-color-three dark:bg-white text-color-four dark:text-[#0f0f0f] font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-all text-sm shadow-sm"
+                                className="inline-flex items-center gap-2 bg-color-one text-color-four font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-all text-sm shadow-sm"
                                 aria-label="Añadir nuevo producto"
                             >
                                 <PlusIcon className="w-4 h-4" />
@@ -66,7 +66,7 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                             >
                                 {isExportingExcel ? (
                                     <>
-                                        <SpinnerIcon className="w-4 h-4 animate-spin text-sky-600" />
+                                        <SpinnerIcon className="w-4 h-4 animate-spin text-color-two" />
                                         <span>Exportando...</span>
                                     </>
                                 ) : (
@@ -93,7 +93,7 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                                 <div className="flex items-center bg-color-three/5 dark:bg-[#0f0f0f] p-1 rounded-lg border border-color-three/10 dark:border-[#2a2a2a]">
                                     <button
                                         onClick={onSelectAll}
-                                        className="text-xs font-medium px-3 py-1.5 text-sky-600 dark:text-sky-400 hover:bg-white dark:hover:bg-[#1a1a1a] rounded-md transition-all"
+                                        className="text-xs font-medium px-3 py-1.5 text-color-two hover:bg-white dark:hover:bg-[#1a1a1a] rounded-md transition-all"
                                     >
                                         Marcar Página
                                     </button>
@@ -109,8 +109,8 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
                             <button
                                 onClick={onToggleSelectionMode}
                                 className={`inline-flex items-center gap-2 font-semibold py-2 px-4 rounded-lg transition-all text-sm ${isSelectionMode
-                                    ? 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
-                                    : 'bg-color-four dark:bg-[#0f0f0f] text-sky-700 dark:text-white border border-color-three/10 dark:border-[#2a2a2a] hover:bg-sky-50 dark:hover:bg-[#1a1a1a] shadow-sm'
+                                    ? 'bg-color-two text-white shadow-md hover:opacity-90'
+                                    : 'bg-color-four dark:bg-[#0f0f0f] text-color-two border border-color-three/10 dark:border-[#2a2a2a] hover:bg-color-two/10 dark:hover:bg-[#1a1a1a] shadow-sm'
                                     }`}
                             >
                                 <CheckCircleIcon className="w-4 h-4" />
@@ -121,12 +121,12 @@ const CatalogToolbar: React.FC<CatalogToolbarProps> = ({
 
                     {/* Fila Contextual: Acciones en Lote (Solo cuando hay selección) */}
                     {isSelectionMode && selectedCount > 0 && (
-                        <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-sky-50/50 dark:bg-sky-900/10 border border-sky-100 dark:border-sky-800/30 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-color-two/10 border border-color-two/30 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
                             <div className="flex items-center gap-2">
-                                <span className="flex items-center justify-center w-6 h-6 bg-sky-600 text-white text-[10px] font-bold rounded-full">
+                                <span className="flex items-center justify-center w-6 h-6 bg-color-two text-white text-[10px] font-bold rounded-full">
                                     {selectedCount}
                                 </span>
-                                <span className="text-sm font-medium text-sky-800 dark:text-sky-300">
+                                <span className="text-sm font-medium text-color-two">
                                     {selectedCount === 1 ? 'elemento seleccionado' : 'elementos seleccionados'}
                                 </span>
                             </div>

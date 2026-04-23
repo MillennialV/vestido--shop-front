@@ -58,7 +58,11 @@ export const useBanners = () => {
                 body: formData,
             });
 
-            if (!response.ok) throw new Error('Error subiendo banner');
+            if (!response.ok) {
+                const error = new Error('Error subiendo banner');
+                (error as any).status = response.status;
+                throw error;
+            }
 
             await fetchBanners(); // Recargar después de subir
             return true;
@@ -74,7 +78,11 @@ export const useBanners = () => {
             const response = await fetch(`/api/banners?id=${id}`, {
                 method: 'DELETE',
             });
-            if (!response.ok) throw new Error('Error eliminando banner');
+            if (!response.ok) {
+                const error = new Error('Error eliminando banner');
+                (error as any).status = response.status;
+                throw error;
+            }
 
             setBanners(prev => prev.filter(b => b.id !== id));
             return true;
@@ -99,7 +107,11 @@ export const useBanners = () => {
                 body: formData,
             });
 
-            if (!response.ok) throw new Error('Error actualizando banner');
+            if (!response.ok) {
+                const error = new Error('Error actualizando banner');
+                (error as any).status = response.status;
+                throw error;
+            }
 
             await fetchBanners(); // Recargar después de actualizar
             return true;

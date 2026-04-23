@@ -168,12 +168,14 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw errorData;
+        const error = new Error(errorData.message || errorData.error || `Error: ${res.status}`);
+        (error as any).status = res.status;
+        throw error;
       }
       const newProduct = await res.json();
       setProducts((prev: Garment[]) => [newProduct, ...prev]);
       return newProduct;
-    } catch (err) {
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'Error al crear producto');
       throw err;
     } finally {
@@ -229,7 +231,9 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw errorData;
+        const error = new Error(errorData.message || errorData.error || `Error: ${res.status}`);
+        (error as any).status = res.status;
+        throw error;
       }
       const updatedProduct = await res.json();
       setProducts((prev: Garment[]) => prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p)));
@@ -254,7 +258,11 @@ export const useProducts = (initialData: Garment[] = [], initialPagination: any 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
       });
-      if (!res.ok) throw new Error('Error al eliminar producto');
+      if (!res.ok) {
+        const error = new Error('Error al eliminar producto');
+        (error as any).status = res.status;
+        throw error;
+      }
       setProducts((prev: Garment[]) => prev.filter(p => p.id !== id && String(p.id) !== String(id)));
       if (selectedProduct && (selectedProduct.id === id || String(selectedProduct.id) === String(id))) {
         setSelectedProduct(null);

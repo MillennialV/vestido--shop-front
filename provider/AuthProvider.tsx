@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     setMounted(true);
     // Verifica la sesión llamando a un endpoint protegido
-    const checkSession = async () => {
+    const checkSession = async (retry = true) => {
       try {
         const res = await fetch('/api/auth/session');
         if (res.ok) {
@@ -25,6 +25,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setOrganization(data.organization || null);
           if (data.token) {
             localStorage.setItem('authToken', data.token);
+          }
+        } else if (res.status === 401 && retry) {
+          // Si falla con 401, intentamos refrescar el token automáticamente una vez
+          console.log('🔄 [AuthProvider] Sesión expirada, intentando refrescar...');
+          const refreshRes = await fetch('/api/auth/refresh', { method: 'POST' });
+          if (refreshRes.ok) {
+            const refreshData = await refreshRes.json();
+            setAuthenticated(true);
+            setUser(refreshData.user || null);
+            setOrganization(refreshData.organization || null);
+            if (refreshData.token) {
+              localStorage.setItem('authToken', refreshData.token);
+            }
+            console.log('✅ [AuthProvider] Token refrescado automáticamente');
+          } else {
+            setAuthenticated(false);
+            setUser(null);
+            setOrganization(null);
           }
         } else {
           setAuthenticated(false);
@@ -87,6 +105,71 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const googleLogin = async (token: string) => {
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Error en validación de Google');
+    }
+
+    const data = await res.json();
+    setAuthenticated(true);
+    setUser(data.user || null);
+    setOrganization(data.organization || null);
+    if (data.token) {
+      localStorage.setItem('authToken', data.token);
+    }
+
+    // Redirección después de login exitoso
+    if (!data.organization) {
+      window.location.href = '/panel';
+    } else {
+      const org = data.organization;
+      const targetDomain = org.domain;
+      const slug = org.organization_name;
+
+      const isLocalhost = typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+      let targetUrl = '/panel';
+      if (isLocalhost) {
+        targetUrl = targetDomain ? '/' : '/panel';
+      } else if (targetDomain) {
+        targetUrl = `https://${targetDomain}`;
+      } else if (slug) {
+        targetUrl = `/${slug}`;
+      }
+
+      window.location.href = targetUrl;
+    }
+  };
+
+  const refreshToken = async (): Promise<boolean> => {
+    try {
+      console.log('🔄 [AuthProvider] Solicitando refresco de token...');
+      const res = await fetch('/api/auth/refresh', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setAuthenticated(true);
+        setUser(data.user || null);
+        setOrganization(data.organization || null);
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
+        console.log('✅ [AuthProvider] Token refrescado con éxito');
+        return true;
+      }
+    } catch (err) {
+      console.error('❌ [AuthProvider] Error al refrescar token:', err);
+    }
+    return false;
+  };
+
   const onLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setAuthenticated(false);
@@ -99,7 +182,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return user;
   };
 
-  const value: AuthContextType = { onLogin, onLogout, authenticated, getUser, organization };
+  const value: AuthContextType = { onLogin, onLogout, googleLogin, refreshToken, authenticated, getUser, organization };
 
   if (!mounted || isLoading) {
     return (

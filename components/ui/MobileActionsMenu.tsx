@@ -11,9 +11,10 @@ interface MobileActionsMenuProps {
     onToggleAdmin: () => void;
     onOpenConfig?: () => void;
     hideAdminControls?: boolean;
+    onAuthError?: (message: string) => void;
 }
 
-const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggleAdmin, onOpenConfig, hideAdminControls = false }) => {
+const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggleAdmin, onOpenConfig, hideAdminControls = false, onAuthError }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
     const { isDark, toggleDarkMode } = useDarkMode();
@@ -124,7 +125,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
 
             {/* Modal for internal control if onOpenConfig is not provided */}
             {!onOpenConfig && (
-                <ConfigModal isOpen={isConfigModalOpen} onClose={() => setIsConfigModalOpen(false)} />
+                <ConfigModal isOpen={isConfigModalOpen} onClose={() => setIsConfigModalOpen(false)} onAuthError={onAuthError} />
             )}
         </div>
     );

@@ -28,6 +28,7 @@ interface HeaderProps {
   onSearchChange?: (query: string) => void;
   colors?: string[];
   hideAdminControls?: boolean;
+  onAuthError?: (message: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -45,6 +46,7 @@ const Header: React.FC<HeaderProps> = ({
   onSearchChange,
   colors = [],
   hideAdminControls = false,
+  onAuthError,
 }) => {
   const { isDark, toggleDarkMode } = useDarkMode();
   const { totalItems, toggleCart, isCartOpen } = useCart();
@@ -224,14 +226,14 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Mobile Actions Menu */}
             <div className="lg:hidden">
-              <MobileActionsMenu isAdmin={isAdmin} onToggleAdmin={onToggleAdmin} hideAdminControls={hideAdminControls} />
+              <MobileActionsMenu isAdmin={isAdmin} onToggleAdmin={onToggleAdmin} hideAdminControls={hideAdminControls} onAuthError={onAuthError} />
             </div>
           </div>
         </div>
 
 
       </div>
-      <ConfigModal isOpen={isConfigModalOpen} onClose={() => setIsConfigModalOpen(false)} />
+      <ConfigModal isOpen={isConfigModalOpen} onClose={() => setIsConfigModalOpen(false)} onAuthError={onAuthError} />
     </header>
   );
 };

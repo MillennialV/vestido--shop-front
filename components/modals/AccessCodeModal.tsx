@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { CloseIcon, EyeIcon, EyeSlashIcon, SpinnerIcon } from "@/components/ui/Icons";
+import { CloseIcon, EyeIcon, EyeSlashIcon, SpinnerIcon, GoogleIcon } from "@/components/ui/Icons";
 
 interface AccessCodeModalProps {
   isOpen: boolean;
@@ -172,6 +172,27 @@ const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
               </button>
             </div>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-stone-200 dark:border-[#2a2a2a]"></div>
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-2 bg-color-four dark:bg-[#1a1a1a] text-stone-500 dark:text-[#a0a0a0] font-medium">
+                O continúa con
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => window.location.href = '/api/auth/google'}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-3 bg-white dark:bg-[#0f0f0f] text-stone-700 dark:text-stone-200 font-bold py-3 px-4 rounded-lg border-2 border-stone-100 dark:border-[#2a2a2a] hover:bg-stone-50 dark:hover:bg-[#1a1a1a] transition-all disabled:opacity-50"
+          >
+            <GoogleIcon className="w-5 h-5" />
+            Google
+          </button>
         </div>
         {!isLoading && (
           <button

@@ -18,6 +18,7 @@ interface PostFormModalProps {
   post?: Post | null;
   onClose: () => void;
   onSubmit: (id: number, post: unknown) => Promise<void> | void;
+  onAuthError?: (message: string) => void;
 }
 
 const modules = {
@@ -32,7 +33,7 @@ const modules = {
 
 const formats = ["header", "bold", "italic", "underline", "strike", "blockquote", "list", "link"];
 
-const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, onSubmit }) => {
+const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, onSubmit, onAuthError }) => {
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -168,6 +169,13 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
       await onSubmit(post?.id || 0, formDataToSend);
     } catch (err: any) {
       console.error("Error capturado:", err.message);
+      if (err?.status === 401 || (err instanceof Error && err.message.includes('401'))) {
+        if (onAuthError) {
+          onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+        }
+        onClose();
+        return;
+      }
       setSubmitError(err.message || "Error al guardar");
     } finally {
       setIsSubmitting(false);
@@ -194,7 +202,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
         </button>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <h2 className="text-2xl font-bold dark:text-white">{post ? "Editar Artículo" : "Nuevo Artículo"}</h2>
+          <h2 className="text-2xl font-bold dark:text-white font-serif">{post ? "Editar Artículo" : "Nuevo Artículo"}</h2>
 
           <div className="space-y-4">
             <div>
@@ -287,7 +295,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
                 name="is_published"
                 checked={formData.is_published}
                 onChange={(e) => setFormData(f => ({ ...f, is_published: e.target.checked }))}
-                className="w-4 h-4 rounded border-stone-300 dark:border-[#2a2a2a] dark:bg-[#0f0f0f] checked:bg-stone-800 dark:checked:bg-white"
+                className="w-4 h-4 rounded border-stone-300 dark:border-[#2a2a2a] dark:bg-[#0f0f0f] text-color-two focus:ring-color-two checked:bg-color-two dark:checked:bg-color-two"
               />
               <span className="text-sm dark:text-[#a0a0a0] group-hover:text-stone-900 dark:group-hover:text-white transition-colors">Publicar artículo</span>
             </label>
@@ -298,7 +306,7 @@ const PostFormModal: React.FC<PostFormModalProps> = ({ isOpen, post, onClose, on
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2 bg-stone-800 dark:bg-white text-white dark:text-[#0f0f0f] rounded hover:bg-black dark:hover:bg-stone-200 disabled:opacity-50 transition-all shadow-md flex items-center gap-2 font-medium"
+              className="px-6 py-2 bg-color-one text-color-four rounded-lg disabled:opacity-50 hover:opacity-90 transition-all shadow-md flex items-center gap-2 font-medium"
             >
               {isSubmitting && <SpinnerIcon className="w-4 h-4 animate-spin" />}
               {post ? "Actualizar" : "Guardar"}

@@ -9,9 +9,10 @@ interface BannerEditModalProps {
     banner: Banner | null;
     onClose: () => void;
     onSave: (id: string, updates: Partial<Banner>, file?: File) => Promise<void>;
+    onAuthError?: (message: string) => void;
 }
 
-export default function BannerEditModal({ isOpen, banner, onClose, onSave }: BannerEditModalProps) {
+export default function BannerEditModal({ isOpen, banner, onClose, onSave, onAuthError }: BannerEditModalProps) {
     const [title, setTitle] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -54,6 +55,13 @@ export default function BannerEditModal({ isOpen, banner, onClose, onSave }: Ban
             }
             onClose();
         } catch (err: any) {
+            if (err?.status === 401 || (err instanceof Error && err.message.includes('401'))) {
+                if (onAuthError) {
+                    onAuthError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo para continuar.");
+                }
+                onClose();
+                return;
+            }
             alert("Error al guardar: " + err.message);
         } finally {
             setIsSaving(false);
@@ -73,7 +81,7 @@ export default function BannerEditModal({ isOpen, banner, onClose, onSave }: Ban
 
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 sm:p-8 border-b border-color-three/10 dark:border-[#2a2a2a] shrink-0">
-                    <h2 className="text-xl font-bold text-color-three dark:text-white">Editar Banner</h2>
+                    <h2 className="text-xl font-bold font-serif text-color-three dark:text-white">Editar Banner</h2>
                     <button
                         onClick={handleClose}
                         disabled={isSaving}

@@ -10,6 +10,8 @@ export const useAuth = (): AuthContextType => {
             authenticated: false,
             onLogin: async () => { throw new Error('AuthProvider no disponible'); },
             onLogout: async () => { throw new Error('AuthProvider no disponible'); },
+            googleLogin: async () => { throw new Error('AuthProvider no disponible'); },
+            refreshToken: async () => { return false; },
         };
     }
 
