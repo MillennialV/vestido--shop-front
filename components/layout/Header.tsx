@@ -51,6 +51,7 @@ const Header: React.FC<HeaderProps> = ({
   const { isDark, toggleDarkMode } = useDarkMode();
   const { totalItems, toggleCart, isCartOpen } = useCart();
   const { storeInfo, organization } = useRemoteTheme();
+  const { authenticated } = useAuth();
   const [mounted, setMounted] = React.useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = React.useState(false);
 
@@ -222,11 +223,22 @@ const Header: React.FC<HeaderProps> = ({
                   <ExitIcon className="w-6 h-6" />
                 </button>
               )}
+
+              {!hideAdminControls && !authenticated && (
+                <button
+                  onClick={onToggleAdmin}
+                  className="p-2 rounded-full text-color-three dark:text-color-four hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
+                  aria-label="Iniciar sesión"
+                  title="Iniciar sesión"
+                >
+                  <AdminIcon className="w-6 h-6" />
+                </button>
+              )}
             </div>
 
             {/* Mobile Actions Menu */}
             <div className="lg:hidden">
-              <MobileActionsMenu isAdmin={isAdmin} onToggleAdmin={onToggleAdmin} hideAdminControls={hideAdminControls} onAuthError={onAuthError} />
+              <MobileActionsMenu isAdmin={isAdmin} onToggleAdmin={onToggleAdmin} hideAdminControls={hideAdminControls} onAuthError={onAuthError} authenticated={authenticated} />
             </div>
           </div>
         </div>

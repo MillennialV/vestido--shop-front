@@ -12,9 +12,10 @@ interface MobileActionsMenuProps {
     onOpenConfig?: () => void;
     hideAdminControls?: boolean;
     onAuthError?: (message: string) => void;
+    authenticated?: boolean;
 }
 
-const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggleAdmin, onOpenConfig, hideAdminControls = false, onAuthError }) => {
+const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggleAdmin, onOpenConfig, hideAdminControls = false, onAuthError, authenticated = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
     const { isDark, toggleDarkMode } = useDarkMode();
@@ -117,6 +118,21 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ isAdmin, onToggle
                         aria-label="Cerrar sesión"
                     >
                         <ExitIcon className="size-[24px]" />
+                    </button>
+                )}
+
+                {/* Login Action (for non-authenticated users) */}
+                {!hideAdminControls && !authenticated && (
+                    <button
+                        onClick={() => {
+                            onToggleAdmin();
+                            setIsOpen(false);
+                        }}
+                        className="p-2 rounded-full text-color-three dark:text-white hover:bg-color-background dark:hover:bg-[#0f0f0f] hover:scale-110 transition-all duration-300"
+                        aria-label="Iniciar sesión"
+                        title="Iniciar sesión"
+                    >
+                        <AdminIcon className="size-[24px]" />
                     </button>
                 )}
 
