@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || '';
-    const model = 'gemini-2.0-flash';
+    const model = 'gemini-1.5-pro'; // Mejor para razonamiento complejo y análisis de imágenes
 
     let dynamicSchema: any = null;
     let promptFromClient = '';

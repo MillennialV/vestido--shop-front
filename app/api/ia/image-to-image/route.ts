@@ -9,17 +9,18 @@ export async function POST(req: NextRequest) {
         let imageBase64 = '';
         let prompt = '';
         let model = 'gemini-2.0-flash';
-
         const token = req.cookies.get('authToken')?.value;
 
         if (contentType.includes('application/json')) {
             const body = await req.json();
             imageBase64 = body.imageBase64 || body.image;
             prompt = body.prompt;
+            if (body.model) model = body.model;
         } else if (contentType.includes('multipart/form-data')) {
             const formData = await req.formData();
             imageBase64 = formData.get('imageBase64') as string || formData.get('image') as string;
             prompt = formData.get('prompt') as string;
+            if (formData.get('model')) model = formData.get('model') as string;
         } else {
             return NextResponse.json({ message: 'Content-Type no soportado' }, { status: 400 });
         }
