@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         // Preparar el cuerpo para el microservicio
         const proxyBody: any = {
             prompt,
-            model: model || 'gemini-1.5-flash',
+            model: 'gemini-1.5-flash',
         };
 
         if (imageUrl) proxyBody.imageUrl = imageUrl;

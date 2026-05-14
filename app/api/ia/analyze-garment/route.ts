@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || '';
-    const model = 'gemini-2.5-flash-image';
+    const model = 'gemini-1.5-flash';
 
     let dynamicSchema: any = null;
     let promptFromClient = '';
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       promptFromClient = formData.get('prompt') as string;
       const schemaStr = formData.get('dynamicSchema') as string;
       if (schemaStr) {
-        try { dynamicSchema = JSON.parse(schemaStr); } catch (e) {}
+        try { dynamicSchema = JSON.parse(schemaStr); } catch (e) { }
       }
       const maxLengthValue = formData.get('maxLength');
       maxLength = typeof maxLengthValue === 'string' ? maxLengthValue : undefined;
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       : imageBase64;
 
     const url = process.env.NEXT_PUBLIC_IA_URL || 'http://localhost:3004';
-    
+
     // Si el cliente envía un esquema dinámico, construimos el prompt basado en él.
     // Si no, usamos un esquema genérico de "producto" en lugar de "vestido".
     const defaultSchema = {
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
 }
 async function handleExternalImage(imageUrl: string, model: string, maxLength: any, token?: string, dynamicSchema?: any) {
   const url = process.env.NEXT_PUBLIC_IA_URL || 'http://localhost:3004';
-  
+
   const defaultSchema = {
     title: "nombre creativo del producto",
     brand: "Sin marca",
