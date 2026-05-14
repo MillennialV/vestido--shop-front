@@ -84,6 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const org = data.organization;
       const targetDomain = org.domain;
       const slug = org.organization_name;
+      const token = data.token;
 
       // Detectar si estamos en entorno local
       const isLocalhost = typeof window !== 'undefined' &&
@@ -93,15 +94,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (isLocalhost) {
         // En local, si tiene dominio vamos a la raíz, si no al panel
         targetUrl = targetDomain ? '/' : '/panel';
+        window.location.href = targetUrl;
       } else if (targetDomain) {
         // Redirigir al dominio propio de la organización en producción
-        targetUrl = `https://${targetDomain}`;
+        // Usamos el endpoint de transferencia para que la cookie se setee en el dominio correcto
+        const currentDomain = window.location.hostname;
+        if (currentDomain !== targetDomain && token) {
+          // Cross-domain: transferir el token al dominio de destino
+          window.location.href = `https://${targetDomain}/api/auth/transfer?token=${encodeURIComponent(token)}&target=/`;
+        } else {
+          window.location.href = `https://${targetDomain}`;
+        }
       } else if (slug) {
         // Si no hay dominio, redirigir a la ruta por slug o panel
-        targetUrl = `/${slug}`;
+        window.location.href = `/${slug}`;
+      } else {
+        window.location.href = targetUrl;
       }
-
-      window.location.href = targetUrl;
     }
   };
 
@@ -132,20 +141,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const org = data.organization;
       const targetDomain = org.domain;
       const slug = org.organization_name;
+      const token = data.token;
 
       const isLocalhost = typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-      let targetUrl = '/panel';
       if (isLocalhost) {
-        targetUrl = targetDomain ? '/' : '/panel';
+        const targetUrl = targetDomain ? '/' : '/panel';
+        window.location.href = targetUrl;
       } else if (targetDomain) {
-        targetUrl = `https://${targetDomain}`;
+        const currentDomain = window.location.hostname;
+        if (currentDomain !== targetDomain && token) {
+          // Cross-domain: transferir el token al dominio de destino para setear la cookie ahí
+          window.location.href = `https://${targetDomain}/api/auth/transfer?token=${encodeURIComponent(token)}&target=/`;
+        } else {
+          window.location.href = `https://${targetDomain}`;
+        }
       } else if (slug) {
-        targetUrl = `/${slug}`;
+        window.location.href = `/${slug}`;
+      } else {
+        window.location.href = '/panel';
       }
-
-      window.location.href = targetUrl;
     }
   };
 
