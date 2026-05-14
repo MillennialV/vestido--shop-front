@@ -71,12 +71,12 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
       onClick={onClose}
     >
       <div
-        className={`relative bg-white dark:bg-[#1a1a1a] text-stone-900 dark:text-white rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl border border-stone-200 dark:border-[#2a2a2a] transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative bg-color-four dark:bg-[#1a1a1a] text-color-three dark:text-white rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl border border-stone-200 dark:border-[#2a2a2a] transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="px-8 pt-8 pb-4 flex justify-between items-center">
-          <h2 className="text-xl font-bold tracking-tight font-serif">Gestionar Categorías</h2>
-          <button onClick={onClose} className="text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors">
+          <h2 className="text-xl font-bold tracking-tight font-serif text-color-three dark:text-white">Gestionar Categorías</h2>
+          <button onClick={onClose} className="text-color-three hover:text-stone-600 dark:hover:text-white transition-colors">
             <CloseIcon className="w-5 h-5" />
           </button>
         </header>
@@ -99,19 +99,19 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                         type="text"
                         value={editingName}
                         onChange={(e) => setEditingName(e.target.value)}
-                        className="flex-grow bg-white dark:bg-[#1a1a1a] border border-stone-300 dark:border-[#2a2a2a] rounded-lg p-2 text-sm focus:outline-none text-stone-900 dark:text-white"
+                        className="input-primary flex-grow border border-stone-200 dark:border-[#2a2a2a] rounded-lg p-2 text-sm"
                         autoFocus
                       />
                       <button
                         onClick={() => handleUpdate(category.id)}
-                        className="bg-color-one text-color-four px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 transition-colors"
+                        className="buttom-shop px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 transition-colors"
                       >
                         OK
                       </button>
                     </div>
                   ) : (
                     <>
-                      <span className="text-[13px] font-bold tracking-[0.05em] text-stone-800 dark:text-stone-100">
+                      <span className="text-[13px] font-bold tracking-[0.05em] text-color-three dark:text-stone-100">
                         {category.name}
                       </span>
                       <div className="flex gap-2">
@@ -120,13 +120,13 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                             setEditingId(category.id);
                             setEditingName(category.name);
                           }}
-                          className="p-2 bg-white dark:bg-[#1a1a1a] rounded-lg text-stone-400 hover:text-stone-900 dark:hover:text-white border border-stone-200 dark:border-transparent transition-all shadow-sm"
+                          className="p-2 bg-white dark:bg-[#1a1a1a] rounded-lg text-[var(--color-threes)] hover:text-color-three dark:hover:text-white border border-stone-200 dark:border-transparent transition-all shadow-sm"
                         >
                           <EditIcon className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setCategoryToDelete({ id: category.id, name: category.name })}
-                          className="p-2 text-stone-400 hover:text-red-500 transition-all"
+                          className="p-2 text-[var(--color-threes)] hover:text-red-500 transition-all"
                         >
                           <DeleteIcon className="w-4 h-4" />
                         </button>
@@ -136,7 +136,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                 </div>
               ))
             ) : (
-              <p className="text-center text-stone-500 dark:text-stone-600 text-sm py-8 font-medium">No hay categorías configuradas.</p>
+              <p className="text-center text-[var(--color-threes)] dark:text-stone-600 text-sm py-8 font-medium">No hay categorías configuradas.</p>
             )}
 
             {showCreateForm ? (
@@ -147,7 +147,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                     placeholder="Escribe una categoría..."
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="w-full bg-white dark:bg-[#1a1a1a] border border-stone-300 dark:border-[#2a2a2a] rounded-lg p-3 text-sm focus:outline-none text-stone-900 dark:text-white"
+                    className="input-primary w-full border border-stone-200 dark:border-[#2a2a2a] rounded-lg p-3 text-sm"
                     autoFocus
                     disabled={isLoading}
                   />
@@ -155,14 +155,14 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
                     <button
                       type="button"
                       onClick={() => setShowCreateForm(false)}
-                      className="text-stone-500 hover:text-stone-900 dark:hover:text-white text-xs px-3 py-2 transition-colors font-medium"
+                      className="text-[var(--color-threes)] hover:text-color-three dark:hover:text-white text-xs px-3 py-2 transition-colors font-medium"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={isLoading || !newCategoryName.trim()}
-                      className="bg-color-one text-color-four text-xs font-bold px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition-colors shadow-md"
+                      className="buttom-shop text-xs font-bold px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition-colors shadow-md"
                     >
                       {isLoading ? "Guardando..." : "Guardar"}
                     </button>
@@ -172,7 +172,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
             ) : (
                <button
                 onClick={() => setShowCreateForm(true)}
-                className="w-full py-4 rounded-xl border border-dashed border-stone-200 dark:border-[#2a2a2a] text-stone-500 dark:text-[#a0a0a0] hover:text-stone-400 hover:border-stone-400 dark:hover:border-white transition-all flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest"
+                className="w-full py-4 rounded-xl border border-dashed border-stone-200 dark:border-[#2a2a2a] text-[var(--color-threes)] dark:text-[#a0a0a0] hover:text-color-three hover:border-color-three dark:hover:border-white transition-all flex items-center justify-center gap-2 text-[13px] font-bold uppercase tracking-widest"
               >
                 <PlusIcon className="w-4 h-4" />
                 Nueva Categoría
@@ -186,7 +186,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOp
         <footer className="p-8 pt-4 flex justify-end">
           <button
             onClick={onClose}
-            className="px-8 py-2.5 bg-white dark:bg-[#0f0f0f] border border-stone-200 dark:border-[#2a2a2a] text-stone-900 dark:text-white text-[13px] font-bold rounded-xl hover:bg-stone-50 dark:hover:bg-[#1a1a1a] transition-all tracking-wide shadow-sm"
+            className="buttom-shop px-8 py-2.5 text-[13px] font-bold rounded-xl transition-all tracking-wide shadow-sm"
           >
             Cerrar
           </button>

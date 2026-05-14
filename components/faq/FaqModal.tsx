@@ -319,7 +319,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
       aria-labelledby="faq-modal-title"
     >
       <div
-        className={`relative bg-stone-50 dark:bg-[#1a1a1a] rounded-lg shadow-2xl w-full max-w-lg transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative bg-color-four dark:bg-[#1a1a1a] text-color-three dark:text-white rounded-lg shadow-2xl w-full max-w-lg transition-all duration-300 ease-in-out ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -327,7 +327,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
         >
           <h2
             id="faq-modal-title"
-            className="text-2xl font-semibold text-stone-900 dark:text-white mb-6"
+            className="text-2xl font-bold tracking-tight font-serif text-color-three dark:text-white mb-6"
           >
             {getTitle()}
           </h2>
@@ -343,20 +343,20 @@ const FaqModal: React.FC<FaqModalProps> = ({
               <div className="flex items-start gap-4">
                 <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-stone-700 dark:text-stone-200 mb-2">
+                  <p className="text-[var(--color-threes)] dark:text-stone-200 mb-2">
                     ¿Estás seguro de que quieres eliminar esta pregunta?
                   </p>
                   {faq && (
                     <div className="bg-stone-100 dark:bg-[#0f0f0f] p-4 rounded-md">
-                      <p className="font-semibold text-stone-900 dark:text-white mb-2">
+                      <p className="font-semibold text-color-three dark:text-white mb-2">
                         {faq.pregunta}
                       </p>
-                      <p className="text-sm text-stone-600 dark:text-[#a0a0a0] line-clamp-2">
+                      <p className="text-sm text-[var(--color-threes)] dark:text-[#a0a0a0] line-clamp-2">
                         {faq.respuesta}
                       </p>
                     </div>
                   )}
-                  <p className="text-sm text-stone-600 dark:text-stone-400 mt-3">
+                  <p className="text-sm text-[var(--color-threes)] dark:text-stone-400 mt-3">
                     Esta acción no se puede deshacer.
                   </p>
                 </div>
@@ -397,7 +397,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
               <div>
                 <label
                   htmlFor="pregunta"
-                  className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-2"
+                  className="block text-xs font-bold text-[var(--color-threes)] dark:text-stone-200 uppercase tracking-wider mb-2"
                 >
                   Pregunta
                 </label>
@@ -418,9 +418,9 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   }}
                   required
                   disabled={isLoading}
-                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-white focus:border-stone-500 dark:focus:border-[#2a2a2a] text-base bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed ${fieldErrors.pregunta
+                  className={`input-primary w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--color-threes)] text-sm disabled:opacity-50 disabled:cursor-not-allowed ${fieldErrors.pregunta
                     ? "border-red-500 dark:border-red-500"
-                    : "border-stone-300 dark:border-[#2a2a2a]"
+                    : "border-stone-200 dark:border-[#2a2a2a]"
                     }`}
                   placeholder="Ej: ¿Cómo puedo saber cuál es mi talla correcta?"
                 />
@@ -433,7 +433,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
               <div>
                 <label
                   htmlFor="respuesta"
-                  className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-2"
+                  className="block text-xs font-bold text-[var(--color-threes)] dark:text-stone-200 uppercase tracking-wider mb-2"
                 >
                   Respuesta
                 </label>
@@ -454,9 +454,9 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   required
                   disabled={isLoading}
                   rows={5}
-                  className={`w-full p-3 border rounded-md focus:ring-stone-500 dark:focus:ring-white focus:border-stone-500 dark:focus:border-[#2a2a2a] text-base bg-white dark:bg-[#0f0f0f] text-stone-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed resize-y ${fieldErrors.respuesta
+                  className={`input-primary w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--color-threes)] text-sm disabled:opacity-50 disabled:cursor-not-allowed resize-y ${fieldErrors.respuesta
                     ? "border-red-500 dark:border-red-500"
-                    : "border-stone-300 dark:border-[#2a2a2a]"
+                    : "border-stone-200 dark:border-[#2a2a2a]"
                     }`}
                   placeholder="Escribe la respuesta a la pregunta..."
                 />
@@ -480,7 +480,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
                   type="submit"
                   aria-label="Guardar"
                   disabled={isLoading}
-                   className="bg-color-one text-color-four font-medium py-2.5 px-6 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer shadow-md"
+                   className="buttom-shop font-medium py-2.5 px-6 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 flex items-center gap-2 shadow-md"
                 >
                   {isLoading ? (
                     <>
@@ -502,7 +502,7 @@ const FaqModal: React.FC<FaqModalProps> = ({
             type="button"
             aria-label="Cerrar"
             onClick={onClose}
-            className="absolute top-4 right-4 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 z-10 transition-colors rounded-full focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-stone-500 dark:focus:ring-stone-400 cursor-pointer disabled:cursor-not-allowed"
+            className="absolute top-4 right-4 text-[var(--color-threes)] hover:text-color-three dark:text-stone-400 dark:hover:text-stone-100 z-10 transition-colors rounded-full focus:outline-none cursor-pointer disabled:cursor-not-allowed"
           >
             <CloseIcon className="w-6 h-6" />
           </button>
