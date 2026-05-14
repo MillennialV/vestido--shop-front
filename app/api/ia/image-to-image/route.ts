@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
         let imageBase64 = '';
         let prompt = '';
-        let model = 'gemini-1.5-flash';
+        let model = 'gemini-1.5-flash-001';
 
         const token = req.cookies.get('authToken')?.value;
 
