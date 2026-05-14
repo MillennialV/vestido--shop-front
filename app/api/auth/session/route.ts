@@ -34,6 +34,29 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // ── Validación de dominio ──────────────────────────────────────────────
+      // Si la organización tiene un dominio configurado, verificamos que la
+      // cookie llegó desde ese mismo dominio. Si no coincide, el token pertenece
+      // a otra tienda: borramos la cookie y rechazamos la sesión.
+      if (organization?.domain) {
+        const normalizeHost = (h: string) =>
+          h.replace(/^www\./, '').split(':')[0].toLowerCase();
+
+        const requestHost = req.headers.get('host') || '';
+        const currentHost = normalizeHost(requestHost);
+        const orgDomain   = normalizeHost(organization.domain);
+
+        console.log(`[Session API Route] Domain check — request: "${currentHost}" | org: "${orgDomain}"`);
+
+        if (orgDomain !== currentHost) {
+          console.warn(`[Session API Route] ⚠️ Domain mismatch — borrando cookie huérfana`);
+          const mismatchRes = NextResponse.json({ authenticated: false }, { status: 401 });
+          mismatchRes.cookies.delete('authToken');
+          return mismatchRes;
+        }
+      }
+      // ──────────────────────────────────────────────────────────────────────
+
       return NextResponse.json({
         authenticated: true,
         token,
