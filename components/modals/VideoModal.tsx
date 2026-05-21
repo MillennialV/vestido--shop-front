@@ -720,8 +720,8 @@ const VideoModal: React.FC<VideoModalProps> = ({
                     {/* 1. Atributos Dinámicos (Personalizados) */}
                     {garment.atributos_dinamicos && Object.entries(garment.atributos_dinamicos).map(([key, value]) => {
                       if (!value || String(value).trim() === '') return null;
-                      // Evitar duplicar campos que mostraremos en la sección "Fija"
-                      if (['size', 'color', 'material', 'occasion', 'style_notes'].includes(key.toLowerCase())) return null;
+                      // Evitar duplicar campos que mostraremos en la sección "Fija" o variantes de talla
+                      if (['size', 'talla', 'tallas', 'sizes', 'color', 'material', 'occasion', 'style_notes'].includes(key.toLowerCase())) return null;
                       
                       const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
                       return (

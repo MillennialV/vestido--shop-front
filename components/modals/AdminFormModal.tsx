@@ -108,7 +108,8 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
 
       if (garment.atributos_dinamicos) {
         Object.entries(garment.atributos_dinamicos).forEach(([k, v], i) => {
-          if (k !== 'size' && k !== 'color') {
+          const lowerK = k.toLowerCase();
+          if (lowerK !== 'size' && lowerK !== 'color' && lowerK !== 'talla' && lowerK !== 'tallas' && lowerK !== 'sizes') {
             initialCustom.push({ id: `cf-${i}-${Date.now()}`, key: k, value: String(v) });
           }
         });
@@ -241,8 +242,13 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       };
 
       customFields.forEach(cf => {
-        if (cf.key.trim() && cf.value.trim()) {
-          dataToSave[cf.key.trim()] = cf.value.trim();
+        const trimmedKey = cf.key.trim();
+        const trimmedVal = cf.value.trim();
+        if (trimmedKey && trimmedVal) {
+          const lowerKey = trimmedKey.toLowerCase();
+          if (lowerKey !== 'size' && lowerKey !== 'talla' && lowerKey !== 'tallas' && lowerKey !== 'sizes') {
+            dataToSave[trimmedKey] = trimmedVal;
+          }
         }
       });
 

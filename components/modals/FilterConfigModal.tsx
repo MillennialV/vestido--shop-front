@@ -104,7 +104,7 @@ const FilterConfigModal: React.FC<FilterConfigModalProps> = ({
                         <div className="grid gap-3">
                             {availableAttributes.length > 0 ? (
                                 availableAttributes.filter(key => 
-                                    !['brand', 'size', 'categoria', 'category', 'atributos_dinamicos'].includes(key.toLowerCase())
+                                    !['brand', 'size', 'talla', 'tallas', 'sizes', 'categoria', 'category', 'atributos_dinamicos'].includes(key.toLowerCase())
                                 ).map(key => (
                                     <label
                                         key={key}

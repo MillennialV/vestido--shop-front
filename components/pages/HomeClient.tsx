@@ -164,7 +164,10 @@ export default function HomeClient({
 
       Object.keys(garment).forEach(key => {
         if (!standardKeys.includes(key)) {
-          keys.add(key);
+          const lowerK = key.toLowerCase();
+          if (lowerK !== 'talla' && lowerK !== 'tallas' && lowerK !== 'sizes') {
+            keys.add(key);
+          }
         }
       });
 
@@ -185,14 +188,37 @@ export default function HomeClient({
       activeFilterKeys.forEach(key => {
         const val = garment[key];
         if (val && val !== '') {
-          options[key].add(String(val));
+          if (key === 'size') {
+            // Dividir por comas para obtener tallas individuales limpias
+            String(val).split(',').forEach(s => {
+              const cleaned = s.trim();
+              if (cleaned) {
+                options[key].add(cleaned);
+              }
+            });
+          } else {
+            options[key].add(String(val));
+          }
         }
       });
     });
 
     const result: Record<string, string[]> = {};
     Object.keys(options).forEach(key => {
-      result[key] = Array.from(options[key]).sort();
+      if (key === 'size') {
+        // Ordenación lógica de tallas de menor a mayor
+        const sizeOrder = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl', '38', '40', '42', '44', 'única', 'unica'];
+        result[key] = Array.from(options[key]).sort((a, b) => {
+          const idxA = sizeOrder.indexOf(a.toLowerCase());
+          const idxB = sizeOrder.indexOf(b.toLowerCase());
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return a.localeCompare(b);
+        });
+      } else {
+        result[key] = Array.from(options[key]).sort();
+      }
     });
     return result;
   }, [allProductsForFilters, initialGarments, activeFilterKeys]);
@@ -337,7 +363,12 @@ export default function HomeClient({
         if (key === 'brand') continue;
         const filterVal = filters[key];
         if (filterVal && filterVal !== 'all') {
-          if (String((g as any)[key]) !== filterVal) return false;
+          if (key === 'size') {
+            const productSizes = String(g.size || '').split(',').map(s => s.trim().toLowerCase());
+            if (!productSizes.includes(filterVal.trim().toLowerCase())) return false;
+          } else {
+            if (String((g as any)[key]) !== filterVal) return false;
+          }
         }
       }
 
@@ -369,7 +400,14 @@ export default function HomeClient({
       for (const key of activeFilterKeys) {
         if (key === 'brand') continue;
         const filterVal = filters[key];
-        if (filterVal && filterVal !== 'all' && String((g as any)[key]) !== filterVal) return false;
+        if (filterVal && filterVal !== 'all') {
+          if (key === 'size') {
+            const productSizes = String(g.size || '').split(',').map(s => s.trim().toLowerCase());
+            if (!productSizes.includes(filterVal.trim().toLowerCase())) return false;
+          } else {
+            if (String((g as any)[key]) !== filterVal) return false;
+          }
+        }
       }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -391,7 +429,14 @@ export default function HomeClient({
       for (const key of activeFilterKeys) {
         if (key === 'brand') continue;
         const filterVal = filters[key];
-        if (filterVal && filterVal !== 'all' && String((g as any)[key]) !== filterVal) return false;
+        if (filterVal && filterVal !== 'all') {
+          if (key === 'size') {
+            const productSizes = String(g.size || '').split(',').map(s => s.trim().toLowerCase());
+            if (!productSizes.includes(filterVal.trim().toLowerCase())) return false;
+          } else {
+            if (String((g as any)[key]) !== filterVal) return false;
+          }
+        }
       }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();

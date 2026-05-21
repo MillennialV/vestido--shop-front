@@ -184,7 +184,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       if (jsonData.length === 0) return;
 
       const newKeysFound = new Set<string>();
-      const standardKeys = ["Producto", "title", "Marca", "brand", "Descripción", "description", "Precio", "price", "Stock", "cantidad", "URL Imagen", "imageUrl", "URL Video", "videoUrl", "Link", "link", "Atributos Dinámicos", "atributos_dinamicos"];
+      const standardKeys = ["Producto", "title", "Marca", "brand", "Descripción", "description", "Precio", "price", "Stock", "cantidad", "URL Imagen", "imageUrl", "URL Video", "videoUrl", "Link", "link", "Atributos Dinámicos", "atributos_dinamicos", "Talla", "talla", "tallas", "sizes", "size"];
 
       jsonData.forEach(row => {
         Object.keys(row).forEach(k => {
@@ -730,7 +730,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           description: "breve descripción",
           price: 0
         };
-        const standardFields = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color'];
+        const standardFields = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color', 'talla', 'tallas', 'sizes'];
 
         // Identificar campos heredados del PRIMER producto de la lista (si no es este el primero)
         const firstFile = files[0];
@@ -819,7 +819,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               if (!updatedData.description && result.description) updatedData.description = result.description;
               if (!updatedData.price && priceString) updatedData.price = priceString;
 
-              const standardFields2 = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color', 'usage', 'error', 'success'];
+              const standardFields2 = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color', 'talla', 'tallas', 'sizes', 'usage', 'error', 'success'];
               const aiCustomFields: { id: string, key: string, value: string }[] = [...(f.customFields || [])];
 
               // Si no es el primer archivo, también heredamos los campos vacíos del primero si faltan en este
@@ -968,7 +968,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             formData.append("cantidad", f.garmentData.cantidad || "0");
 
             // Atributos dinámicos combinados
-            const standardFields = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color'];
+            const standardFields = ['title', 'brand', 'description', 'price', 'cantidad', 'size', 'color', 'talla', 'tallas', 'sizes'];
 
             // 1. Del garmentData original (ej. Excel)
             Object.entries(f.garmentData).forEach(([k, v]) => {
@@ -980,8 +980,13 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             // 2. Del customFields (UI)
             if (f.customFields) {
               f.customFields.forEach(cf => {
-                if (cf.key.trim() && cf.value.trim()) {
-                  formData.append(cf.key.trim().toLowerCase(), String(cf.value));
+                const trimmedKey = cf.key.trim();
+                const trimmedVal = cf.value.trim();
+                if (trimmedKey && trimmedVal) {
+                  const lowerKey = trimmedKey.toLowerCase();
+                  if (lowerKey !== 'size' && lowerKey !== 'talla' && lowerKey !== 'tallas' && lowerKey !== 'sizes') {
+                    formData.append(lowerKey, String(trimmedVal));
+                  }
                 }
               });
             }
