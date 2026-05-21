@@ -168,7 +168,6 @@ export default function HomeClient({
         }
       });
 
-      if (garment.size) keys.add('size');
       if (garment.occasion) keys.add('occasion');
     });
 

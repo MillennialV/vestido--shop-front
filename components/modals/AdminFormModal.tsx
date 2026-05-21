@@ -70,6 +70,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     videoUrl: "", // URL manual de video como alternativa
     imagen_principal: "", // URL manual de imagen principal
     cantidad: "",
+    size: "",
   });
   const [customFields, setCustomFields] = useState<{ id: string, key: string, value: string }[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -99,10 +100,10 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         videoUrl: garment.videoUrl || "",
         imagen_principal: garment.imagen_principal || "",
         cantidad: garment.cantidad !== undefined && garment.cantidad !== null ? String(garment.cantidad) : "0",
+        size: garment.size || "",
       });
 
       const initialCustom: { id: string, key: string, value: string }[] = [];
-      if (garment.size) initialCustom.push({ id: `cf-size-${Date.now()}`, key: "size", value: String(garment.size) });
       if (garment.color) initialCustom.push({ id: `cf-color-${Date.now()}`, key: "color", value: String(garment.color) });
 
       if (garment.atributos_dinamicos) {
@@ -131,6 +132,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         videoUrl: "",
         imagen_principal: "",
         cantidad: "1",
+        size: "",
       });
       setCustomFields([]);
       setPreviewUrl(null);
@@ -190,6 +192,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
     const errors: Record<string, string> = {};
     if (!formData.title) errors.title = "El título es requerido";
     if (!formData.brand) errors.brand = "La marca es requerida";
+    if (!formData.size) errors.size = "La talla es requerida";
     if (!formData.description) errors.description = "La descripción es requerida";
 
     if (Object.keys(errors).length > 0) {
@@ -231,6 +234,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
         price: priceAsNumber,
         cantidad: cantidadAsNumber,
         imagenes: existingImageUrls,
+        size: formData.size,
         ...(formData.videoUrl && !videoFile
           ? { videoUrl: formData.videoUrl }
           : {}),
@@ -486,6 +490,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
       const baseSchema: Record<string, any> = {
         title: "nombre creativo del vestido",
         brand: "Identifica la marca",
+        size: "Identifica la talla (ej: S, M, L, 38, etc.) o null si no se distingue",
         description: "breve descripción",
         price: 0,
       };
@@ -523,6 +528,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
           ...prev,
           title: result.title || prev.title,
           brand: result.brand || prev.brand,
+          size: result.size || result.talla || prev.size,
           description: result.description || prev.description,
           price: priceString,
         };
@@ -817,6 +823,24 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({
                 className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
               />
               {formErrors.brand && <p className="text-red-500 text-xs mt-1">{formErrors.brand}</p>}
+            </div>
+            <div>
+              <label
+                htmlFor="size"
+                className="block text-sm font-medium text-color-three dark:text-stone-300 mb-1"
+              >
+                Talla
+              </label>
+              <input
+                type="text"
+                name="size"
+                id="size"
+                value={formData.size}
+                onChange={handleChange}
+                placeholder="Ej: S, M, L, 38, etc."
+                className="input-primary w-full p-2 border border-color-three/20 dark:border-[#2a2a2a] rounded-md"
+              />
+              {formErrors.size && <p className="text-red-500 text-xs mt-1">{formErrors.size}</p>}
             </div>
             <div>
               <label

@@ -83,12 +83,28 @@ const FilterConfigModal: React.FC<FilterConfigModalProps> = ({
                             <input type="checkbox" checked readOnly className="w-5 h-5 accent-color-one cursor-not-allowed" />
                         </div>
 
+                        {/* Campo de Producto: Talla */}
+                        <label className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer group ${selectedKeys.includes('size')
+                            ? 'bg-color-one/5 dark:bg-color-one/10 border-color-one shadow-sm'
+                            : 'bg-white dark:bg-[#121212] border-stone-100 dark:border-[#2a2a2a] hover:border-stone-200 dark:hover:border-[#3a3a3a] hover:bg-stone-50 dark:hover:bg-[#1a1a1a]'
+                            }`}>
+                            <div className="flex items-center gap-3">
+                                <span className={`font-semibold ${selectedKeys.includes('size') ? 'text-stone-900 dark:text-white' : 'text-stone-600 dark:text-[#a0a0a0]'}`}>Talla</span>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={selectedKeys.includes('size')}
+                                onChange={() => handleToggleKey('size')}
+                                className="w-5 h-5 accent-color-one rounded-md transition-transform group-active:scale-[0.95]"
+                            />
+                        </label>
+
                         <p className="text-xs font-bold text-stone-400 dark:text-[#666] uppercase tracking-wider mt-6 mb-2">Campos Dinámicos Detectados</p>
 
                         <div className="grid gap-3">
                             {availableAttributes.length > 0 ? (
                                 availableAttributes.filter(key => 
-                                    !['brand', 'categoria', 'category', 'atributos_dinamicos'].includes(key.toLowerCase())
+                                    !['brand', 'size', 'categoria', 'category', 'atributos_dinamicos'].includes(key.toLowerCase())
                                 ).map(key => (
                                     <label
                                         key={key}
