@@ -164,10 +164,7 @@ export default function HomeClient({
 
       Object.keys(garment).forEach(key => {
         if (!standardKeys.includes(key)) {
-          const lowerK = key.toLowerCase();
-          if (lowerK !== 'talla' && lowerK !== 'tallas' && lowerK !== 'sizes') {
-            keys.add(key);
-          }
+          keys.add(key);
         }
       });
 
